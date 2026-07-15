@@ -164,3 +164,9 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
+
+# OpenAI-compatible LLM endpoint used by analysis services.
+AI_API_URL = config("AI_API_URL", default="https://api.openai.com/v1/chat/completions")
+AI_API_KEY = config("AI_API_KEY", default="")
+AI_PROVIDER = config("AI_PROVIDER", default="openai-compatible")
+AI_MODEL_NAME = config("AI_MODEL_NAME", default="")
