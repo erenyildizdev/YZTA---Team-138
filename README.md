@@ -226,6 +226,32 @@ Django admin paneli için:
 http://localhost:8000/admin/
 ```
 
+### MoSCoW MVP kapsam API'si
+
+`GET /api/analyses/ideas/<idea_id>/moscow-scope/` kullanıcının kendi fikri için daha önce
+kaydedilmiş analizi döndürür; kayıt yoksa `404` döner. `POST` aynı URL'de request body
+gerektirmeden yeni analiz üretir ve kalıcı olarak kaydeder. İlk üretim `201`, var olan kaydın
+yenilenmesi `200` döndürür. İki işlem de JWT authentication gerektirir ve başka kullanıcıların
+fikirlerini `404` ile gizler.
+
+```json
+{
+  "id": 1,
+  "idea_id": 5,
+  "summary": "MVP temel doğrulama akışına odaklanmalıdır.",
+  "must_have": [{"title": "Fikir girişi", "reason": "Analiz için temel fikir bilgileri gereklidir."}],
+  "should_have": [{"title": "Analiz geçmişi", "reason": "Önceki sonuçlarla karşılaştırmayı kolaylaştırır."}],
+  "could_have": [{"title": "PDF çıktısı", "reason": "Sonucun paydaşlarla paylaşılmasını kolaylaştırır."}],
+  "wont_have": [{"title": "Ödeme sistemi", "reason": "İlk MVP değerini test etmek için gerekli değildir."}],
+  "prompt_version": "moscow-v1",
+  "provider": "openai-compatible",
+  "model_name": "configured-model"
+}
+```
+
+Servis OpenAI uyumlu chat-completions endpoint'i için `AI_API_URL`, `AI_API_KEY`,
+`AI_PROVIDER` ve `AI_MODEL_NAME` ortam değişkenlerini kullanır.
+
 ---
 
 ## Geliştirme Ortamı
