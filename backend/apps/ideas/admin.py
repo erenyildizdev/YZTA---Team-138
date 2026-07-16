@@ -1,3 +1,9 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import Idea
+
+
+@admin.register(Idea)
+class IdeaAdmin(admin.ModelAdmin):
+    list_display = ("title", "user", "created_at")
+    search_fields = ("title", "description", "target_audience")
