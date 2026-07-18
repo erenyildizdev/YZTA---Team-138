@@ -177,3 +177,8 @@ GEMINI_MODEL_NAME = config(
     "GEMINI_MODEL_NAME",
     default="gemini-3.1-flash-lite",
 )
+
+GEMINI_EMBEDDING_MODEL_NAME = config(
+    "GEMINI_EMBEDDING_MODEL_NAME",
+    default="gemini-embedding-001",
+)
