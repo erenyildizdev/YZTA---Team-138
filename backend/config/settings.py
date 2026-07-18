@@ -170,3 +170,10 @@ AI_API_URL = config("AI_API_URL", default="https://api.openai.com/v1/chat/comple
 AI_API_KEY = config("AI_API_KEY", default="")
 AI_PROVIDER = config("AI_PROVIDER", default="openai-compatible")
 AI_MODEL_NAME = config("AI_MODEL_NAME", default="")
+
+# Gemini API settings
+GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
+GEMINI_MODEL_NAME = config(
+    "GEMINI_MODEL_NAME",
+    default="gemini-3.1-flash-lite",
+)

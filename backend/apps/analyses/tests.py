@@ -13,6 +13,7 @@ from apps.analyses.services import (
 )
 from apps.ideas.models import Idea
 
+from apps.analyses.services.llm_client import LLMClientError
 
 class MomTestQuestionEndpointTests(APITestCase):
     def setUp(self):
@@ -331,3 +332,91 @@ class MoscowScopeEndpointTests(APITestCase):
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
         self.assertEqual(response.data, {"detail": "The MoSCoW scope could not be generated."})
+
+class IdeaAnalysisEndpointTests(APITestCase):
+
+    def setUp(self):
+        self.url = "/api/analyses/analyze/"
+
+    @patch("apps.analyses.views.analyze_idea")
+    def test_successful_analysis_returns_200(self, mock_analyze):
+        mock_analyze.return_value = {
+            "idea_summary": "Test fikri özeti",
+            "target_customer": "Üniversite öğrencileri",
+            "problem_statement": "Öğrenciler uygun fiyatlı sağlıklı beslenmekte zorlanıyor.",
+            "value_proposition": "Bütçeye uygun sağlıklı yemek planları sunar.",
+            "risky_assumptions": [
+                "Öğrenciler bu hizmeti düzenli kullanır."
+            ],
+            "mom_test_questions": [
+                "Geçtiğimiz hafta yemek planlamasını nasıl yaptın?"
+            ],
+            "moscow": {
+                "must": ["Yemek planı oluşturma"],
+                "should": ["Alışveriş listesi"],
+                "could": ["Market fiyat karşılaştırması"],
+                "wont": ["Yemek teslimatı"],
+            },
+            "validation_roadmap": [
+                "Hedef kullanıcılarla görüş."
+            ],
+            "evidence_to_collect": [
+                "Müşteri görüşme notları"
+            ],
+            "final_recommendation": "Fikir müşteri görüşmeleriyle doğrulanmalıdır.",
+        }
+
+        response = self.client.post(
+            self.url,
+            {
+                "idea_text": "Bu örnek bir iş fikridir."
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["idea_summary"], "Test fikri özeti")
+
+    def test_missing_idea_text_returns_400(self):
+
+        response = self.client.post(
+            self.url,
+            {},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_short_idea_text_returns_400(self):
+
+        response = self.client.post(
+            self.url,
+            {
+                "idea_text": "abc"
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    @patch(
+    "apps.analyses.views.analyze_idea",
+    side_effect=LLMClientError("AI service is unavailable."),
+    )
+    def test_ai_service_error_returns_controlled_503(self, _mock_analyze):
+        response = self.client.post(
+            self.url,
+            {
+                "idea_text": "Bu yeterince uzun bir iş fikridir."
+            },
+            format="json",
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+        self.assertEqual(
+            response.data,
+            {"detail": "AI service is unavailable."},
+        )
