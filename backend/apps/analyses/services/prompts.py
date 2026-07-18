@@ -1,4 +1,4 @@
-IDEA_VALIDATION_PROMPT = """
+IDEA_VALIDATION_BASE_PROMPT = """
 Sen deneyimli bir girişim doğrulama danışmanısın.
 Amacın, verilen iş fikrini MVP geliştirilmeden önce doğrulanabilir hale getirmektir.
 
@@ -91,3 +91,34 @@ Genel Kurallar
 - MoSCoW'daki Must kategorisi yalnızca MVP için vazgeçilmez özellikleri içermeli.
 - Teknik çözüm yerine kullanıcı problemini doğrulamaya öncelik ver.
 """
+
+def build_idea_validation_prompt(rag_context: str) -> str:
+    clean_context = rag_context.strip()
+
+    if not clean_context:
+        context_section = """
+Ek bilgi kaynağı bulunamadı.
+Analizi yalnızca kullanıcının verdiği iş fikri ve genel girişim
+doğrulama ilkeleri üzerinden yap.
+""".strip()
+    else:
+        context_section = f"""
+Aşağıdaki kaynak parçalarını analiz sırasında referans olarak kullan:
+
+--- RAG BAĞLAMI ---
+{clean_context}
+--- RAG BAĞLAMI SONU ---
+
+Kaynak kullanım kuralları:
+
+- Kaynak parçalarını doğrudan kopyalama.
+- Kaynaklardaki ilkeleri kullanıcının fikrine uyarlayarak kullan.
+- Kaynaklarda bulunmayan veri, istatistik veya araştırma sonucu uydurma.
+- Kaynak bağlamı ile kullanıcının fikri çelişirse kesin hüküm verme.
+""".strip()
+
+    return f"""
+{IDEA_VALIDATION_BASE_PROMPT.strip()}
+
+{context_section}
+""".strip()
