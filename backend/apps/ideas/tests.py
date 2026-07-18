@@ -31,12 +31,18 @@ class IdeaEndpointsTests(APITestCase):
             "title": "EcoMutfak",
             "description": "A sustainable kitchen waste app.",
             "target_audience": "Environmentally conscious households",
+            "problem": "Evlerde yemek atıkları için net bir takip yok.",
+            "solution": "Atıkları analiz edip tasarruf önerileri sunan bir ürün.",
+            "sector_category": "Sürdürülebilirlik",
         }
 
         response = self.client.post(self.list_url, payload, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["title"], payload["title"])
+        self.assertEqual(response.data["message"], "Idea saved successfully.")
+        self.assertEqual(response.data["idea"]["title"], payload["title"])
+        self.assertEqual(response.data["idea"]["problem"], payload["problem"])
+        self.assertEqual(response.data["analysis_url"], f"/analysis/{response.data['idea']['id']}")
         self.assertTrue(Idea.objects.filter(user=self.user, title=payload["title"]).exists())
 
     def test_list_only_current_users_ideas(self):

@@ -7,7 +7,19 @@ class Idea(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     target_audience = models.CharField(max_length=255)
+    problem = models.TextField(blank=True, default="")
+    solution = models.TextField(blank=True, default="")
+    sector_category = models.CharField(max_length=255, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
+
+
+class ValidationRoadmap(models.Model):
+    idea = models.OneToOneField(Idea, on_delete=models.CASCADE, related_name="validation_roadmap")
+    roadmap_data = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Validation roadmap for {self.idea.title}"
