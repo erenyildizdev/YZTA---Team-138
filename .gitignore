@@ -24,3 +24,8 @@ staticfiles/
 
 # Docker
 *.log
+
+# Frontend generated and design-source files
+**/node_modules/
+**/dist/
+**/panel.zip
