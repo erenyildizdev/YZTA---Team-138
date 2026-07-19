@@ -76,256 +76,666 @@ AI Destekli Fikir Doğrulama Asistanı'nın ana hedef kitlesi, iş fikrini hayat
 
 ## Ürün Özellikleri
 
-### MVP Kapsamındaki Temel Özellikler
+### Tamamlanan MVP Özellikleri
 
-- Kullanıcının iş fikrini sisteme girebilmesi
-- Girilen iş fikrinin AI tarafından temel olarak analiz edilmesi
-- Fikrin hedef kitlesi, problem alanı ve değer önerisinin çıkarılması
-- İş fikrindeki en riskli varsayımların belirlenmesi
-- Müşteri görüşmeleri için Mom Test prensiplerine uygun soru önerileri oluşturulması
-- MVP kapsamının MoSCoW yöntemiyle önceliklendirilmesi
-- Kullanıcıya fikir doğrulama süreci için adım adım yol haritası sunulması
+- Kullanıcı kayıt ve giriş işlemlerinin gerçekleştirilmesi
+- JWT tabanlı kullanıcı kimlik doğrulama altyapısının sağlanması
+- Kullanıcının yeni bir iş fikrini sisteme ekleyebilmesi
+- Kullanıcının kendisine ait iş fikirlerini listeleyebilmesi
+- Kullanıcının fikir detaylarını görüntüleyebilmesi
+- Kullanıcının eklediği iş fikirlerini güncelleyebilmesi ve silebilmesi
+- Girilen iş fikrinin backend tarafında yapay zekâ destekli olarak analiz edilebilmesi
+- Kullanıcının hedef kitlesiyle gerçekleştireceği görüşmeler için Mom Test prensiplerine uygun sorular üretilmesi
+- İş fikrinin MVP kapsamının MoSCoW yöntemiyle önceliklendirilmesi
+- Doğrulama yol haritası üretim servisinin backend tarafında hazırlanması
+- Girişimcilik ve fikir doğrulama içeriklerinin kullanılabilmesi için başlangıç seviyesinde RAG retrieval altyapısının hazırlanması
+- MoSCoW kapsam analizlerinin veritabanında saklanması ve analiz endpointlerinde kullanıcı sahipliği kontrollerinin gerçekleştirilmesi
+- Analiz endpointleri için doğrulama, yetkilendirme ve temel backend testlerinin hazırlanması
 
-### Geliştirilmesi Planlanan Özellikler
+### Son Sprint Kapsamındaki Çalışmalar
+
+- Backend tarafından oluşturulan analiz sonuçlarının dashboard kullanıcı arayüzüne entegre edilmesi
+- Fikir gönderme, analiz başlatma ve sonuç görüntüleme adımlarının uçtan uca bir kullanıcı akışında birleştirilmesi
+- Sprint 2 kapsamında geliştirilen analiz modüllerinin frontend ekranlarında gösterilmesi
+- Uçtan uca MVP akışına yönelik temel test senaryolarının hazırlanması
+- Kullanıcının daha önce oluşturduğu fikirleri ve analiz sonuçlarını arayüz üzerinden görüntüleyebilmesi
+- Ürünün teslim edilebilir ve deploy edilebilir hale getirilmesi
+- Son ürün kontrollerinin, hata düzeltmelerinin ve demo hazırlıklarının tamamlanması
+
+### MVP Sonrasında Geliştirilebilecek Özellikler
 
 - Kullanıcının müşteri görüşme notlarını sisteme ekleyebilmesi
-- Görüşme notlarından kanıt ve içgörü analizi yapılması
-- Fikrin doğrulama durumunu gösteren final validasyon raporu oluşturulması
-- RAG destekli girişimcilik bilgi katmanı ile analiz kalitesinin artırılması
-- Kullanıcının önceki analizlerini görüntüleyebilmesi
+- Görüşme notlarından kanıt, içgörü ve tekrar eden problem analizi yapılması
+- Kullanıcı geri bildirimlerine göre fikir varsayımlarının güncellenmesi
+- Fikrin doğrulama seviyesini gösteren kapsamlı final validasyon raporu oluşturulması
+- Analiz sonuçlarının PDF veya paylaşılabilir rapor olarak dışa aktarılması
+- Kullanıcıya doğrulama sürecindeki ilerlemesini gösteren takip sistemi sunulması
+- RAG bilgi tabanının daha fazla açık kaynak girişimcilik içeriğiyle genişletilmesi
 
 ---
 
 ## Product Backlog
 
-| ID    | Backlog Item                                                        | Öncelik | Sprint     | Durum |
-| ----- | ------------------------------------------------------------------- | ------- | ---------- | ----- |
-| PB-01 | Kullanıcı kayıt ve giriş işlemleri için backend endpointlerinin yazılması | Yüksek  | Sprint 1   | Tamamlandı |
-| PB-02 | Kullanıcının iş fikri ekleyebilmesi için backend endpointinin yazılması | Yüksek  | Sprint 1   | Tamamlandı |
-| PB-03 | Kullanıcının eklediği fikirleri listeleyebilmesi                    | Yüksek  | Sprint 1   | Tamamlandı |
-| PB-04 | Kullanıcının fikir detayını görüntüleyebilmesi                      | Yüksek  | Sprint 1   | Tamamlandı |
-| PB-05 | Kullanıcının eklediği fikri silebilmesi                             | Orta    | Sprint 1   | Tamamlandı |
-| PB-06 | Admin panel üzerinden temel veri yönetiminin sağlanması             | Orta    | Sprint 1   | Tamamlandı |
-| PB-07 | Kayıt ve giriş ekranlarının frontend tarafında hazırlanması         | Yüksek  | Sprint 2   | Planlandı |
-| PB-08 | Fikir ekleme ve fikir listeleme ekranlarının frontend ile entegre edilmesi | Yüksek | Sprint 2 | Planlandı |
-| PB-09 | Girilen iş fikrinin AI ile temel analizinin yapılması               | Yüksek  | Sprint 2   | Planlandı |
-| PB-10 | İş fikrindeki riskli varsayımların çıkarılması                      | Yüksek  | Sprint 2   | Planlandı |
-| PB-11 | Mom Test prensiplerine uygun müşteri görüşme sorularının üretilmesi | Yüksek  | Sprint 2   | Planlandı |
-| PB-12 | MVP kapsamının MoSCoW yöntemiyle önceliklendirilmesi                | Orta    | Sprint 2   | Planlandı |
-| PB-13 | Doğrulama yol haritasının oluşturulması                             | Orta    | Sprint 3   | Planlandı |
-| PB-14 | Kullanıcının görüşme notlarını sisteme ekleyebilmesi                | Orta    | Sprint 3   | Planlandı |
-| PB-15 | Görüşme notlarından kanıt ve içgörü analizi yapılması               | Orta    | Sprint 3   | Planlandı |
-| PB-16 | RAG destekli girişimcilik bilgi katmanı için kaynak araştırması ve entegrasyon çalışması | Orta | Sprint 1-3 | Devam Ediyor |
-| PB-17 | Final validasyon raporunun oluşturulması                            | Yüksek  | Sprint 3   | Planlandı |
-| PB-18 | Ürünün deploy edilebilir hale getirilmesi                           | Orta    | Sprint 3   | Planlandı |
+Product Backlog, ürünün geliştirme sürecinde ihtiyaç duyulan özellikleri ve teknik çalışmaları göstermektedir. İşlerin ayrıntılı takibi GitHub Issues, Milestone ve Project Board üzerinden gerçekleştirilmektedir.
+
+| ID | Backlog Item | Öncelik | Sprint | Durum |
+| --- | --- | --- | --- | --- |
+| PB-01 | Kullanıcı kayıt ve giriş işlemleri için backend endpointlerinin geliştirilmesi | Yüksek | Sprint 1 | Tamamlandı |
+| PB-02 | JWT tabanlı kimlik doğrulama altyapısının hazırlanması | Yüksek | Sprint 1 | Tamamlandı |
+| PB-03 | Kullanıcının iş fikri ekleyebilmesi için backend endpointlerinin geliştirilmesi | Yüksek | Sprint 1 | Tamamlandı |
+| PB-04 | Kullanıcının kendi fikirlerini listeleyebilmesi ve detaylarını görüntüleyebilmesi | Yüksek | Sprint 1 | Tamamlandı |
+| PB-05 | Kullanıcının eklediği fikirleri güncelleyebilmesi ve silebilmesi | Orta | Sprint 1 | Tamamlandı |
+| PB-06 | Django Admin üzerinden temel veri yönetiminin sağlanması | Orta | Sprint 1 | Tamamlandı |
+| PB-07 | Docker ve PostgreSQL tabanlı geliştirme ortamının hazırlanması | Yüksek | Sprint 1 | Tamamlandı |
+| PB-08 | Kullanıcının iş fikrini sisteme gönderebilmesini sağlayan fikir gönderme akışının geliştirilmesi | Yüksek | Sprint 2 | Tamamlandı |
+| PB-09 | İş fikirlerinin doğrulanması için yapay zekâ analiz servisinin geliştirilmesi | Yüksek | Sprint 2 | Backend tamamlandı, frontend entegrasyonu Son Sprint'e aktarıldı |
+| PB-10 | Mom Test prensiplerine uygun müşteri görüşme sorularının üretilmesi | Yüksek | Sprint 2 | Tamamlandı |
+| PB-11 | MVP kapsamının MoSCoW yöntemiyle önceliklendirilmesi | Yüksek | Sprint 2 | Tamamlandı |
+| PB-12 | Kullanıcıya fikir doğrulama yol haritası oluşturulması | Yüksek | Sprint 2 | Tamamlandı |
+| PB-13 | Girişimcilik içerikleri için başlangıç RAG retrieval altyapısının hazırlanması | Orta | Sprint 2 | Tamamlandı |
+| PB-14 | Analiz sonuçlarının dashboard kullanıcı arayüzüne entegre edilmesi | Yüksek | Son Sprint | Son Sprint'e Aktarıldı |
+| PB-15 | Fikir gönderme, analiz başlatma ve sonuç görüntüleme adımlarının uçtan uca birleştirilmesi | Yüksek | Son Sprint | Planlandı |
+| PB-16 | MVP kullanıcı akışına yönelik temel test senaryolarının hazırlanması | Yüksek | Son Sprint | Planlandı |
+| PB-17 | Kullanıcının önceki fikirlerini ve analiz sonuçlarını arayüz üzerinden görüntüleyebilmesi | Orta | Son Sprint | Planlandı |
+| PB-18 | Ürünün deploy edilebilir hale getirilmesi | Yüksek | Son Sprint | Planlandı |
+| PB-19 | Son ürün kontrollerinin, hata düzeltmelerinin ve demo hazırlıklarının tamamlanması | Yüksek | Son Sprint | Planlandı |
+| PB-20 | Kullanıcının müşteri görüşme notlarını sisteme ekleyebilmesi | Orta | MVP Sonrası | Planlandı |
+| PB-21 | Görüşme notlarından kanıt ve içgörü analizi yapılması | Orta | MVP Sonrası | Planlandı |
+| PB-22 | Kapsamlı final validasyon raporunun oluşturulması | Orta | MVP Sonrası | Planlandı |
+| PB-23 | Analiz sonuçlarının PDF veya paylaşılabilir rapor olarak dışa aktarılması | Düşük | MVP Sonrası | Planlandı |
+
+Sprint 2 sonunda backend ve yapay zekâ ağırlıklı analiz özelliklerinin büyük bölümü tamamlanmıştır. Frontend entegrasyonu, uçtan uca kullanıcı akışı, test çalışmaları ve ürünün deploy edilebilir hale getirilmesi Son Sprint'in öncelikli backlog maddeleri olarak belirlenmiştir.
 ---
 
 ## Product Backlog URL
 
-Product backlog GitHub Projects üzerinde takip edilmektedir.  
-URL: Sprint 1 sonunda eklenecektir.
----
+Product Backlog; GitHub Issues, Milestone ve GitHub Projects kullanılarak takip edilmektedir.
 
-## Sprint Board URL
-
-Sprint 1 kapsamındaki görevler GitHub Projects üzerinde takip edilmektedir.  
-Board üzerinde görevler Backlog, Todo, In Progress ve Done kolonlarıyla yönetilmektedir.
+Backlog maddelerinin öncelikleri, sprint atamaları, sorumluları ve güncel durumları Project Board üzerinden görüntülenebilir.
 
 URL: <https://github.com/users/erenylldz/projects/2>
 
 ---
 
-## Planlanan Teknolojiler
+## Sprint Board URL
 
-| Alan             | Teknoloji / Yaklaşım |
-| ---------------- | -------------------- |
-| Frontend         | Hazırlanan arayüz prototipi ve kullanıcı akışı referans alınarak Sprint 2 kapsamında geliştirilecek |
-| Backend          | Django |
-| API              | Django REST Framework |
-| Database         | PostgreSQL |
-| Admin Panel      | Django Admin |
-| Authentication   | Kullanıcı kayıt/giriş endpointleri |
-| Containerization | Docker |
-| AI               | LLM API |
-| RAG              | Girişimcilik ve fikir doğrulama içerikleri üzerinden kaynak araştırması ve entegrasyon |
-| Deployment       | Sprint 3 kapsamında değerlendirilecek |
+Bootcamp süresince planlanan ve geliştirilen çalışmalar GitHub Projects üzerinde takip edilmektedir.
+
+Board üzerinde görevler aşağıdaki durumlara göre yönetilmektedir:
+
+- `Backlog`: Henüz sprint kapsamına alınmamış çalışmalar
+- `To Do`: İlgili sprintte yapılması planlanan çalışmalar
+- `In Progress`: Geliştirmesi devam eden çalışmalar
+- `Done`: Geliştirmesi ve kontrolleri tamamlanan çalışmalar
+
+Tamamlanamayan işler ilgili issue'lara açıklayıcı yorumlar eklenerek sonraki sprintlere aktarılmaktadır. Tamamlanan çalışmalar ise pull request ve test süreçlerinin ardından `Done` durumuna taşınmaktadır.
+
+URL: <https://github.com/users/erenylldz/projects/2>
+
+---
+
+## Kullanılan Teknolojiler
+
+Projenin backend, frontend, yapay zekâ ve geliştirme ortamında kullanılan temel teknolojiler aşağıdaki tabloda gösterilmiştir.
+
+| Alan | Teknoloji / Yaklaşım |
+| --- | --- |
+| Frontend | React |
+| Frontend Geliştirme Aracı | Vite |
+| Arayüz ve Stil | Tailwind CSS |
+| Backend | Django |
+| REST API | Django REST Framework |
+| Veritabanı | PostgreSQL |
+| Kimlik Doğrulama | JWT ve Django REST Framework SimpleJWT |
+| Admin Panel | Django Admin |
+| Containerization | Docker ve Docker Compose |
+| Yapay Zekâ | OpenAI uyumlu LLM API |
+| RAG | Girişimcilik ve fikir doğrulama kaynakları üzerinden retrieval pipeline |
+| Test | Django Test Framework |
+| Versiyon Kontrolü | Git ve GitHub |
+| Proje Yönetimi | GitHub Issues, Milestones ve GitHub Projects |
+| Dokümantasyon | Markdown |
+| Deployment | Son Sprint kapsamında hazırlanacaktır |
+
+### Teknik Yaklaşım
+
+Backend tarafında modüler ve sürdürülebilir bir yapı oluşturmak amacıyla Django uygulamaları sorumluluklarına göre ayrılmıştır. Kullanıcı işlemleri `users`, iş fikri işlemleri `ideas`, yapay zekâ destekli doğrulama işlemleri ise `analyses` uygulaması üzerinden yönetilmektedir.
+
+API geliştirme süreçlerinde Django REST Framework kullanılmakta, kullanıcı kimlik doğrulama işlemleri JWT tabanlı olarak gerçekleştirilmektedir. Veritabanı olarak ilişkisel veri yapısına uygun olması nedeniyle PostgreSQL tercih edilmiştir.
+
+Yapay zekâ analiz işlemleri doğrudan view katmanında yürütülmek yerine servis katmanı üzerinden gerçekleştirilmektedir. Bu yapı sayesinde LLM bağlantısı, prompt yönetimi, yanıt doğrulama, normalizasyon ve hata yönetimi gibi işlemlerin API katmanından ayrılması hedeflenmiştir.
+
+Frontend tarafında React ve Vite kullanılmaktadır. Kullanıcı arayüzünün geliştirilmesinde Tailwind CSS tercih edilmiştir. Frontend ile backend arasındaki iletişim REST API endpointleri üzerinden sağlanmaktadır.
+
+Projenin farklı geliştirme ortamlarında tutarlı biçimde çalıştırılabilmesi için Docker ve Docker Compose kullanılmaktadır. PostgreSQL veritabanı ve Django backend servisi container yapısı içerisinde çalışacak şekilde yapılandırılmıştır.
 
 ---
 
 ## Proje Yapısı
 
+Proje; Django tabanlı backend, React tabanlı frontend, yapay zekâ analiz servisleri, RAG altyapısı ve sprint dokümantasyonlarından oluşmaktadır.
+
 ```text
 .
 ├── backend/
 │   ├── apps/
-│   │   ├── users/        # Kullanıcı kayıt ve giriş işlemleri
-│   │   ├── ideas/        # İş fikri ekleme, listeleme, detay ve silme işlemleri
-│   │   └── analyses/     # AI analiz süreçleri için ayrılan uygulama alanı
-│   ├── config/           # Django proje ayarları
+│   │   ├── analyses/
+│   │   │   ├── rag/                 # RAG kaynakları ve retrieval işlemleri
+│   │   │   ├── services/            # AI analiz ve doğrulama servisleri
+│   │   │   ├── tests/               # Analiz modüllerine ait testler
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py            # Analiz sonuçlarına ait veri modelleri
+│   │   │   ├── serializers.py       # Analiz API serializer'ları
+│   │   │   ├── urls.py              # Analiz endpoint tanımları
+│   │   │   └── views.py             # Analiz API view'ları
+│   │   ├── ideas/
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── models.py            # İş fikri veri modeli
+│   │   │   ├── serializers.py       # Fikir API serializer'ları
+│   │   │   ├── tests.py             # Fikir işlemlerine ait testler
+│   │   │   ├── urls.py
+│   │   │   └── views.py             # Fikir CRUD endpointleri
+│   │   └── users/
+│   │       ├── admin.py
+│   │       ├── apps.py
+│   │       ├── models.py            # Özel kullanıcı modeli
+│   │       ├── serializers.py       # Kayıt ve kullanıcı serializer'ları
+│   │       ├── tests.py             # Kullanıcı işlemlerine ait testler
+│   │       ├── urls.py
+│   │       └── views.py             # Kayıt ve kimlik doğrulama işlemleri
+│   ├── config/
+│   │   ├── settings.py              # Django proje ayarları
+│   │   ├── urls.py                  # Ana URL yönlendirmeleri
+│   │   ├── asgi.py
+│   │   └── wsgi.py
 │   ├── manage.py
 │   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── App.tsx              # Ana React uygulama bileşeni
+│   │   │   ├── components/
+│   │   │   │   ├── common/          # Ortak kullanılan bileşenler
+│   │   │   │   ├── figma/           # Tasarımdan uyarlanan bileşenler
+│   │   │   │   ├── layout/          # Sayfa düzeni bileşenleri
+│   │   │   │   ├── mentor/          # AI mentor bileşenleri
+│   │   │   │   └── ui/              # Temel arayüz bileşenleri
+│   │   │   ├── data/
+│   │   │   │   └── mockData.ts      # Geliştirme sürecindeki örnek veriler
+│   │   │   ├── pages/
+│   │   │   │   ├── AnalysisPage.tsx
+│   │   │   │   ├── DashboardPage.tsx
+│   │   │   │   ├── HistoryPage.tsx
+│   │   │   │   ├── LoadingPage.tsx
+│   │   │   │   ├── MentorPage.tsx
+│   │   │   │   └── ReportPage.tsx
+│   │   │   └── types/
+│   │   │       └── index.ts          # TypeScript tip tanımları
+│   │   ├── main.tsx                  # Frontend başlangıç noktası
+│   │   └── styles/
+│   │       ├── fonts.css
+│   │       ├── globals.css
+│   │       ├── index.css
+│   │       ├── tailwind.css
+│   │       └── theme.css
+│   ├── guidelines/
+│   │   └── Guidelines.md
+│   ├── index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── postcss.config.mjs
+│   ├── vite.config.ts
+│   └── README.md
 ├── docs/
-│   ├── product/          # Ürün fikri, kapsam ve ürün dokümantasyonu
-│   ├── sprint-1/         # Sprint 1 dokümantasyonu
-│   ├── sprint-2/         # Sprint 2 dokümantasyonu
-│   └── sprint-3/         # Sprint 3 dokümantasyonu
-├── Dockerfile
-├── docker-compose.yml
-├── .env.example
+│   ├── product/                      # Ürün kapsamı ve ürün dokümantasyonu
+│   ├── sprint-1/
+│   │   ├── screenshots/              # Sprint 1 ekran görüntüleri
+│   │   ├── backlog-distribution.md
+│   │   ├── daily-scrum.md
+│   │   ├── product-status.md
+│   │   ├── sprint-board.md
+│   │   ├── sprint-review.md
+│   │   ├── sprint-retrospective.md
+│   │   ├── sprint1-demo.gif
+│   │   └── sprint1-demo.webm
+│   ├── sprint-2/
+│   │   ├── screenshots/
+│   │   │   └── sprint-board.png
+│   │   └── sprint2-demo.gif
+│   └── sprint-3/
+├── Dockerfile                       # Django backend container tanımı
+├── docker-compose.yml               # Backend ve PostgreSQL servisleri
+├── .env.example                     # Ortam değişkenleri için örnek dosya
 ├── .gitignore
 └── README.md
+```
+
+`dist/`, `node_modules/`, Python sanal ortamları, `__pycache__`, migration dosyaları ve geçici arşiv dosyaları okunabilirliği korumak amacıyla proje ağacında gösterilmemiştir.
 
 ---
 
 ## Kurulum
 
-Projeyi lokal ortamda çalıştırmak için Docker kullanılması önerilmektedir. Backend tarafı Django ile geliştirilmiş olup PostgreSQL veritabanı Docker Compose üzerinden çalışacak şekilde yapılandırılmıştır.
+Proje, Django REST Framework tabanlı backend, PostgreSQL veritabanı ve React tabanlı frontend uygulamasından oluşmaktadır.
+
+Backend ve veritabanının çalıştırılması için Docker Compose kullanılması önerilmektedir. Frontend uygulaması ise Vite geliştirme sunucusu üzerinden ayrı olarak çalıştırılmaktadır.
+
+### Gereksinimler
+
+Projeyi çalıştırmak için aşağıdaki araçların sistemde kurulu olması gerekir:
+
+- Git
+- Docker
+- Docker Compose
+- Node.js
+- npm
 
 ### 1. Repoyu klonlama
 
 ```bash
-git clone <repository-url>
-cd <repository-name>
+git clone https://github.com/erenylldz/YZTA---Team-138.git
+cd YZTA---Team-138
 ```
 
 ### 2. Ortam değişkenlerini hazırlama
 
-Proje kök dizininde yer alan `.env.example` dosyası örnek alınarak `.env` dosyası oluşturulmalıdır.
+Proje kök dizininde bulunan `.env.example` dosyası örnek alınarak `.env` dosyası oluşturulmalıdır.
 
 ```bash
 cp .env.example .env
 ```
 
+Oluşturulan `.env` dosyasındaki veritabanı, Django ve yapay zekâ servislerine ait değişkenler geliştirme ortamına göre düzenlenmelidir.
 
-### 3. Docker ile projeyi çalıştırma
+AI destekli analiz özellikleri için kullanılan temel ortam değişkenleri:
+
+```env
+AI_API_URL=
+AI_API_KEY=
+AI_PROVIDER=
+AI_MODEL_NAME=
+```
+
+Gizli anahtarlar ve gerçek erişim bilgileri GitHub reposuna gönderilmemelidir.
+
+### 3. Backend ve veritabanını çalıştırma
+
+Proje kök dizininde aşağıdaki komut çalıştırılmalıdır:
 
 ```bash
 docker compose up --build
 ```
 
-### 4. Veritabanı migration işlemlerini çalıştırma
+Bu komut Django backend uygulamasını ve PostgreSQL veritabanını başlatır.
 
-Container'lar ayağa kalktıktan sonra Django migration işlemleri çalıştırılmalıdır.
+Servisleri arka planda çalıştırmak için:
 
 ```bash
-docker compose exec backend python manage.py migrate
+docker compose up --build -d
 ```
 
+### 4. Veritabanı migration işlemlerini çalıştırma
 
-### 5. Uygulamayı açma
+Container'lar çalışmaya başladıktan sonra migration işlemleri ayrı bir terminal üzerinden yürütülmelidir:
 
-Backend uygulaması lokal ortamda aşağıdaki adres üzerinden çalışacaktır:
+```bash
+docker compose exec web python manage.py migrate
+```
+
+### 5. Admin kullanıcısı oluşturma
+
+Django Admin panelini kullanmak için isteğe bağlı olarak superuser oluşturulabilir:
+
+```bash
+docker compose exec web python manage.py createsuperuser
+```
+
+### 6. Frontend bağımlılıklarını yükleme
+
+Yeni bir terminal açılarak frontend klasörüne geçilmelidir:
+
+```bash
+cd frontend
+npm install
+```
+
+### 7. Frontend uygulamasını çalıştırma
+
+```bash
+npm run dev
+```
+
+Vite geliştirme sunucusu başlatıldıktan sonra terminalde gösterilen bağlantı tarayıcı üzerinden açılabilir.
+
+Frontend varsayılan olarak:
+
+```text
+http://localhost:5173/
+```
+
+Backend API varsayılan olarak:
 
 ```text
 http://localhost:8000/
 ```
 
-Django admin paneli için:
+Django Admin paneli:
 
 ```text
 http://localhost:8000/admin/
 ```
 
-### MoSCoW MVP kapsam API'si
+### 8. Servisleri durdurma
 
-`GET /api/analyses/ideas/<idea_id>/moscow-scope/` kullanıcının kendi fikri için daha önce
-kaydedilmiş analizi döndürür; kayıt yoksa `404` döner. `POST` aynı URL'de request body
-gerektirmeden yeni analiz üretir ve kalıcı olarak kaydeder. İlk üretim `201`, var olan kaydın
-yenilenmesi `200` döndürür. İki işlem de JWT authentication gerektirir ve başka kullanıcıların
-fikirlerini `404` ile gizler.
+Docker servislerini durdurmak için proje kök dizininde:
+
+```bash
+docker compose down
+```
+
+Veritabanı volume'larını da silerek tamamen temiz bir kurulum yapmak için:
+
+```bash
+docker compose down -v
+```
+
+> `docker compose down -v` komutu PostgreSQL içerisinde saklanan yerel verileri siler. Bu nedenle yalnızca temiz bir geliştirme ortamı gerektiğinde kullanılmalıdır.
+
+## API Kullanımı
+
+Backend API, varsayılan olarak aşağıdaki temel adres üzerinden çalışmaktadır:
+
+```text
+http://localhost:8000/api/
+```
+
+Kimlik doğrulama gerektiren endpointlere JWT access token ile istek gönderilmelidir:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+### Kimlik Doğrulama Endpointleri
+
+| Metot | Endpoint | Açıklama | Kimlik Doğrulama |
+| --- | --- | --- | --- |
+| `POST` | `/api/auth/register/` | Yeni kullanıcı kaydı oluşturur. | Gerekli değil |
+| `POST` | `/api/auth/login/` | Kullanıcı girişi gerçekleştirir ve JWT bilgilerini döndürür. | Gerekli değil |
+
+### İş Fikri Endpointleri
+
+İş fikri işlemleri Django REST Framework `DefaultRouter` ve `IdeaViewSet` üzerinden yönetilmektedir.
+
+| Metot | Endpoint | Açıklama | Kimlik Doğrulama |
+| --- | --- | --- | --- |
+| `GET` | `/api/ideas/` | Kullanıcının kendisine ait iş fikirlerini listeler. | Gerekli |
+| `POST` | `/api/ideas/` | Yeni bir iş fikri oluşturur. | Gerekli |
+| `GET` | `/api/ideas/<idea_id>/` | Belirtilen iş fikrinin detaylarını getirir. | Gerekli |
+| `PUT` | `/api/ideas/<idea_id>/` | İş fikrinin bütün alanlarını günceller. | Gerekli |
+| `PATCH` | `/api/ideas/<idea_id>/` | İş fikrinin belirtilen alanlarını günceller. | Gerekli |
+| `DELETE` | `/api/ideas/<idea_id>/` | İş fikrini siler. | Gerekli |
+
+Kullanıcılar yalnızca kendilerine ait fikirler üzerinde işlem yapabilir.
+
+### Yapay Zekâ Fikir Analizi
+
+| Metot | Endpoint | Açıklama | Kimlik Doğrulama |
+| --- | --- | --- | --- |
+| `POST` | `/api/analyses/analyze/` | Gönderilen iş fikri için yapay zekâ destekli temel analiz oluşturur. | Gerekli |
+
+Bu endpoint, iş fikrinin temel doğrulama analizinin backend tarafında gerçekleştirilmesi için kullanılmaktadır.
+
+### Mom Test Görüşme Soruları
+
+| Metot | Endpoint | Açıklama | Kimlik Doğrulama |
+| --- | --- | --- | --- |
+| `POST` | `/api/analyses/ideas/<idea_id>/mom-test-questions/` | Belirtilen fikir için Mom Test yaklaşımına uygun müşteri görüşme soruları üretir. | Gerekli |
+
+İstek içerisinde üretilecek soru sayısı belirtilebilir:
+
+```json
+{
+  "question_count": 10
+}
+```
+
+`question_count` değeri 8 ile 10 arasında olmalıdır. Değer gönderilmediğinde varsayılan olarak 10 soru üretilir.
+
+Endpoint, yalnızca giriş yapan kullanıcının kendisine ait fikirler için kullanılabilir.
+
+### MoSCoW MVP Kapsam Analizi
+
+| Metot | Endpoint | Açıklama | Kimlik Doğrulama |
+| --- | --- | --- | --- |
+| `GET` | `/api/analyses/ideas/<idea_id>/moscow-scope/` | Daha önce oluşturulmuş MoSCoW analizini getirir. | Gerekli |
+| `POST` | `/api/analyses/ideas/<idea_id>/moscow-scope/` | Fikir için yeni bir MoSCoW kapsam analizi oluşturur veya mevcut analizi yeniler. | Gerekli |
+
+`GET` isteğinde kayıtlı analiz bulunmuyorsa `404 Not Found` yanıtı döndürülür.
+
+`POST` isteği request body gerektirmez. İlk kez oluşturulan analiz için `201 Created`, mevcut analizin yenilenmesi durumunda `200 OK` yanıtı döndürülür.
+
+Örnek yanıt:
 
 ```json
 {
   "id": 1,
   "idea_id": 5,
   "summary": "MVP temel doğrulama akışına odaklanmalıdır.",
-  "must_have": [{"title": "Fikir girişi", "reason": "Analiz için temel fikir bilgileri gereklidir."}],
-  "should_have": [{"title": "Analiz geçmişi", "reason": "Önceki sonuçlarla karşılaştırmayı kolaylaştırır."}],
-  "could_have": [{"title": "PDF çıktısı", "reason": "Sonucun paydaşlarla paylaşılmasını kolaylaştırır."}],
-  "wont_have": [{"title": "Ödeme sistemi", "reason": "İlk MVP değerini test etmek için gerekli değildir."}],
+  "must_have": [
+    {
+      "title": "Fikir girişi",
+      "reason": "Analiz için temel fikir bilgilerinin alınması gereklidir."
+    }
+  ],
+  "should_have": [
+    {
+      "title": "Analiz geçmişi",
+      "reason": "Önceki sonuçlarla karşılaştırma yapılmasını kolaylaştırır."
+    }
+  ],
+  "could_have": [
+    {
+      "title": "PDF çıktısı",
+      "reason": "Sonucun paydaşlarla paylaşılmasını kolaylaştırır."
+    }
+  ],
+  "wont_have": [
+    {
+      "title": "Ödeme sistemi",
+      "reason": "İlk MVP değerini test etmek için gerekli değildir."
+    }
+  ],
   "prompt_version": "moscow-v1",
   "provider": "openai-compatible",
   "model_name": "configured-model"
 }
 ```
 
-Servis OpenAI uyumlu chat-completions endpoint'i için `AI_API_URL`, `AI_API_KEY`,
-`AI_PROVIDER` ve `AI_MODEL_NAME` ortam değişkenlerini kullanır.
+MoSCoW endpointi yalnızca kullanıcının kendisine ait fikirler için erişilebilir. Başka bir kullanıcıya ait fikir istendiğinde kaynak bilgisi gizlenerek `404 Not Found` yanıtı döndürülür.
+
+### Yapay Zekâ Servisi Ayarları
+
+Yapay zekâ analiz servisleri OpenAI uyumlu chat completions altyapısını kullanmaktadır.
+
+Gerekli ortam değişkenleri:
+
+```env
+AI_API_URL=
+AI_API_KEY=
+AI_PROVIDER=
+AI_MODEL_NAME=
+```
+
+Gerçek API anahtarları `.env` dosyasında saklanmalı ve GitHub reposuna gönderilmemelidir.
 
 ---
 
 ## Geliştirme Ortamı
 
-Backend uygulaması Django ve Django REST Framework kullanılarak geliştirilmiştir. Veritabanı olarak PostgreSQL tercih edilmiş, geliştirme ortamının daha kolay kurulabilmesi için Docker desteği eklenmiştir.
+Proje geliştirme sürecinde backend ve frontend uygulamaları ayrı geliştirme sunucuları üzerinden çalıştırılmaktadır.
 
-Docker kullanmadan lokal geliştirme yapmak isteyen geliştiriciler için aşağıdaki adımlar izlenebilir:
+Backend tarafında Django ve Django REST Framework, frontend tarafında ise React, TypeScript ve Vite kullanılmaktadır. PostgreSQL veritabanı ile Django backend servisinin Docker Compose üzerinden çalıştırılması önerilmektedir.
 
-### 1. Sanal ortam oluşturma
+### Backend Geliştirme Ortamı
 
-```bash
-python3 -m venv venv
-```
-
-### 2. Sanal ortamı aktif etme
+Backend ve PostgreSQL servislerini başlatmak için proje kök dizininde:
 
 ```bash
-source venv/bin/activate
+docker compose up --build
 ```
 
-### 3. Bağımlılıkları yükleme
+Servisleri arka planda çalıştırmak için:
 
 ```bash
-pip install -r backend/requirements.txt
+docker compose up --build -d
 ```
 
-### 4. Backend klasörüne geçme
+Django sistem kontrollerini çalıştırmak için:
 
 ```bash
-cd backend
+docker compose exec web python manage.py check
 ```
 
-### 5. Migration işlemlerini çalıştırma
+Veritabanı migration işlemlerini uygulamak için:
 
 ```bash
-python manage.py migrate
+docker compose exec web python manage.py migrate
 ```
 
-### 6. Geliştirme sunucusunu başlatma
+Backend testlerini çalıştırmak için:
 
 ```bash
-python manage.py runserver
+docker compose exec web python manage.py test
 ```
 
-Uygulama varsayılan olarak aşağıdaki adreste çalışacaktır:
+Belirli bir uygulamanın testlerini çalıştırmak için:
+
+```bash
+docker compose exec web python manage.py test apps.users
+docker compose exec web python manage.py test apps.ideas
+docker compose exec web python manage.py test apps.analyses
+```
+
+Backend uygulaması varsayılan olarak aşağıdaki adreste çalışır:
 
 ```text
 http://localhost:8000/
 ```
 
+### Docker Kullanmadan Backend Geliştirme
+
+Backend uygulamasını Docker kullanmadan çalıştırmak için Python sanal ortamı oluşturulabilir.
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Bağımlılıkları yüklemek için:
+
+```bash
+pip install -r backend/requirements.txt
+```
+
+Backend dizinine geçerek migration işlemlerini uygulamak ve geliştirme sunucusunu başlatmak için:
+
+```bash
+cd backend
+python manage.py migrate
+python manage.py runserver
+```
+
+Docker kullanılmadan çalıştırıldığında PostgreSQL bağlantısı ve gerekli ortam değişkenleri lokal geliştirme ortamına uygun biçimde yapılandırılmalıdır.
+
+### Frontend Geliştirme Ortamı
+
+Frontend bağımlılıklarını yüklemek için:
+
+```bash
+cd frontend
+npm install
+```
+
+Vite geliştirme sunucusunu başlatmak için:
+
+```bash
+npm run dev
+```
+
+Frontend uygulaması varsayılan olarak aşağıdaki adreste çalışır:
+
+```text
+http://localhost:5173/
+```
+
+Üretim için frontend build çıktısı oluşturmak için:
+
+```bash
+npm run build
+```
+
+Oluşturulan build dosyaları `frontend/dist/` klasöründe yer alır.
+
+### Geliştirme Akışı
+
+Yeni geliştirmeler doğrudan `main` branch üzerinde yapılmamalıdır. Her çalışma için ilgili issue üzerinden ayrı bir branch oluşturulmalı, değişiklikler commit edildikten sonra pull request açılmalıdır.
+
+Geliştirme tamamlanmadan önce aşağıdaki kontroller gerçekleştirilmelidir:
+
+- İlgili issue kapsamındaki gereksinimlerin karşılandığının doğrulanması
+- Backend sistem kontrollerinin çalıştırılması
+- İlgili backend testlerinin başarıyla tamamlanması
+- Frontend build işleminin hatasız tamamlanması
+- Ortam değişkenleri ve gizli anahtarların repoya eklenmediğinin kontrol edilmesi
+- Project Board ve issue durumlarının güncellenmesi
 ---
 
 ## Sprint Dokümantasyonu
 
-Bootcamp süreci 3 sprint üzerinden ilerlemektedir. Her sprint sonunda proje yönetimi, ürün ilerlemesi ve takım içi değerlendirme notları ilgili sprint klasörü altında dokümante edilecektir.
+Bootcamp süreci toplam üç sprint üzerinden ilerlemektedir. Her sprint sonunda proje yönetimi süreci, ürün ilerlemesi, takım içi değerlendirmeler ve ortaya çıkan ürün artımı ilgili sprint klasörü altında dokümante edilmektedir.
 
-* [Sprint 1](docs/sprint-1/)
-* [Sprint 2](docs/sprint-2/)
-* [Sprint 3](docs/sprint-3/)
+Sprint dokümantasyonlarında aşağıdaki içeriklere yer verilmektedir:
+
+- Sprint hedefi ve sprint notları
+- Sprint backlog dağılımı
+- Daily Scrum kayıtları
+- Sprint Board güncellemeleri
+- Ürün durumu ve demo kayıtları
+- Sprint Review
+- Sprint Retrospective
+- Ekran görüntüleri ve ilerleme kanıtları
+
+Sprint dokümantasyonlarına aşağıdaki bağlantılardan ulaşılabilir:
+
+- [Sprint 1 Dokümantasyonu](docs/sprint-1/)
+- [Sprint 2 Dokümantasyonu](docs/sprint-2/)
+- [Sprint 3 Dokümantasyonu](docs/sprint-3/)
+
+Her sprintin dokümantasyonu, ekran görüntüleri ve ürün ilerleme kayıtları ilgili sprint klasörü altında saklanmaktadır.
 
 ---
 
 ## Sprint Sonu Beklenen Dokümanlar
 
-Her sprint sonunda proje yönetimi sürecini ve ürün ilerlemesini göstermek amacıyla aşağıdaki başlıkların güncellenmesi hedeflenmektedir:
+Her sprint sonunda proje yönetimi sürecini, takımın çalışma biçimini ve ürünün geldiği noktayı göstermek amacıyla aşağıdaki başlıklar güncellenmektedir:
 
 - Backlog dağıtma mantığı
+- Sprint hedefi ve sprint notları
 - Daily Scrum notları
-- Sprint board güncellemeleri
+- Sprint Board güncellemeleri
 - Ürün durumu
-- Sprint review
-- Sprint retrospective
+- Sprint Review
+- Sprint Retrospective
+- Tamamlanan ve sonraki sprinte aktarılan işlerin durumu
+- Ürün ekran görüntüleri ve demo kayıtları
 
-Bu dokümanlar ilgili sprint klasörü altında tutulacaktır. Sprint 1 için dokümantasyon `docs/sprint-1/` klasörü altında paylaşılacaktır.
+Dokümantasyon hazırlanırken GitHub Issues, Milestones, Project Board, pull request'ler ve ürün çıktıları kanıt olarak kullanılmaktadır.
+
+Tamamlanamayan işler ilgili issue'lara açıklayıcı yorumlar eklenerek açık biçimde belirtilmekte ve gerekli olması durumunda sonraki sprinte aktarılmaktadır.
+
+Tüm sprint dokümanları `docs/` klasörü altında, ilgili sprint dizinlerinde tutulmaktadır.
 
 ---
 
