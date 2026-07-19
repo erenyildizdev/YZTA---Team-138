@@ -594,7 +594,7 @@ Tamamlanamayan işlerin açıklamaları ilgili issue'lara yorum olarak eklenmiş
 
 #### Sprint Board Ekran Görüntüsü
 
-Sprint board ekran görüntüleri ve görev durumları `docs/sprint-2/` klasörü altında paylaşılacaktır.
+Sprint board ekran görüntüleri ve görev durumları `docs/sprint-2/` klasörü altında paylaşılmıştır.
 
 ### Ürün Durumu
 
