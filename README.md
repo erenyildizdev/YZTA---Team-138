@@ -598,7 +598,7 @@ Sprint board ekran görüntüleri ve görev durumları `docs/sprint-2/` klasör�
 
 ### Ürün Durumu
 
-Belirlenecek.
+![Sprint 2 Ürün Durumu](docs/sprint-2/sprint2-demo.gif)
 
 ### Sprint Review
 
