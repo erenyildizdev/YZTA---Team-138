@@ -828,7 +828,7 @@ Sprint board üzerinde özellikle aşağıdaki iş grupları takip edilmiştir:
 
 Sprint 1 sonunda backend tarafındaki temel endpoint geliştirmeleri tamamlanmış, frontend entegrasyonu ve AI analiz akışları Sprint 2 kapsamına alınmıştır.
 
-Sprint board ekran görüntüleri ve görev durumları `docs/sprint-1/` klasörü altında paylaşılacaktır.
+![Sprint 1 Board](docs/sprint-1/screenshots/sprint-board.png)
 
 ### Ürün Durumu
 
@@ -865,7 +865,7 @@ Sprint 1 sonunda ortaya çıkan başlıca çıktılar:
 - Arayüz prototipi ve kullanıcı akışı üzerinden frontend geliştirme planı değerlendirildi.
 - RAG destekli bilgi katmanı için kaynak araştırması başlatıldı.
 
-Sprint Review sonucunda, Sprint 2’de frontend ekranlarının geliştirilmesi, backend ile entegrasyonun yapılması ve AI destekli temel fikir analizi akışının başlatılması öncelikli hedefler olarak belirlenmiştir..
+Sprint Review sonucunda, Sprint 2’de frontend ekranlarının geliştirilmesi, backend ile entegrasyonun yapılması ve AI destekli temel fikir analizi akışının başlatılması öncelikli hedefler olarak belirlenmiştir.
 
 ### Sprint Retrospective
 
@@ -955,7 +955,7 @@ Sprint 2 backlog'u, kullanıcının iş fikrini sisteme göndermesini ve yapay z
 | #21 | Build Initial RAG Retrieval Pipeline | Tamamlandı. |
 | #22 | Integrate Analysis Results into Dashboard UI | Frontend hazır olmadığı için tamamlanamadı. Açık bırakılarak Son Sprint'e aktarıldı. |
 | #23 | Add Basic Test Scenarios for Sprint 2 MVP Flow | Uçtan uca MVP akışı tamamlanmadığı için gerçekleştirilemedi. Açık bırakılarak Son Sprint'e aktarıldı. |
-| #24 | Prepare Sprint 2 Documentation and Review Notes | Sprint sonu dokümantasyon çalışmaları kapsamında yürütülmektedir. |
+| #24 | Prepare Sprint 2 Documentation and Review Notes | Tamamlandı ve issue kapatıldı. |
 
 Sprint içerisinde toplam dokuz backlog maddesi takip edilmiştir. Bunlardan altısının teknik geliştirmeleri tamamlanmış, iki çalışma Son Sprint'e aktarılmış ve Sprint 2 dokümantasyonu sprint kapanış sürecinde hazırlanmıştır.
 
@@ -998,13 +998,13 @@ Sprint sonunda board üzerinde gerçekleştirilen güncellemeler aşağıdaki gi
 - **#21 – Build Initial RAG Retrieval Pipeline:** Tamamlanarak `Done` durumuna taşındı.
 - **#22 – Integrate Analysis Results into Dashboard UI:** Tamamlanamadığı için açık bırakıldı, `To Do` durumuna alındı ve Son Sprint'e aktarıldı.
 - **#23 – Add Basic Test Scenarios for Sprint 2 MVP Flow:** Tamamlanamadığı için açık bırakıldı, `To Do` durumuna alındı ve Son Sprint'e aktarıldı.
-- **#24 – Prepare Sprint 2 Documentation and Review Notes:** Sprint kapanış sürecinde `In Progress` durumunda takip edildi.
+- **#24 – Prepare Sprint 2 Documentation and Review Notes:** Dokümantasyon tamamlanarak `Done` durumuna taşındı ve issue kapatıldı.
 
 Tamamlanamayan işlerin açıklamaları ilgili issue'lara yorum olarak eklenmiş ve milestone bilgileri `Son Sprint` olarak güncellenmiştir. Böylece Sprint 2 sonunda board, tamamlanan çalışmalar ile sonraki sprinte aktarılan işleri açık biçimde gösterecek şekilde düzenlenmiştir.
 
 #### Sprint Board Ekran Görüntüsü
 
-Sprint board ekran görüntüleri ve görev durumları `docs/sprint-2/` klasörü altında paylaşılmıştır.
+![Sprint 2 Board](docs/sprint-2/screenshots/sprint-board.png)
 
 ### Ürün Durumu
 
