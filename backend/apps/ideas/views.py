@@ -1,6 +1,7 @@
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from apps.analyses.services.analyzer import analyze_idea
 
 from .models import Idea, ValidationRoadmap
 from .serializers import IdeaSerializer, ValidationRoadmapSerializer
@@ -17,6 +18,25 @@ class IdeaViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
     
+    @action(detail=True, methods=["post"], url_path="analyze")
+    def analyze(self, request, pk=None):
+        idea = self.get_object()
+
+        idea_text = "\n".join(
+            [
+                f"Title: {idea.title}",
+                f"Description: {idea.description}",
+                f"Target audience: {idea.target_audience}",
+                f"Problem: {idea.problem}",
+                f"Solution: {idea.solution}",
+                f"Sector: {idea.sector}",
+            ]
+        )
+
+        result = analyze_idea(idea_text=idea_text)
+
+        return Response(result, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=["post"], url_path="generate-roadmap")
     def generate_roadmap(self, request, pk=None):
         idea = self.get_object()
