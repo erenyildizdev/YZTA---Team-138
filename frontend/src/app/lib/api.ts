@@ -44,12 +44,23 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
 
   if (!response.ok) {
-    const detail =
-      (body && typeof body === "object" && ("detail" in body || "message" in body)
-        ? ((body as any).detail ?? (body as any).message)
-        : null) ?? (typeof body === "string" ? body : null);
+    let message: string | null = null;
 
-    throw new ApiError(detail ?? `İstek başarısız oldu (${response.status}).`, response.status);
+    if (body && typeof body === "object") {
+      const anyBody = body as Record<string, unknown>;
+      if ("detail" in anyBody || "message" in anyBody) {
+        message = String(anyBody.detail ?? anyBody.message);
+      } else {
+        const fieldErrors = Object.entries(anyBody)
+          .map(([field, value]) => (Array.isArray(value) ? `${field}: ${value.join(" ")}` : null))
+          .filter((part): part is string => Boolean(part));
+        if (fieldErrors.length) message = fieldErrors.join(" ");
+      }
+    } else if (typeof body === "string" && body) {
+      message = body;
+    }
+
+    throw new ApiError(message ?? `İstek başarısız oldu (${response.status}).`, response.status);
   }
 
   return body as T;
@@ -121,5 +132,26 @@ export function getValidationRoadmap(ideaId: number): Promise<ValidationRoadmapR
 export function generateValidationRoadmap(ideaId: number): Promise<ValidationRoadmapResponse> {
   return request<ValidationRoadmapResponse>(`/ideas/${ideaId}/generate-roadmap/`, {
     method: "POST",
+  });
+}
+
+export interface IdeaPayload {
+  title: string;
+  description: string;
+  target_audience: string;
+  problem: string;
+  solution: string;
+  sector: string;
+}
+
+export interface IdeaResponse extends IdeaPayload {
+  id: number;
+  created_at: string;
+}
+
+export function createIdea(payload: IdeaPayload): Promise<IdeaResponse> {
+  return request<IdeaResponse>("/ideas/", {
+    method: "POST",
+    body: JSON.stringify(payload),
   });
 }

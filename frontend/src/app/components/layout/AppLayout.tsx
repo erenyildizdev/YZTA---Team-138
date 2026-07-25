@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { LogOut, Menu, Sparkles, X } from "lucide-react";
+import { LogOut, Menu, Plus, Sparkles, X } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { BarChart3, Bot, FileText, History, LayoutDashboard, Settings } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
@@ -10,6 +10,7 @@ const navigation = [
   { to: "/analysis", label: "Fikir Analizi", Icon: BarChart3 },
   { to: "/report", label: "Doğrulama Raporu", Icon: FileText },
   { to: "/history", label: "Geçmiş Fikirler", Icon: History },
+  { to: "/ideas/new", label: "Yeni Fikir Ekle", Icon: Plus },
 ];
 
 function Sidebar({ onClose }: { onClose: () => void }) {

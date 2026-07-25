@@ -7,6 +7,7 @@ import { HistoryPage } from "./pages/HistoryPage";
 import { LoadingPage } from "./pages/LoadingPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MentorPage } from "./pages/MentorPage";
+import { NewIdeaPage } from "./pages/NewIdeaPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { ReportPage } from "./pages/ReportPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -40,13 +41,14 @@ function AppRoutes() {
           index
           element={
             <DashboardPage
-              onNew={() => navigate("/mentor")}
+              onNew={() => navigate("/ideas/new")}
               onViewAll={() => navigate("/history")}
               onOpenDetail={() => navigate("/analysis")}
             />
           }
         />
         <Route path="mentor" element={<MentorPage onAnalyze={() => navigate("/analysis/loading")} />} />
+        <Route path="ideas/new" element={<NewIdeaPage onCreated={() => navigate("/analysis")} />} />
         <Route path="analysis/loading" element={<LoadingPage onDone={() => navigate("/analysis")} />} />
         <Route path="analysis" element={<AnalysisPage onReport={() => navigate("/report")} />} />
         <Route path="report" element={<ReportPage onBack={() => navigate("/analysis")} />} />

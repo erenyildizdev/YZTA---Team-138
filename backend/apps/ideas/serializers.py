@@ -6,7 +6,16 @@ from .models import Idea, ValidationRoadmap
 class IdeaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Idea
-        fields = ["id", "title", "description", "target_audience", "created_at"]
+        fields = [
+            "id",
+            "title",
+            "description",
+            "target_audience",
+            "problem",
+            "solution",
+            "sector",
+            "created_at",
+        ]
         read_only_fields = ["id", "created_at", "user"]
 
 

@@ -7,6 +7,9 @@ class Idea(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     target_audience = models.CharField(max_length=255)
+    problem = models.TextField()
+    solution = models.TextField()
+    sector = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
