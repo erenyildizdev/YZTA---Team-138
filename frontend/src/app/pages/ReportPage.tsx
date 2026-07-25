@@ -4,8 +4,11 @@ import { analysisData, initialMessages, sampleIdeas } from "../data/mockData";
 import type { ChatMessage } from "../types";
 import { RiskBadge, StatusBadge } from "../components/common/Badges";
 import { MentorCharacter } from "../components/mentor/MentorCharacter";
+import { ValidationRoadmapBody } from "../components/analysis/ValidationRoadmapBody";
+import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 
 export function ReportPage({ onBack }: { onBack: () => void }) {
+  const [ideaId] = useActiveIdeaId();
   const Divider = ({ label }: { label: string }) => (
     <div className="flex items-center gap-2 mb-4">
       <div className="w-4 h-0.5 bg-primary rounded-full" />
@@ -106,21 +109,7 @@ export function ReportPage({ onBack }: { onBack: () => void }) {
 
           <section>
             <Divider label="Doğrulama Yol Haritası" />
-            {analysisData.roadmap.map((item, i) => (
-              <div key={item.step} className="flex gap-4">
-                <div className="flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-full bg-primary text-white text-sm font-bold flex items-center justify-center flex-shrink-0">{item.step}</div>
-                  {i < analysisData.roadmap.length - 1 && <div className="w-px flex-1 bg-border my-1" style={{ minHeight: 24 }} />}
-                </div>
-                <div className={`flex-1 ${i < analysisData.roadmap.length - 1 ? "pb-5" : ""}`}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-foreground">{item.title}</span>
-                    <span className="text-xs text-muted-foreground">{item.weeks}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{item.description}</p>
-                </div>
-              </div>
-            ))}
+            <ValidationRoadmapBody ideaId={ideaId} />
           </section>
 
           <section>

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Idea
+from .models import Idea, ValidationRoadmap
 
 
 class IdeaSerializer(serializers.ModelSerializer):
@@ -8,3 +8,10 @@ class IdeaSerializer(serializers.ModelSerializer):
         model = Idea
         fields = ["id", "title", "description", "target_audience", "created_at"]
         read_only_fields = ["id", "created_at", "user"]
+
+
+class ValidationRoadmapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ValidationRoadmap
+        fields = ["id", "idea", "roadmap_data", "created_at"]
+        read_only_fields = fields

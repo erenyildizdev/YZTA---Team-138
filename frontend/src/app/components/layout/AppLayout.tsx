@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { Menu, Sparkles, X } from "lucide-react";
-import { NavLink, Outlet } from "react-router";
+import { LogOut, Menu, Sparkles, X } from "lucide-react";
+import { NavLink, Outlet, useNavigate } from "react-router";
 import { BarChart3, Bot, FileText, History, LayoutDashboard, Settings } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const navigation = [
   { to: "/", label: "Ana Sayfa", Icon: LayoutDashboard, end: true },
@@ -12,6 +13,17 @@ const navigation = [
 ];
 
 function Sidebar({ onClose }: { onClose: () => void }) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    onClose();
+    navigate("/login", { replace: true });
+  };
+
+  const displayName = user ? `${user.first_name} ${user.last_name}`.trim() || user.email : "Kullanıcı";
+
   return (
     <aside className="flex h-full w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
       <div className="flex items-center justify-between border-b border-sidebar-border px-5 py-5">
@@ -30,7 +42,8 @@ function Sidebar({ onClose }: { onClose: () => void }) {
       </nav>
       <div className="border-t border-sidebar-border p-3">
         <button type="button" disabled title="Backend entegrasyonu sonrasında kullanılabilir" className="flex w-full cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sidebar-foreground/30"><Settings size={17} />Hesap Ayarları</button>
-        <div className="mt-2 rounded-xl bg-white/5 px-3 py-2.5 text-xs"><strong>Ahmet Yılmaz</strong><div className="mt-1 text-sidebar-foreground/35">Aktif Kullanıcı</div></div>
+        <button type="button" onClick={handleLogout} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sidebar-foreground/55 hover:bg-white/5 hover:text-sidebar-foreground transition-colors"><LogOut size={17} />Çıkış Yap</button>
+        <div className="mt-2 rounded-xl bg-white/5 px-3 py-2.5 text-xs"><strong>{displayName}</strong><div className="mt-1 text-sidebar-foreground/35">{user?.email ?? "Aktif Kullanıcı"}</div></div>
       </div>
     </aside>
   );

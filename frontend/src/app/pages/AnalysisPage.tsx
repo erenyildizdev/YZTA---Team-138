@@ -4,10 +4,13 @@ import { analysisData, initialMessages, sampleIdeas } from "../data/mockData";
 import type { ChatMessage } from "../types";
 import { RiskBadge, StatusBadge } from "../components/common/Badges";
 import { MentorCharacter } from "../components/mentor/MentorCharacter";
+import { ValidationRoadmapBody } from "../components/analysis/ValidationRoadmapBody";
+import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 
 export function AnalysisPage({ onReport }: { onReport: () => void }) {
   const [msgs, setMsgs] = useState<ChatMessage[]>(initialMessages);
   const [input, setInput] = useState("");
+  const [ideaId, setIdeaId] = useActiveIdeaId();
   const endRef = useRef<HTMLDivElement>(null);
 
   const sendMsg = () => {
@@ -126,21 +129,7 @@ export function AnalysisPage({ onReport }: { onReport: () => void }) {
             {/* E: Roadmap */}
             <div className="bg-card rounded-xl border border-border p-5">
               <CardHeader bg="bg-violet-500/10" Icon={Map} iconColor="text-violet-400" title="Doğrulama Yol Haritası" />
-              {analysisData.roadmap.map((item, i) => (
-                <div key={item.step} className="flex gap-3.5">
-                  <div className="flex flex-col items-center">
-                    <div className="w-7 h-7 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center flex-shrink-0">{item.step}</div>
-                    {i < analysisData.roadmap.length - 1 && <div className="w-px flex-1 bg-border mt-1 mb-1" style={{ minHeight: 20 }} />}
-                  </div>
-                  <div className={`flex-1 ${i < analysisData.roadmap.length - 1 ? "pb-4" : ""}`}>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-foreground">{item.title}</span>
-                      <span className="text-xs text-muted-foreground px-2 py-0.5 bg-secondary rounded-full border border-border">{item.weeks}</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{item.description}</p>
-                  </div>
-                </div>
-              ))}
+              <ValidationRoadmapBody ideaId={ideaId} onIdeaIdChange={setIdeaId} />
             </div>
 
             {/* F: Evaluation */}

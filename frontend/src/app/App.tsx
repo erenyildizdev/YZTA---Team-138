@@ -1,18 +1,41 @@
-import { BrowserRouter, Navigate, Route, Routes, useNavigate } from "react-router";
+import type { ReactNode } from "react";
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from "react-router";
 import { AppLayout } from "./components/layout/AppLayout";
 import { AnalysisPage } from "./pages/AnalysisPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { LoadingPage } from "./pages/LoadingPage";
+import { LoginPage } from "./pages/LoginPage";
 import { MentorPage } from "./pages/MentorPage";
+import { RegisterPage } from "./pages/RegisterPage";
 import { ReportPage } from "./pages/ReportPage";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+
+function RequireAuth({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  return <>{children}</>;
+}
 
 function AppRoutes() {
   const navigate = useNavigate();
 
   return (
     <Routes>
-      <Route element={<AppLayout />}>
+      <Route path="login" element={<LoginPage />} />
+      <Route path="register" element={<RegisterPage />} />
+      <Route
+        element={
+          <RequireAuth>
+            <AppLayout />
+          </RequireAuth>
+        }
+      >
         <Route
           index
           element={
@@ -36,8 +59,10 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
