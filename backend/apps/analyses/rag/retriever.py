@@ -10,6 +10,10 @@ from apps.analyses.rag.embedding_service import embed_query
 class RetrievedChunk:
     content: str
     source_title: str
+    source_type: str
+    source_url: str | None
+    chunk_id: int
+    chunk_index: int
     distance: float
 
 
@@ -43,10 +47,39 @@ def retrieve_context(
         RetrievedChunk(
             content=result.content,
             source_title=result.source.title,
+            source_type=result.source.source_type,
+            source_url=result.source.source_url,
+            chunk_id=result.id,
+            chunk_index=result.chunk_index,
             distance=float(result.distance),
         )
         for result in results
     ]
+
+def format_rag_context(
+    chunks: list[RetrievedChunk],
+) -> str:
+    if not chunks:
+        return ""
+
+    sections = []
+
+    for index, chunk in enumerate(chunks, start=1):
+        source_url_line = ""
+
+        if chunk.source_url:
+            source_url_line = f"Bağlantı: {chunk.source_url}\n"
+
+        sections.append(
+            (
+                f"Kaynak {index}: {chunk.source_title}\n"
+                f"Kaynak türü: {chunk.source_type}\n"
+                f"{source_url_line}"
+                f"İçerik:\n{chunk.content}"
+            )
+        )
+
+    return "\n\n".join(sections)
 
 
 def build_rag_context(
@@ -58,17 +91,4 @@ def build_rag_context(
         limit=limit,
     )
 
-    if not chunks:
-        return ""
-
-    sections = []
-
-    for index, chunk in enumerate(chunks, start=1):
-        sections.append(
-            (
-                f"Kaynak {index}: {chunk.source_title}\n"
-                f"İçerik:\n{chunk.content}"
-            )
-        )
-
-    return "\n\n".join(sections)
+    return format_rag_context(chunks)
