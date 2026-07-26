@@ -7,7 +7,11 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from apps.analyses.models import InterviewNote, MoscowScopeAnalysis
+from apps.analyses.models import (
+    InterviewEvidenceAnalysis,
+    InterviewNote,
+    MoscowScopeAnalysis,
+)
 from apps.analyses.services import (
     MoscowGenerationError,
     generate_mom_test_questions,
@@ -17,6 +21,10 @@ from apps.analyses.services import (
 from apps.ideas.models import Idea
 
 from apps.analyses.services.llm_client import LLMClientError
+from apps.analyses.services.interview_evidence import (
+    InterviewNotesNotFoundError,
+    analyze_interview_evidence,
+)
 
 class MomTestQuestionEndpointTests(APITestCase):
     def setUp(self):
@@ -932,3 +940,360 @@ class IdeaAnalysisEndpointTests(APITestCase):
             response.data,
             {"detail": "AI service is unavailable."},
         )
+
+class InterviewEvidenceAnalysisEndpointTests(APITestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="analysis-owner",
+            password="pass",
+        )
+        self.other_user = get_user_model().objects.create_user(
+            username="analysis-other",
+            password="pass",
+        )
+
+        self.idea = Idea.objects.create(
+            user=self.user,
+            title="Idea",
+            description="Description",
+            target_audience="Students",
+            problem="Problem",
+            solution="Solution",
+            sector="Education",
+        )
+
+        self.other_idea = Idea.objects.create(
+            user=self.other_user,
+            title="Other",
+            description="Description",
+            target_audience="Students",
+            problem="Problem",
+            solution="Solution",
+            sector="Education",
+        )
+
+        self.url = reverse(
+            "analyses:interview-evidence-analysis",
+            kwargs={"idea_id": self.idea.pk},
+        )
+
+    def authenticate(self):
+        self.client.force_authenticate(user=self.user)
+
+    def test_unauthenticated_returns_401(self):
+        response = self.client.post(self.url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
+
+    def test_other_users_idea_returns_404(self):
+        self.authenticate()
+
+        url = reverse(
+            "analyses:interview-evidence-analysis",
+            kwargs={"idea_id": self.other_idea.pk},
+        )
+
+        response = self.client.post(url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+
+    def test_returns_400_when_no_notes_exist(self):
+        self.authenticate()
+
+        response = self.client.post(self.url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+
+    @patch("apps.analyses.views.analyze_interview_evidence")
+    def test_successful_generation_returns_201(
+        self,
+        mock_generate,
+    ):
+        self.authenticate()
+
+        analysis = InterviewEvidenceAnalysis.objects.create(
+            idea=self.idea,
+            result={
+                "supporting_evidence": ["Kanıt"],
+                "contradicting_evidence": [],
+                "repeated_needs": ["İhtiyaç"],
+                "new_risky_assumptions": ["Hipotez"],
+                "next_validation_steps": ["Yeni görüşme yap"],
+            },
+            provider="test",
+        )
+
+        mock_generate.return_value = analysis
+
+        response = self.client.post(self.url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_201_CREATED,
+        )
+        self.assertEqual(
+            response.data["idea_id"],
+            self.idea.pk,
+        )
+
+    @patch(
+        "apps.analyses.views.analyze_interview_evidence",
+        side_effect=InterviewNotesNotFoundError("No notes"),
+    )
+    def test_service_error_returns_400(self, _mock):
+        self.authenticate()
+
+        response = self.client.post(self.url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertEqual(response.data, {"detail": "No notes"})
+
+    @patch(
+        "apps.analyses.views.analyze_interview_evidence",
+        side_effect=LLMClientError("AI service is unavailable."),
+    )
+    def test_llm_error_returns_503(self, _mock):
+        self.authenticate()
+
+        response = self.client.post(self.url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+        )
+        self.assertEqual(
+            response.data,
+            {"detail": "AI service is unavailable."},
+        )
+
+    def test_get_without_saved_analysis_returns_404(self):
+        self.authenticate()
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+
+    def test_get_returns_latest_saved_analysis(self):
+        self.authenticate()
+
+        InterviewEvidenceAnalysis.objects.create(
+            idea=self.idea,
+            result={
+                "supporting_evidence": ["Eski kanıt"],
+                "contradicting_evidence": [],
+                "repeated_needs": [],
+                "new_risky_assumptions": [],
+                "next_validation_steps": ["Eski adım"],
+            },
+        )
+
+        latest = InterviewEvidenceAnalysis.objects.create(
+            idea=self.idea,
+            result={
+                "supporting_evidence": ["Yeni kanıt"],
+                "contradicting_evidence": ["Karşı kanıt"],
+                "repeated_needs": ["Tekrarlanan ihtiyaç"],
+                "new_risky_assumptions": [
+                    "Hipotez: Yeni varsayım"
+                ],
+                "next_validation_steps": ["Yeni görüşme yap"],
+            },
+        )
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(response.data["id"], latest.pk)
+        self.assertEqual(
+            response.data["supporting_evidence"],
+            ["Yeni kanıt"],
+        )
+        self.assertEqual(
+            response.data["next_validation_steps"],
+            ["Yeni görüşme yap"],
+        )
+
+    def test_get_other_users_idea_returns_404(self):
+        self.authenticate()
+
+        InterviewEvidenceAnalysis.objects.create(
+            idea=self.other_idea,
+            result={
+                "supporting_evidence": ["Private evidence"],
+                "contradicting_evidence": [],
+                "repeated_needs": [],
+                "new_risky_assumptions": [],
+                "next_validation_steps": ["Private step"],
+            },
+        )
+
+        url = reverse(
+            "analyses:interview-evidence-analysis",
+            kwargs={"idea_id": self.other_idea.pk},
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+
+    @patch("apps.analyses.views.analyze_interview_evidence")
+    def test_response_contains_non_empty_next_validation_steps(
+        self,
+        mock_generate,
+    ):
+        self.authenticate()
+
+        analysis = InterviewEvidenceAnalysis.objects.create(
+            idea=self.idea,
+            result={
+                "supporting_evidence": [],
+                "contradicting_evidence": [],
+                "repeated_needs": [],
+                "new_risky_assumptions": [],
+                "next_validation_steps": [
+                    "Üç yeni müşteri görüşmesi yap."
+                ],
+            },
+        )
+
+        mock_generate.return_value = analysis
+
+        response = self.client.post(self.url)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_201_CREATED,
+        )
+        self.assertTrue(response.data["next_validation_steps"])
+
+
+class InterviewEvidenceAnalysisServiceTests(APITestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="evidence-service-owner",
+            password="pass",
+        )
+
+        self.idea = Idea.objects.create(
+            user=self.user,
+            title="Primary idea",
+            description="Primary description",
+            target_audience="Students",
+            problem="Primary problem",
+            solution="Primary solution",
+            sector="Education",
+        )
+
+        self.other_idea = Idea.objects.create(
+            user=self.user,
+            title="Other idea",
+            description="Other description",
+            target_audience="Teams",
+            problem="Other problem",
+            solution="Other solution",
+            sector="SaaS",
+        )
+
+        self.first_note = InterviewNote.objects.create(
+            idea=self.idea,
+            interviewee_name="Ada",
+            notes="Students need a faster workflow.",
+        )
+
+        self.second_note = InterviewNote.objects.create(
+            idea=self.idea,
+            interviewee_name="Lin",
+            notes="The current process takes too much time.",
+        )
+
+        self.foreign_note = InterviewNote.objects.create(
+            idea=self.other_idea,
+            interviewee_name="Grace",
+            notes="This note must not be included.",
+        )
+
+    @patch(
+        "apps.analyses.services.interview_evidence."
+        "call_interview_analysis_llm"
+    )
+    def test_only_selected_ideas_notes_are_analyzed(
+        self,
+        mock_llm,
+    ):
+        mock_llm.return_value = {
+            "supporting_evidence": ["Supporting"],
+            "contradicting_evidence": [],
+            "repeated_needs": ["Speed"],
+            "new_risky_assumptions": [],
+            "next_validation_steps": ["Run another interview"],
+        }
+
+        analysis = analyze_interview_evidence(self.idea)
+
+        prompt = mock_llm.call_args.kwargs["prompt"]
+
+        self.assertIn(
+            "Students need a faster workflow.",
+            prompt,
+        )
+        self.assertIn(
+            "The current process takes too much time.",
+            prompt,
+        )
+        self.assertNotIn(
+            "This note must not be included.",
+            prompt,
+        )
+
+        self.assertEqual(
+            set(
+                analysis.interview_notes.values_list(
+                    "id",
+                    flat=True,
+                )
+            ),
+            {
+                self.first_note.pk,
+                self.second_note.pk,
+            },
+        )
+        self.assertFalse(
+            analysis.interview_notes.filter(
+                pk=self.foreign_note.pk
+            ).exists()
+        )
+
+    def test_no_notes_raises_error(self):
+        empty_idea = Idea.objects.create(
+            user=self.user,
+            title="Empty idea",
+            description="No interviews yet.",
+            target_audience="Founders",
+            problem="Unknown problem",
+            solution="Unknown solution",
+            sector="SaaS",
+        )
+
+        with self.assertRaises(InterviewNotesNotFoundError):
+            analyze_interview_evidence(empty_idea)

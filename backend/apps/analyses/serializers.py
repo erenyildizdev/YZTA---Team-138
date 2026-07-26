@@ -3,7 +3,11 @@ from collections.abc import Mapping
 
 from rest_framework import serializers
 
-from .models import InterviewNote, MoscowScopeAnalysis
+from .models import (
+    InterviewEvidenceAnalysis,
+    InterviewNote,
+    MoscowScopeAnalysis,
+)
 
 
 class IdeaAnalysisRequestSerializer(serializers.Serializer):
@@ -82,6 +86,93 @@ class InterviewNoteSerializer(serializers.ModelSerializer):
                 )
 
         return super().to_internal_value(data)
+
+class InterviewEvidenceResultSerializer(StrictFieldsSerializer):
+    supporting_evidence = serializers.ListField(
+        child=serializers.CharField(
+            allow_blank=False,
+            trim_whitespace=True,
+        ),
+        allow_empty=True,
+    )
+    contradicting_evidence = serializers.ListField(
+        child=serializers.CharField(
+            allow_blank=False,
+            trim_whitespace=True,
+        ),
+        allow_empty=True,
+    )
+    repeated_needs = serializers.ListField(
+        child=serializers.CharField(
+            allow_blank=False,
+            trim_whitespace=True,
+        ),
+        allow_empty=True,
+    )
+    new_risky_assumptions = serializers.ListField(
+        child=serializers.CharField(
+            allow_blank=False,
+            trim_whitespace=True,
+        ),
+        allow_empty=True,
+    )
+    next_validation_steps = serializers.ListField(
+        child=serializers.CharField(
+            allow_blank=False,
+            trim_whitespace=True,
+        ),
+        allow_empty=False,
+    )
+
+class InterviewEvidenceAnalysisSerializer(serializers.ModelSerializer):
+    idea_id = serializers.IntegerField(read_only=True)
+    interview_note_ids = serializers.PrimaryKeyRelatedField(
+        source="interview_notes",
+        many=True,
+        read_only=True,
+    )
+    supporting_evidence = serializers.SerializerMethodField()
+    contradicting_evidence = serializers.SerializerMethodField()
+    repeated_needs = serializers.SerializerMethodField()
+    new_risky_assumptions = serializers.SerializerMethodField()
+    next_validation_steps = serializers.SerializerMethodField()
+
+    class Meta:
+        model = InterviewEvidenceAnalysis
+        fields = (
+            "id",
+            "idea_id",
+            "interview_note_ids",
+            "supporting_evidence",
+            "contradicting_evidence",
+            "repeated_needs",
+            "new_risky_assumptions",
+            "next_validation_steps",
+            "prompt_version",
+            "provider",
+            "model_name",
+            "created_at",
+        )
+        read_only_fields = fields
+
+    def _result_value(self, obj, key):
+        value = obj.result.get(key, [])
+        return value if isinstance(value, list) else []
+
+    def get_supporting_evidence(self, obj):
+        return self._result_value(obj, "supporting_evidence")
+
+    def get_contradicting_evidence(self, obj):
+        return self._result_value(obj, "contradicting_evidence")
+
+    def get_repeated_needs(self, obj):
+        return self._result_value(obj, "repeated_needs")
+
+    def get_new_risky_assumptions(self, obj):
+        return self._result_value(obj, "new_risky_assumptions")
+
+    def get_next_validation_steps(self, obj):
+        return self._result_value(obj, "next_validation_steps")
 
 
 class MoscowFeatureSerializer(StrictFieldsSerializer):

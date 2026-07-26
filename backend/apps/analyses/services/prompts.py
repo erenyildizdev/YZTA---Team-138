@@ -122,3 +122,79 @@ Kaynak kullanım kuralları:
 
 {context_section}
 """.strip()
+
+
+INTERVIEW_EVIDENCE_ANALYSIS_PROMPT = """
+Sen deneyimli bir müşteri keşfi ve girişim doğrulama danışmanısın.
+
+Görevin, verilen iş fikrine ait müşteri görüşmesi notlarını analiz etmektir.
+
+Analiz sonucunu SADECE aşağıdaki JSON alanlarıyla üret:
+
+- supporting_evidence
+- contradicting_evidence
+- repeated_needs
+- new_risky_assumptions
+- next_validation_steps
+
+Kurallar:
+
+- Sadece geçerli JSON döndür.
+- Markdown, açıklama veya ekstra metin ekleme.
+- Tüm cevap Türkçe olmalı.
+- Verilmeyen bilgi, sayı, araştırma sonucu veya kullanıcı ifadesi uydurma.
+- Her bulgu görüşme notlarındaki gerçek ifadelere dayanmalı.
+- Aynı anlama gelen ifadeleri gereksiz yere tekrar etme.
+- Kesin kanıt bulunmayan konularda kesin hüküm verme.
+
+Supporting Evidence
+
+- İş fikrinin çözmeye çalıştığı problemi destekleyen kanıtları çıkar.
+- Kullanıcıların yaşadığı gerçek problemleri, mevcut davranışları ve çözüm arayışlarını dikkate al.
+- Her madde kısa ve anlaşılır olsun.
+
+Contradicting Evidence
+
+- İş fikrini zayıflatan, ihtiyaç olmadığını gösteren veya önerilen çözümle çelişen kanıtları çıkar.
+- Çelişen kanıt yoksa boş liste döndür.
+- Kanıt bulunmadığında içerik uydurma.
+
+Repeated Needs
+
+- Birden fazla görüşmede tekrar eden kullanıcı problemlerini ve ihtiyaçlarını belirle.
+- Yalnızca gerçekten tekrar eden ihtiyaçları yaz.
+- Tek görüşme notu varsa açıkça görülen önemli ihtiyacı yazabilirsin ancak tekrar ettiğini iddia etme.
+
+New Risky Assumptions
+
+- Görüşmeler sonucunda ortaya çıkan yeni ve test edilmesi gereken varsayımları yaz.
+- Her varsayım test edilebilir olmalı.
+- Her madde "Hipotez:" ifadesiyle başlamalı.
+- Kesin hüküm veya uydurma sayısal hedef kullanma.
+
+Next Validation Steps
+
+- En az 1, en fazla 5 uygulanabilir doğrulama adımı üret.
+- Adımlar mevcut belirsizlikleri ve riskli varsayımları test etmeye odaklanmalı.
+- Teknik geliştirmeden önce kullanıcı doğrulamasına öncelik ver.
+"""
+
+
+def build_interview_evidence_analysis_prompt(
+    idea_text: str,
+    interview_notes_text: str,
+) -> str:
+    clean_idea_text = idea_text.strip()
+    clean_notes_text = interview_notes_text.strip()
+
+    return f"""
+{INTERVIEW_EVIDENCE_ANALYSIS_PROMPT.strip()}
+
+Analiz edilecek iş fikri:
+
+{clean_idea_text}
+
+Bu fikre ait müşteri görüşmesi notları:
+
+{clean_notes_text}
+""".strip()
