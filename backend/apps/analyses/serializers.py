@@ -233,6 +233,16 @@ class MoscowResultSerializer(serializers.Serializer):
         allow_empty=False,
     )
 
+class RagSourceSerializer(serializers.Serializer):
+    title = serializers.CharField()
+    source_type = serializers.CharField()
+    source_url = serializers.URLField(
+        allow_null=True,
+        required=False,
+    )
+    chunk_id = serializers.IntegerField()
+    chunk_index = serializers.IntegerField()
+    distance = serializers.FloatField()
 
 class IdeaAnalysisResponseSerializer(serializers.Serializer):
     idea_summary = serializers.CharField()
@@ -261,3 +271,14 @@ class IdeaAnalysisResponseSerializer(serializers.Serializer):
     )
 
     final_recommendation = serializers.CharField()
+
+    rag_used = serializers.BooleanField(
+        required=False,
+        default=False,
+    )
+
+    sources = RagSourceSerializer(
+        many=True,
+        required=False,
+        default=list,
+    )
