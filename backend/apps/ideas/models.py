@@ -30,3 +30,11 @@ class RiskyAssumptions(models.Model):
 
     def __str__(self):
         return f"Risky assumptions for {self.idea.title}"
+
+class GeneralEvaluation(models.Model):
+    idea = models.OneToOneField(Idea, on_delete=models.CASCADE, related_name="general_evaluation")
+    evaluation_data = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"General evaluation for {self.idea.title}"

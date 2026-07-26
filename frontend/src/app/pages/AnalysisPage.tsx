@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { LayoutDashboard, Bot, BarChart3, FileText, History, Settings, ChevronRight, AlertTriangle, CheckCircle, CheckCircle2, Clock, Users, Target, MessageSquare, RefreshCw, Download, Send, Sparkles, TrendingUp, Calendar, Tag, Map, HelpCircle, XCircle, Zap, Star, Menu, X, ArrowRight, Plus } from "lucide-react";
-import { analysisData, sampleIdeas } from "../data/mockData";
+import { LayoutDashboard, Bot, BarChart3, FileText, History, Settings, ChevronRight, AlertTriangle, CheckCircle2, Clock, Users, Target, MessageSquare, RefreshCw, Download, Send, Sparkles, TrendingUp, Calendar, Tag, Map, XCircle, Star, Menu, X, ArrowRight, Plus } from "lucide-react";
+import { sampleIdeas } from "../data/mockData";
 import type { ChatMessage } from "../types";
 import { StatusBadge } from "../components/common/Badges";
 import { MentorCharacter } from "../components/mentor/MentorCharacter";
 import { ValidationRoadmapBody } from "../components/analysis/ValidationRoadmapBody";
 import { RiskyAssumptionsBody } from "../components/analysis/RiskyAssumptionsBody";
+import { MoscowScopeBody } from "../components/analysis/MoscowScopeBody";
+import { MomTestQuestionsBody } from "../components/analysis/MomTestQuestionsBody";
+import { GeneralEvaluationBody } from "../components/analysis/GeneralEvaluationBody";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
+import { useIdea } from "../hooks/useIdea";
 import { ApiError, sendMentorMessage } from "../lib/api";
 
 const ACTION_LABELS: Record<string, string> = {
@@ -15,6 +19,7 @@ const ACTION_LABELS: Record<string, string> = {
   regenerate_moscow_scope: "MVP kapsamı güncellendi",
   generate_mom_test_questions: "Görüşme soruları üretildi",
   regenerate_risky_assumptions: "Riskli varsayımlar güncellendi",
+  regenerate_general_evaluation: "Genel değerlendirme güncellendi",
 };
 
 function nowLabel() {
@@ -34,7 +39,11 @@ export function AnalysisPage({ onReport }: { onReport: () => void }) {
   const [isSending, setIsSending] = useState(false);
   const [roadmapRefreshKey, setRoadmapRefreshKey] = useState(0);
   const [risksRefreshKey, setRisksRefreshKey] = useState(0);
+  const [moscowRefreshKey, setMoscowRefreshKey] = useState(0);
+  const [questionsRefreshKey, setQuestionsRefreshKey] = useState(0);
+  const [evaluationRefreshKey, setEvaluationRefreshKey] = useState(0);
   const [ideaId, setIdeaId] = useActiveIdeaId();
+  const { data: idea, reload: reloadIdea } = useIdea(ideaId);
   const endRef = useRef<HTMLDivElement>(null);
 
   const sendMsg = async () => {
@@ -63,6 +72,18 @@ export function AnalysisPage({ onReport }: { onReport: () => void }) {
       }
       if (res.actions.some((a) => a.tool === "regenerate_risky_assumptions" && a.status === "success")) {
         setRisksRefreshKey((k) => k + 1);
+      }
+      if (res.actions.some((a) => a.tool === "regenerate_moscow_scope" && a.status === "success")) {
+        setMoscowRefreshKey((k) => k + 1);
+      }
+      if (res.actions.some((a) => a.tool === "generate_mom_test_questions" && a.status === "success")) {
+        setQuestionsRefreshKey((k) => k + 1);
+      }
+      if (res.actions.some((a) => a.tool === "regenerate_general_evaluation" && a.status === "success")) {
+        setEvaluationRefreshKey((k) => k + 1);
+      }
+      if (res.actions.some((a) => a.tool === "update_target_audience" && a.status === "success")) {
+        reloadIdea();
       }
     } catch (err) {
       setMsgs((p) => [
@@ -102,14 +123,16 @@ export function AnalysisPage({ onReport }: { onReport: () => void }) {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2.5">
                 <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 bg-violet-500/10 text-violet-400 rounded-full border border-violet-500/20">
-                  <Tag size={10} />F&B Teknolojisi
+                  <Tag size={10} />{idea?.sector || "Sektör belirtilmedi"}
                 </span>
                 <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 bg-secondary text-muted-foreground rounded-full border border-border">
-                  <Users size={10} />Restoran sahipleri
+                  <Users size={10} />{idea?.target_audience || "Hedef kitle belirtilmedi"}
                 </span>
               </div>
-              <h1 className="text-xl font-bold text-foreground">Restoran Stok Yönetim Uygulaması</h1>
-              <p className="text-xs text-muted-foreground mt-1">Son güncelleme: 28 Haziran 2025</p>
+              <h1 className="text-xl font-bold text-foreground">{idea?.title ?? "Yükleniyor..."}</h1>
+              <p className="text-xs text-muted-foreground mt-1">
+                {idea ? `Oluşturulma: ${new Date(idea.created_at).toLocaleDateString("tr-TR")}` : ""}
+              </p>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <button onClick={onReport} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-all">
@@ -125,7 +148,19 @@ export function AnalysisPage({ onReport }: { onReport: () => void }) {
             {/* A: Summary */}
             <div className="bg-card rounded-xl border border-border p-5">
               <CardHeader bg="bg-blue-500/10" Icon={Sparkles} iconColor="text-blue-400" title="Fikir Özeti" />
-              <p className="text-sm text-muted-foreground leading-relaxed">{analysisData.summary}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{idea?.description}</p>
+              {idea?.problem && (
+                <div className="mt-3 pt-3 border-t border-border">
+                  <span className="text-xs font-bold text-foreground">Problem: </span>
+                  <span className="text-sm text-muted-foreground">{idea.problem}</span>
+                </div>
+              )}
+              {idea?.solution && (
+                <div className="mt-2">
+                  <span className="text-xs font-bold text-foreground">Çözüm Önerisi: </span>
+                  <span className="text-sm text-muted-foreground">{idea.solution}</span>
+                </div>
+              )}
             </div>
 
             {/* B: Risks */}
@@ -137,39 +172,13 @@ export function AnalysisPage({ onReport }: { onReport: () => void }) {
             {/* C: Questions */}
             <div className="bg-card rounded-xl border border-border p-5">
               <CardHeader bg="bg-cyan-500/10" Icon={MessageSquare} iconColor="text-cyan-400" title="Mom Test / Müşteri Görüşme Soruları" />
-              <div className="space-y-2.5">
-                {analysisData.questions.map((q, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <span className="w-5 h-5 rounded-full bg-blue-500/10 text-blue-400 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5 border border-blue-500/20">{i + 1}</span>
-                    <p className="text-sm text-muted-foreground">{q}</p>
-                  </div>
-                ))}
-              </div>
+              <MomTestQuestionsBody key={questionsRefreshKey} ideaId={ideaId} />
             </div>
 
             {/* D: MVP MoSCoW */}
             <div className="bg-card rounded-xl border border-border p-5">
               <CardHeader bg="bg-emerald-500/10" Icon={Target} iconColor="text-emerald-400" title="MVP Kapsamı" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {[
-                  { key: "mustHave",   label: "Must Have",   bg: "bg-red-900/20 border-red-800/30",     lc: "text-red-400",     dot: "bg-red-500" },
-                  { key: "shouldHave", label: "Should Have", bg: "bg-amber-900/20 border-amber-800/30",   lc: "text-amber-400",   dot: "bg-amber-500" },
-                  { key: "couldHave",  label: "Could Have",  bg: "bg-blue-900/20 border-blue-800/30",     lc: "text-blue-400",    dot: "bg-blue-500" },
-                  { key: "wontHave",   label: "Won't Have",  bg: "bg-slate-800/30 border-slate-700/30",   lc: "text-slate-400",   dot: "bg-slate-500" },
-                ].map(({ key, label, bg, lc, dot }) => (
-                  <div key={key} className={`rounded-xl border p-3.5 ${bg}`}>
-                    <div className="flex items-center gap-1.5 mb-2.5">
-                      <div className={`w-1.5 h-1.5 rounded-full ${dot}`} />
-                      <span className={`text-xs font-bold ${lc}`}>{label}</span>
-                    </div>
-                    <ul className="space-y-1.5">
-                      {(analysisData.mvp as any)[key].map((item: string, i: number) => (
-                        <li key={i} className={`text-xs leading-relaxed ${lc} opacity-75`}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
+              <MoscowScopeBody key={moscowRefreshKey} ideaId={ideaId} />
             </div>
 
             {/* E: Roadmap */}
@@ -181,41 +190,7 @@ export function AnalysisPage({ onReport }: { onReport: () => void }) {
             {/* F: Evaluation */}
             <div className="bg-card rounded-xl border border-border p-5">
               <CardHeader bg="bg-amber-500/10" Icon={Star} iconColor="text-amber-400" title="Genel Değerlendirme" />
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <CheckCircle size={12} className="text-emerald-400" />
-                    <span className="text-xs font-bold text-foreground">Güçlü Yönler</span>
-                  </div>
-                  <ul className="space-y-1.5">
-                    {analysisData.evaluation.strengths.map((s, i) => (
-                      <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                        <span className="text-emerald-500 mt-0.5">·</span>{s}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <HelpCircle size={12} className="text-amber-400" />
-                    <span className="text-xs font-bold text-foreground">Belirsiz Noktalar</span>
-                  </div>
-                  <ul className="space-y-1.5">
-                    {analysisData.evaluation.uncertainties.map((u, i) => (
-                      <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                        <span className="text-amber-500 mt-0.5">·</span>{u}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="bg-blue-900/20 border border-blue-800/30 rounded-xl p-4">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <Zap size={12} className="text-blue-400" />
-                    <span className="text-xs font-bold text-blue-300">İlk Yapılacak Aksiyon</span>
-                  </div>
-                  <p className="text-sm text-blue-300/80 leading-relaxed">{analysisData.evaluation.nextAction}</p>
-                </div>
-              </div>
+              <GeneralEvaluationBody key={evaluationRefreshKey} ideaId={ideaId} />
             </div>
           </div>
         </div>

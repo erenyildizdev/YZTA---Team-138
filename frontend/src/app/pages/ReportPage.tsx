@@ -1,15 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import { LayoutDashboard, Bot, BarChart3, FileText, History, Settings, ChevronRight, AlertTriangle, CheckCircle, Clock, Users, Target, MessageSquare, RefreshCw, Download, Send, Sparkles, TrendingUp, Calendar, Tag, Map, HelpCircle, Zap, Star, Menu, X, ArrowRight, Plus } from "lucide-react";
-import { analysisData, initialMessages, sampleIdeas } from "../data/mockData";
+import { LayoutDashboard, Bot, BarChart3, FileText, History, Settings, ChevronRight, AlertTriangle, CheckCircle, Clock, Users, Target, MessageSquare, RefreshCw, Download, Send, Sparkles, TrendingUp, Calendar, Tag, Map, HelpCircle, Star, Menu, X, ArrowRight, Plus } from "lucide-react";
+import { initialMessages, sampleIdeas } from "../data/mockData";
 import type { ChatMessage } from "../types";
 import { StatusBadge } from "../components/common/Badges";
 import { MentorCharacter } from "../components/mentor/MentorCharacter";
 import { ValidationRoadmapBody } from "../components/analysis/ValidationRoadmapBody";
 import { RiskyAssumptionsBody } from "../components/analysis/RiskyAssumptionsBody";
+import { MoscowScopeBody } from "../components/analysis/MoscowScopeBody";
+import { MomTestQuestionsBody } from "../components/analysis/MomTestQuestionsBody";
+import { GeneralEvaluationBody } from "../components/analysis/GeneralEvaluationBody";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
+import { useIdea } from "../hooks/useIdea";
 
 export function ReportPage({ onBack }: { onBack: () => void }) {
   const [ideaId] = useActiveIdeaId();
+  const { data: idea } = useIdea(ideaId);
   const Divider = ({ label }: { label: string }) => (
     <div className="flex items-center gap-2 mb-4">
       <div className="w-4 h-0.5 bg-primary rounded-full" />
@@ -23,8 +28,10 @@ export function ReportPage({ onBack }: { onBack: () => void }) {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-10">
           <div>
             <div className="text-xs text-muted-foreground mb-1 tracking-widest uppercase">FikirLab — Doğrulama Raporu</div>
-            <h1 className="text-2xl font-bold text-foreground">Restoran Stok Yönetim Uygulaması</h1>
-            <p className="text-sm text-muted-foreground mt-1">28 Haziran 2025 tarihli analiz</p>
+            <h1 className="text-2xl font-bold text-foreground">{idea?.title ?? "Yükleniyor..."}</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              {idea ? `${new Date(idea.created_at).toLocaleDateString("tr-TR")} tarihli analiz` : ""}
+            </p>
           </div>
           <button
             disabled
@@ -42,7 +49,7 @@ export function ReportPage({ onBack }: { onBack: () => void }) {
         <div className="space-y-9">
           <section>
             <Divider label="Fikir Özeti" />
-            <p className="text-sm text-muted-foreground leading-relaxed">{analysisData.summary}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed">{idea?.description}</p>
           </section>
 
           <section>
@@ -50,15 +57,11 @@ export function ReportPage({ onBack }: { onBack: () => void }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-card rounded-xl border border-border p-5">
                 <h3 className="text-sm font-bold text-foreground mb-2">Problem</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Küçük restoranların manuel stok yönetimi nedeniyle günlük %8–15 oranında gıda israfı ve yükselen operasyonel maliyet.
-                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{idea?.problem}</p>
               </div>
               <div className="bg-card rounded-xl border border-border p-5">
                 <h3 className="text-sm font-bold text-foreground mb-2">Hedef Kitle</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Günlük 50–300 müşteriye hizmet veren, teknolojiye açık küçük ve orta ölçekli restoran sahipleri ve şefleri.
-                </p>
+                <p className="text-sm text-muted-foreground leading-relaxed">{idea?.target_audience}</p>
               </div>
             </div>
           </section>
@@ -70,35 +73,12 @@ export function ReportPage({ onBack }: { onBack: () => void }) {
 
           <section>
             <Divider label="Müşteri Görüşme Soruları" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {analysisData.questions.map((q, i) => (
-                <div key={i} className="bg-card rounded-xl border border-border p-4">
-                  <span className="text-xs font-bold text-blue-400 mb-1.5 block">Soru {i + 1}</span>
-                  <p className="text-sm text-muted-foreground">{q}</p>
-                </div>
-              ))}
-            </div>
+            <MomTestQuestionsBody ideaId={ideaId} />
           </section>
 
           <section>
             <Divider label="MVP Kapsamı (MoSCoW)" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                { key: "mustHave",   label: "Must Have",   bg: "bg-red-900/20 border-red-800/30",   lc: "text-red-400" },
-                { key: "shouldHave", label: "Should Have", bg: "bg-amber-900/20 border-amber-800/30", lc: "text-amber-400" },
-                { key: "couldHave",  label: "Could Have",  bg: "bg-blue-900/20 border-blue-800/30",  lc: "text-blue-400" },
-                { key: "wontHave",   label: "Won't Have",  bg: "bg-slate-800/30 border-slate-700/30", lc: "text-slate-400" },
-              ].map(({ key, label, bg, lc }) => (
-                <div key={key} className={`rounded-xl border p-4 ${bg}`}>
-                  <div className={`text-xs font-bold mb-2 ${lc}`}>{label}</div>
-                  <ul className="space-y-1">
-                    {(analysisData.mvp as any)[key].map((item: string, i: number) => (
-                      <li key={i} className={`text-xs ${lc} opacity-70`}>· {item}</li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
+            <MoscowScopeBody ideaId={ideaId} />
           </section>
 
           <section>
@@ -107,14 +87,8 @@ export function ReportPage({ onBack }: { onBack: () => void }) {
           </section>
 
           <section>
-            <Divider label="Sonraki Adımlar" />
-            <div className="bg-blue-900/20 border border-blue-800/30 rounded-xl p-5">
-              <div className="flex items-center gap-1.5 mb-2">
-                <Zap size={13} className="text-blue-400" />
-                <span className="text-sm font-bold text-blue-300">İlk Aksiyon</span>
-              </div>
-              <p className="text-sm text-blue-300/80 leading-relaxed">{analysisData.evaluation.nextAction}</p>
-            </div>
+            <Divider label="Genel Değerlendirme" />
+            <GeneralEvaluationBody ideaId={ideaId} />
           </section>
         </div>
       </div>

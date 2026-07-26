@@ -9,6 +9,80 @@ class RiskyAssumptionsGenerationError(Exception):
     """Raised when risky assumptions cannot be generated from the AI response."""
 
 
+class GeneralEvaluationGenerationError(Exception):
+    """Raised when the general evaluation cannot be generated from the AI response."""
+
+
+GENERAL_EVALUATION_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "strengths": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+        "uncertainties": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+        "next_action": {"type": "string"},
+    },
+    "required": ["strengths", "uncertainties", "next_action"],
+}
+
+
+def build_general_evaluation_prompt(idea) -> str:
+    return (
+        "Sen deneyimli bir girişim doğrulama danışmanısın. SADECE geçerli JSON döndür, "
+        "markdown veya ek açıklama ekleme. Aşağıdaki iş fikri için genel bir değerlendirme yap: "
+        "tam olarak 3 güçlü yön, tam olarak 2 belirsiz/riskli nokta üret. Ayrıca fikrin sahibinin "
+        "bu hafta atması gereken tek, somut ve uygulanabilir ilk aksiyonu tek cümlede yaz. "
+        "Genel geçer laf kalabalığından kaçın, fikre özgü ve spesifik ol.\n\n"
+        f"Fikir başlığı: {idea.title}\n"
+        f"Açıklama: {idea.description}\n"
+        f"Hedef kitle: {idea.target_audience}\n"
+        f"Problem: {idea.problem}\n"
+        f"Çözüm önerisi: {idea.solution}\n"
+        f"Sektör: {idea.sector}\n"
+    )
+
+
+def generate_general_evaluation_payload(idea) -> dict:
+    api_key = getattr(settings, "GEMINI_API_KEY", "")
+    if not api_key:
+        raise GeneralEvaluationGenerationError("GEMINI_API_KEY is not configured.")
+
+    client = genai.Client(
+        api_key=api_key,
+        http_options=types.HttpOptions(timeout=60_000),
+    )
+
+    try:
+        response = client.models.generate_content(
+            model=settings.GEMINI_MODEL_NAME,
+            contents=build_general_evaluation_prompt(idea),
+            config=types.GenerateContentConfig(
+                temperature=0.3,
+                response_mime_type="application/json",
+                response_schema=GENERAL_EVALUATION_SCHEMA,
+                max_output_tokens=1024,
+            ),
+        )
+    except Exception as exc:
+        raise GeneralEvaluationGenerationError("AI provider request failed.") from exc
+
+    try:
+        result = json.loads(response.text)
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise GeneralEvaluationGenerationError("AI response was not valid JSON.") from exc
+
+    if not isinstance(result, dict) or not all(
+        key in result for key in ("strengths", "uncertainties", "next_action")
+    ):
+        raise GeneralEvaluationGenerationError("AI response was incomplete.")
+
+    return result
+
+
 RISKY_ASSUMPTIONS_SCHEMA = {
     "type": "object",
     "properties": {

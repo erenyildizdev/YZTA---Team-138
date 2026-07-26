@@ -8,9 +8,11 @@ from apps.analyses.services import (
     generate_moscow_scope,
 )
 
-from .models import RiskyAssumptions, ValidationRoadmap
+from .models import GeneralEvaluation, RiskyAssumptions, ValidationRoadmap
 from .services import (
+    GeneralEvaluationGenerationError,
     RiskyAssumptionsGenerationError,
+    generate_general_evaluation_payload,
     generate_risky_assumptions_payload,
     generate_validation_roadmap_payload,
 )
@@ -85,12 +87,26 @@ def _tool_regenerate_risky_assumptions(idea, args: dict) -> dict:
     }
 
 
+def _tool_regenerate_general_evaluation(idea, args: dict) -> dict:
+    try:
+        payload = generate_general_evaluation_payload(idea)
+    except GeneralEvaluationGenerationError as exc:
+        raise ValueError(str(exc)) from exc
+
+    GeneralEvaluation.objects.update_or_create(
+        idea=idea,
+        defaults={"evaluation_data": payload},
+    )
+    return payload
+
+
 TOOL_HANDLERS = {
     "update_target_audience": _tool_update_target_audience,
     "regenerate_validation_roadmap": _tool_regenerate_validation_roadmap,
     "regenerate_moscow_scope": _tool_regenerate_moscow_scope,
     "generate_mom_test_questions": _tool_generate_mom_test_questions,
     "regenerate_risky_assumptions": _tool_regenerate_risky_assumptions,
+    "regenerate_general_evaluation": _tool_regenerate_general_evaluation,
 }
 
 TOOL_DECLARATIONS = [
@@ -134,6 +150,11 @@ TOOL_DECLARATIONS = [
     types.FunctionDeclaration(
         name="regenerate_risky_assumptions",
         description="Fikrin riskli varsayımlarını (test edilmesi gereken hipotezleri) yeniden değerlendirir.",
+        parameters={"type": "object", "properties": {}},
+    ),
+    types.FunctionDeclaration(
+        name="regenerate_general_evaluation",
+        description="Fikrin genel değerlendirmesini (güçlü yönler, belirsiz noktalar, ilk aksiyon) yeniden oluşturur.",
         parameters={"type": "object", "properties": {}},
     ),
 ]
