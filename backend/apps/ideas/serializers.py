@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Idea, RiskyAssumptions, ValidationRoadmap
+from .models import GeneralEvaluation, Idea, RiskyAssumptions, ValidationRoadmap
 
 
 class IdeaSerializer(serializers.ModelSerializer):
@@ -30,4 +30,11 @@ class RiskyAssumptionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = RiskyAssumptions
         fields = ["id", "idea", "assumptions_data", "created_at"]
+        read_only_fields = fields
+
+
+class GeneralEvaluationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GeneralEvaluation
+        fields = ["id", "idea", "evaluation_data", "created_at"]
         read_only_fields = fields

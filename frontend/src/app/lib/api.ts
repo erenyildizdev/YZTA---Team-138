@@ -156,6 +156,10 @@ export function createIdea(payload: IdeaPayload): Promise<IdeaResponse> {
   });
 }
 
+export function getIdea(ideaId: number): Promise<IdeaResponse> {
+  return request<IdeaResponse>(`/ideas/${ideaId}/`);
+}
+
 export interface RiskyAssumptionItem {
   text: string;
   level: "high" | "medium" | "low";
@@ -178,6 +182,84 @@ export function getRiskyAssumptions(ideaId: number): Promise<RiskyAssumptionsRes
 
 export function generateRiskyAssumptions(ideaId: number): Promise<RiskyAssumptionsResponse> {
   return request<RiskyAssumptionsResponse>(`/ideas/${ideaId}/generate-risky-assumptions/`, {
+    method: "POST",
+  });
+}
+
+export interface MoscowFeatureItem {
+  title: string;
+  reason: string;
+}
+
+export interface MoscowScopeData {
+  summary: string;
+  must_have: MoscowFeatureItem[];
+  should_have: MoscowFeatureItem[];
+  could_have: MoscowFeatureItem[];
+  wont_have: MoscowFeatureItem[];
+}
+
+export interface MoscowScopeResponse extends MoscowScopeData {
+  id: number;
+  idea_id: number;
+  prompt_version: string;
+  provider: string;
+  model_name: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export function getMoscowScope(ideaId: number): Promise<MoscowScopeResponse> {
+  return request<MoscowScopeResponse>(`/analyses/ideas/${ideaId}/moscow-scope/`);
+}
+
+export function generateMoscowScope(ideaId: number): Promise<MoscowScopeResponse> {
+  return request<MoscowScopeResponse>(`/analyses/ideas/${ideaId}/moscow-scope/`, {
+    method: "POST",
+  });
+}
+
+export interface MomTestQuestionItem {
+  category: string;
+  question: string;
+}
+
+export interface MomTestQuestionsResponse {
+  idea_id: number;
+  framework: string;
+  question_count: number;
+  questions: MomTestQuestionItem[];
+}
+
+export function generateMomTestQuestions(
+  ideaId: number,
+  questionCount = 10,
+): Promise<MomTestQuestionsResponse> {
+  return request<MomTestQuestionsResponse>(`/analyses/ideas/${ideaId}/mom-test-questions/`, {
+    method: "POST",
+    body: JSON.stringify({ question_count: questionCount }),
+  });
+}
+
+export interface GeneralEvaluationData {
+  strengths: string[];
+  uncertainties: string[];
+  next_action: string;
+}
+
+export interface GeneralEvaluationResponse {
+  id: number;
+  idea: number;
+  evaluation_data: GeneralEvaluationData;
+  created_at: string;
+}
+
+export function getGeneralEvaluation(ideaId: number): Promise<GeneralEvaluationResponse> {
+  return request<GeneralEvaluationResponse>(`/ideas/${ideaId}/evaluation/`);
+}
+
+export function generateGeneralEvaluation(ideaId: number): Promise<GeneralEvaluationResponse> {
+  return request<GeneralEvaluationResponse>(`/ideas/${ideaId}/generate-evaluation/`, {
     method: "POST",
   });
 }

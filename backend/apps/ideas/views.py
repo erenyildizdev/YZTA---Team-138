@@ -4,11 +4,18 @@ from rest_framework.response import Response
 from apps.analyses.services.analyzer import analyze_idea
 
 from .mentor_agent import MentorAgentError, run_mentor_chat
-from .models import Idea, RiskyAssumptions, ValidationRoadmap
-from .serializers import IdeaSerializer, RiskyAssumptionsSerializer, ValidationRoadmapSerializer
+from .models import GeneralEvaluation, Idea, RiskyAssumptions, ValidationRoadmap
+from .serializers import (
+    GeneralEvaluationSerializer,
+    IdeaSerializer,
+    RiskyAssumptionsSerializer,
+    ValidationRoadmapSerializer,
+)
 from .services import (
+    GeneralEvaluationGenerationError,
     RiskyAssumptionsGenerationError,
-    build_validation_roadmap_prompt,
+    RoadmapGenerationError,
+    generate_general_evaluation_payload,
     generate_risky_assumptions_payload,
     generate_validation_roadmap_payload,
 )
@@ -46,8 +53,14 @@ class IdeaViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="generate-roadmap")
     def generate_roadmap(self, request, pk=None):
         idea = self.get_object()
-        build_validation_roadmap_prompt(idea)
-        roadmap_data = generate_validation_roadmap_payload(idea)
+
+        try:
+            roadmap_data = generate_validation_roadmap_payload(idea)
+        except RoadmapGenerationError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
 
         roadmap, _ = ValidationRoadmap.objects.update_or_create(
             idea=idea,
@@ -99,6 +112,38 @@ class IdeaViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Risky assumptions not found."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = RiskyAssumptionsSerializer(assumptions)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="generate-evaluation")
+    def generate_evaluation(self, request, pk=None):
+        idea = self.get_object()
+
+        try:
+            evaluation_data = generate_general_evaluation_payload(idea)
+        except GeneralEvaluationGenerationError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        evaluation, _ = GeneralEvaluation.objects.update_or_create(
+            idea=idea,
+            defaults={"evaluation_data": evaluation_data},
+        )
+
+        serializer = GeneralEvaluationSerializer(evaluation)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["get"], url_path="evaluation")
+    def evaluation(self, request, pk=None):
+        idea = self.get_object()
+
+        try:
+            evaluation = idea.general_evaluation
+        except GeneralEvaluation.DoesNotExist:
+            return Response({"detail": "Evaluation not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = GeneralEvaluationSerializer(evaluation)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="mentor-chat")
