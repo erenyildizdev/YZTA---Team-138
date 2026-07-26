@@ -22,3 +22,11 @@ class ValidationRoadmap(models.Model):
 
     def __str__(self):
         return f"Validation roadmap for {self.idea.title}"
+
+class RiskyAssumptions(models.Model):
+    idea = models.OneToOneField(Idea, on_delete=models.CASCADE, related_name="risky_assumptions")
+    assumptions_data = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Risky assumptions for {self.idea.title}"

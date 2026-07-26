@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { LayoutDashboard, Bot, BarChart3, FileText, History, Settings, ChevronRight, AlertTriangle, CheckCircle, Clock, Users, Target, MessageSquare, RefreshCw, Download, Send, Sparkles, TrendingUp, Calendar, Tag, Map, HelpCircle, Zap, Star, Menu, X, ArrowRight, Plus } from "lucide-react";
 import { analysisData, initialMessages, sampleIdeas } from "../data/mockData";
 import type { ChatMessage } from "../types";
-import { RiskBadge, StatusBadge } from "../components/common/Badges";
+import { StatusBadge } from "../components/common/Badges";
 import { MentorCharacter } from "../components/mentor/MentorCharacter";
 import { ValidationRoadmapBody } from "../components/analysis/ValidationRoadmapBody";
+import { RiskyAssumptionsBody } from "../components/analysis/RiskyAssumptionsBody";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 
 export function ReportPage({ onBack }: { onBack: () => void }) {
@@ -64,14 +65,7 @@ export function ReportPage({ onBack }: { onBack: () => void }) {
 
           <section>
             <Divider label="Riskli Varsayımlar" />
-            <div className="space-y-2.5">
-              {analysisData.risks.map((r) => (
-                <div key={r.id} className="flex items-start gap-3 bg-card rounded-xl border border-border p-4">
-                  <RiskBadge level={r.level} />
-                  <p className="text-sm text-muted-foreground">{r.text}</p>
-                </div>
-              ))}
-            </div>
+            <RiskyAssumptionsBody ideaId={ideaId} />
           </section>
 
           <section>

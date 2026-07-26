@@ -1,32 +1,85 @@
 import { useEffect, useRef, useState } from "react";
-import { LayoutDashboard, Bot, BarChart3, FileText, History, Settings, ChevronRight, AlertTriangle, CheckCircle, Clock, Users, Target, MessageSquare, RefreshCw, Download, Send, Sparkles, TrendingUp, Calendar, Tag, Map, HelpCircle, Zap, Star, Menu, X, ArrowRight, Plus } from "lucide-react";
-import { analysisData, initialMessages, sampleIdeas } from "../data/mockData";
+import { LayoutDashboard, Bot, BarChart3, FileText, History, Settings, ChevronRight, AlertTriangle, CheckCircle, CheckCircle2, Clock, Users, Target, MessageSquare, RefreshCw, Download, Send, Sparkles, TrendingUp, Calendar, Tag, Map, HelpCircle, XCircle, Zap, Star, Menu, X, ArrowRight, Plus } from "lucide-react";
+import { analysisData, sampleIdeas } from "../data/mockData";
 import type { ChatMessage } from "../types";
-import { RiskBadge, StatusBadge } from "../components/common/Badges";
+import { StatusBadge } from "../components/common/Badges";
 import { MentorCharacter } from "../components/mentor/MentorCharacter";
 import { ValidationRoadmapBody } from "../components/analysis/ValidationRoadmapBody";
+import { RiskyAssumptionsBody } from "../components/analysis/RiskyAssumptionsBody";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
+import { ApiError, sendMentorMessage } from "../lib/api";
+
+const ACTION_LABELS: Record<string, string> = {
+  update_target_audience: "Hedef kitle güncellendi",
+  regenerate_validation_roadmap: "Yol haritası yenilendi",
+  regenerate_moscow_scope: "MVP kapsamı güncellendi",
+  generate_mom_test_questions: "Görüşme soruları üretildi",
+  regenerate_risky_assumptions: "Riskli varsayımlar güncellendi",
+};
+
+function nowLabel() {
+  return new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+}
 
 export function AnalysisPage({ onReport }: { onReport: () => void }) {
-  const [msgs, setMsgs] = useState<ChatMessage[]>(initialMessages);
+  const [msgs, setMsgs] = useState<ChatMessage[]>([
+    {
+      id: "welcome",
+      role: "assistant",
+      content: "Merhaba! Bu fikir üzerinde birlikte çalışalım. Hedef kitleyi, MVP kapsamını, yol haritasını veya müşteri sorularını güncellememi isteyebilirsin.",
+      timestamp: nowLabel(),
+    },
+  ]);
   const [input, setInput] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [roadmapRefreshKey, setRoadmapRefreshKey] = useState(0);
+  const [risksRefreshKey, setRisksRefreshKey] = useState(0);
   const [ideaId, setIdeaId] = useActiveIdeaId();
   const endRef = useRef<HTMLDivElement>(null);
 
-  const sendMsg = () => {
-    if (!input.trim()) return;
-    const u: ChatMessage = { id: Date.now().toString(), role: "user", content: input, timestamp: new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }) };
-    setMsgs((p) => [...p, u]);
+  const sendMsg = async () => {
+    const text = input.trim();
+    if (!text || isSending) return;
+
+    const history = msgs.slice(-6).map((m) => ({ role: m.role, content: m.content }));
+    const userMsg: ChatMessage = { id: Date.now().toString(), role: "user", content: text, timestamp: nowLabel() };
+    setMsgs((p) => [...p, userMsg]);
     setInput("");
-    setTimeout(() => {
+    setIsSending(true);
+
+    try {
+      const res = await sendMentorMessage(ideaId, text, history);
+      const assistantMsg: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: res.reply,
+        timestamp: nowLabel(),
+        actions: res.actions.map((a) => ({ tool: a.tool, status: a.status, result: a.result })),
+      };
+      setMsgs((p) => [...p, assistantMsg]);
+
+      if (res.actions.some((a) => a.tool === "regenerate_validation_roadmap" && a.status === "success")) {
+        setRoadmapRefreshKey((k) => k + 1);
+      }
+      if (res.actions.some((a) => a.tool === "regenerate_risky_assumptions" && a.status === "success")) {
+        setRisksRefreshKey((k) => k + 1);
+      }
+    } catch (err) {
       setMsgs((p) => [
         ...p,
-        { id: (Date.now() + 1).toString(), role: "assistant", content: "Bu önerin analizi etkiliyor. Hedef kitleyi ve problem tanımını güncelleyip yeni bir risk değerlendirmesi yapabilirim.", timestamp: new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }), hasAction: true },
+        {
+          id: (Date.now() + 2).toString(),
+          role: "assistant",
+          content: err instanceof ApiError ? err.message : "Bir şeyler ters gitti, tekrar dener misin?",
+          timestamp: nowLabel(),
+        },
       ]);
-    }, 900);
+    } finally {
+      setIsSending(false);
+    }
   };
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs]);
+  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, isSending]);
 
   const quickActions = ["Riskleri güncelle", "MVP'yi sadeleştir", "Müşteri soruları üret", "Hedef kitleyi değiştir", "Yol haritasını yenile"];
 
@@ -78,14 +131,7 @@ export function AnalysisPage({ onReport }: { onReport: () => void }) {
             {/* B: Risks */}
             <div className="bg-card rounded-xl border border-border p-5">
               <CardHeader bg="bg-red-500/10" Icon={AlertTriangle} iconColor="text-red-400" title="Riskli Varsayımlar" />
-              <div className="space-y-3">
-                {analysisData.risks.map((r) => (
-                  <div key={r.id} className="flex items-start gap-3">
-                    <RiskBadge level={r.level} />
-                    <p className="text-sm text-muted-foreground leading-relaxed">{r.text}</p>
-                  </div>
-                ))}
-              </div>
+              <RiskyAssumptionsBody key={risksRefreshKey} ideaId={ideaId} />
             </div>
 
             {/* C: Questions */}
@@ -129,7 +175,7 @@ export function AnalysisPage({ onReport }: { onReport: () => void }) {
             {/* E: Roadmap */}
             <div className="bg-card rounded-xl border border-border p-5">
               <CardHeader bg="bg-violet-500/10" Icon={Map} iconColor="text-violet-400" title="Doğrulama Yol Haritası" />
-              <ValidationRoadmapBody ideaId={ideaId} onIdeaIdChange={setIdeaId} />
+              <ValidationRoadmapBody key={roadmapRefreshKey} ideaId={ideaId} onIdeaIdChange={setIdeaId} />
             </div>
 
             {/* F: Evaluation */}
@@ -195,7 +241,8 @@ export function AnalysisPage({ onReport }: { onReport: () => void }) {
             <button
               key={a}
               onClick={() => setInput(a)}
-              className="text-[11px] px-2.5 py-1 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-blue-500/40 hover:bg-secondary transition-all"
+              disabled={isSending}
+              className="text-[11px] px-2.5 py-1 rounded-full border border-border text-muted-foreground hover:text-foreground hover:border-blue-500/40 hover:bg-secondary transition-all disabled:opacity-40 disabled:pointer-events-none"
             >
               {a}
             </button>
@@ -219,15 +266,59 @@ export function AnalysisPage({ onReport }: { onReport: () => void }) {
                 }`}>
                   {m.content}
                 </div>
-                {m.hasAction && (
-                  <button disabled title="Backend entegrasyonu sonrasında kullanılabilir" className="mt-2 w-full cursor-not-allowed text-xs font-semibold text-blue-400/45 border border-blue-500/15 rounded-xl py-1.5">
-                    Analizi Güncelle
-                  </button>
+                {m.actions && m.actions.length > 0 && (
+                  <div className="mt-1.5 flex flex-col gap-1.5">
+                    {m.actions.map((a, i) => {
+                      const questions = a.status === "success" ? (a.result?.questions as string[] | undefined) : undefined;
+                      const newAudience = a.status === "success" ? (a.result?.target_audience as string | undefined) : undefined;
+
+                      return (
+                        <div key={i} className="flex flex-col gap-1 items-start">
+                          <span
+                            className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-1 rounded-lg border w-fit ${
+                              a.status === "success"
+                                ? "text-emerald-400 border-emerald-800/40 bg-emerald-900/10"
+                                : "text-red-400 border-red-800/40 bg-red-900/10"
+                            }`}
+                          >
+                            {a.status === "success" ? <CheckCircle2 size={11} /> : <XCircle size={11} />}
+                            {ACTION_LABELS[a.tool] ?? a.tool}
+                          </span>
+
+                          {newAudience && (
+                            <span className="text-xs text-foreground bg-secondary border border-border rounded-lg px-2.5 py-1.5">
+                              "{newAudience}"
+                            </span>
+                          )}
+
+                          {questions && questions.length > 0 && (
+                            <ul className="w-full space-y-1 bg-secondary border border-border rounded-lg px-2.5 py-2">
+                              {questions.map((q, qi) => (
+                                <li key={qi} className="text-xs text-foreground leading-relaxed flex gap-1.5">
+                                  <span className="text-blue-400 font-bold">{qi + 1}.</span>{q}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 )}
                 <div className="text-[10px] text-muted-foreground mt-1 px-1">{m.timestamp}</div>
               </div>
             </div>
           ))}
+          {isSending && (
+            <div className="flex justify-start">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0 mr-2 mt-1">
+                <Bot size={11} className="text-white" />
+              </div>
+              <div className="px-3.5 py-2.5 text-sm bg-secondary border border-border text-muted-foreground rounded-2xl rounded-tl-sm">
+                <RefreshCw size={13} className="animate-spin" />
+              </div>
+            </div>
+          )}
           <div ref={endRef} />
         </div>
 
@@ -240,11 +331,12 @@ export function AnalysisPage({ onReport }: { onReport: () => void }) {
               onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMsg(); } }}
               placeholder="Bu fikirle ilgili neyi geliştirmek istiyorsun?"
               rows={2}
-              className="flex-1 bg-muted border border-border rounded-xl px-3 py-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 resize-none transition-all"
+              disabled={isSending}
+              className="flex-1 bg-muted border border-border rounded-xl px-3 py-2.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 resize-none transition-all disabled:opacity-60"
             />
             <button
               onClick={sendMsg}
-              disabled={!input.trim()}
+              disabled={!input.trim() || isSending}
               className="w-9 h-9 bg-primary hover:bg-blue-600 text-white rounded-xl flex items-center justify-center transition-all disabled:opacity-40 flex-shrink-0"
             >
               <Send size={13} />

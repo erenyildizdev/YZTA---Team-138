@@ -67,6 +67,51 @@ class OpenAICompatibleClient:
             raise MoscowGenerationError("AI provider request failed.") from exc
 
 
+@dataclass
+class GeminiClient:
+    api_key: str
+    model_name: str
+    provider: str = "gemini"
+
+    @classmethod
+    def from_settings(cls):
+        if not settings.GEMINI_API_KEY:
+            raise MoscowGenerationError("AI provider is not configured.")
+        return cls(api_key=settings.GEMINI_API_KEY, model_name=settings.GEMINI_MODEL_NAME)
+
+    def complete(self, prompt: str) -> str:
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(
+            api_key=self.api_key,
+            http_options=types.HttpOptions(timeout=60_000),
+        )
+        try:
+            response = client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.2,
+                    response_mime_type="application/json",
+                    max_output_tokens=2048,
+                ),
+            )
+        except Exception as exc:
+            raise MoscowGenerationError("AI provider request failed.") from exc
+
+        text = getattr(response, "text", None)
+        if not text:
+            raise MoscowGenerationError("AI provider returned an empty response.")
+        return text
+
+
+def _default_client() -> MoscowClient:
+    if getattr(settings, "GEMINI_API_KEY", ""):
+        return GeminiClient.from_settings()
+    return OpenAICompatibleClient.from_settings()
+
+
 def build_moscow_prompt(idea) -> str:
     return f"""Deneyimli bir ürün yöneticisi ve MVP danışmanı gibi davran.
 Aşağıdaki iş fikrini yalnızca verilen bilgilerle değerlendir:
@@ -157,7 +202,7 @@ def save_moscow_analysis(idea, result: dict, *, provider: str = "", model_name: 
 
 
 def generate_moscow_scope(idea, client: MoscowClient | None = None):
-    client = client or OpenAICompatibleClient.from_settings()
+    client = client or _default_client()
     prompt = build_moscow_prompt(idea)
     last_error = None
     for _attempt in range(2):

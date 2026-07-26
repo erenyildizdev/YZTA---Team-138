@@ -155,3 +155,56 @@ export function createIdea(payload: IdeaPayload): Promise<IdeaResponse> {
     body: JSON.stringify(payload),
   });
 }
+
+export interface RiskyAssumptionItem {
+  text: string;
+  level: "high" | "medium" | "low";
+}
+
+export interface RiskyAssumptionsData {
+  assumptions: RiskyAssumptionItem[];
+}
+
+export interface RiskyAssumptionsResponse {
+  id: number;
+  idea: number;
+  assumptions_data: RiskyAssumptionsData;
+  created_at: string;
+}
+
+export function getRiskyAssumptions(ideaId: number): Promise<RiskyAssumptionsResponse> {
+  return request<RiskyAssumptionsResponse>(`/ideas/${ideaId}/risky-assumptions/`);
+}
+
+export function generateRiskyAssumptions(ideaId: number): Promise<RiskyAssumptionsResponse> {
+  return request<RiskyAssumptionsResponse>(`/ideas/${ideaId}/generate-risky-assumptions/`, {
+    method: "POST",
+  });
+}
+
+export interface MentorChatHistoryTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface MentorChatAction {
+  tool: string;
+  status: "success" | "error";
+  result: Record<string, unknown>;
+}
+
+export interface MentorChatResponse {
+  reply: string;
+  actions: MentorChatAction[];
+}
+
+export function sendMentorMessage(
+  ideaId: number,
+  message: string,
+  history: MentorChatHistoryTurn[] = [],
+): Promise<MentorChatResponse> {
+  return request<MentorChatResponse>(`/ideas/${ideaId}/mentor-chat/`, {
+    method: "POST",
+    body: JSON.stringify({ message, history }),
+  });
+}

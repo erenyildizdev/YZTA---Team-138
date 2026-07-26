@@ -1,3 +1,85 @@
+import json
+
+from django.conf import settings
+from google import genai
+from google.genai import types
+
+
+class RiskyAssumptionsGenerationError(Exception):
+    """Raised when risky assumptions cannot be generated from the AI response."""
+
+
+RISKY_ASSUMPTIONS_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "assumptions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "text": {"type": "string"},
+                    "level": {"type": "string", "enum": ["high", "medium", "low"]},
+                },
+                "required": ["text", "level"],
+            },
+        }
+    },
+    "required": ["assumptions"],
+}
+
+
+def build_risky_assumptions_prompt(idea) -> str:
+    return (
+        "Sen deneyimli bir girişim doğrulama danışmanısın. SADECE geçerli JSON döndür, "
+        "markdown veya ek açıklama ekleme. Aşağıdaki iş fikri için tam olarak 5 riskli varsayım üret. "
+        "Her varsayım, MVP geliştirilmeden önce test edilmesi gereken, ölçülebilir ve spesifik bir hipotez "
+        "olmalı (soyut ifadeler kullanma). Her varsayıma, yanlış çıkması durumunda fikre ne kadar zarar "
+        "vereceğine ve şu an ne kadar belirsiz olduğuna göre \"high\", \"medium\" veya \"low\" risk seviyesi ata.\n\n"
+        f"Fikir başlığı: {idea.title}\n"
+        f"Açıklama: {idea.description}\n"
+        f"Hedef kitle: {idea.target_audience}\n"
+        f"Problem: {idea.problem}\n"
+        f"Çözüm önerisi: {idea.solution}\n"
+        f"Sektör: {idea.sector}\n"
+    )
+
+
+def generate_risky_assumptions_payload(idea) -> dict:
+    api_key = getattr(settings, "GEMINI_API_KEY", "")
+    if not api_key:
+        raise RiskyAssumptionsGenerationError("GEMINI_API_KEY is not configured.")
+
+    client = genai.Client(
+        api_key=api_key,
+        http_options=types.HttpOptions(timeout=60_000),
+    )
+
+    try:
+        response = client.models.generate_content(
+            model=settings.GEMINI_MODEL_NAME,
+            contents=build_risky_assumptions_prompt(idea),
+            config=types.GenerateContentConfig(
+                temperature=0.3,
+                response_mime_type="application/json",
+                response_schema=RISKY_ASSUMPTIONS_SCHEMA,
+                max_output_tokens=1024,
+            ),
+        )
+    except Exception as exc:
+        raise RiskyAssumptionsGenerationError("AI provider request failed.") from exc
+
+    try:
+        result = json.loads(response.text)
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise RiskyAssumptionsGenerationError("AI response was not valid JSON.") from exc
+
+    assumptions = result.get("assumptions") if isinstance(result, dict) else None
+    if not isinstance(assumptions, list) or not assumptions:
+        raise RiskyAssumptionsGenerationError("AI response did not contain assumptions.")
+
+    return {"assumptions": assumptions}
+
+
 def build_validation_roadmap_prompt(idea):
     return (
         "You are an expert startup validation strategist. Return ONLY valid JSON. "
