@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { AlertTriangle, Sparkles } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { ThemeToggle } from "../components/common/ThemeToggle";
 
 export function LoginPage() {
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
@@ -23,7 +24,8 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-dvh w-full items-center justify-center bg-background px-4" style={{ animation: "page-in 0.3s ease-out" }}>
+    <div className="relative flex min-h-dvh w-full items-center justify-center bg-background px-4" style={{ animation: "page-in 0.3s ease-out" }}>
+      <ThemeToggle className="absolute top-4 right-4" />
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-7">
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary mb-3">

@@ -3,6 +3,7 @@ import { LogOut, Menu, Plus, Sparkles, X } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router";
 import { BarChart3, Bot, FileText, History, LayoutDashboard, Settings } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { ThemeToggle } from "../common/ThemeToggle";
 
 const navigation = [
   { to: "/", label: "Ana Sayfa", Icon: LayoutDashboard, end: true },
@@ -32,7 +33,10 @@ function Sidebar({ onClose }: { onClose: () => void }) {
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary"><Sparkles size={15} /></span>
           <span className="font-bold">FikirLab</span>
         </NavLink>
-        <button type="button" onClick={onClose} aria-label="Menüyü kapat" className="rounded-lg p-2 text-muted-foreground hover:bg-white/5 md:hidden"><X size={18} /></button>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <button type="button" onClick={onClose} aria-label="Menüyü kapat" className="rounded-lg p-2 text-muted-foreground hover:bg-white/5 md:hidden"><X size={18} /></button>
+        </div>
       </div>
       <nav aria-label="Ana navigasyon" className="flex-1 space-y-1 p-3">
         {navigation.map(({ to, label, Icon, end }) => (
@@ -71,7 +75,8 @@ export function AppLayout() {
       <main className="flex min-h-dvh min-w-0 flex-1 flex-col overflow-x-hidden">
         <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-sidebar/95 px-4 py-3 backdrop-blur md:hidden">
           <button ref={menuButton} type="button" onClick={() => setOpen(true)} aria-label="Menüyü aç" aria-expanded={open} className="rounded-lg p-1 text-muted-foreground"><Menu size={20} /></button>
-          <Sparkles size={14} className="text-primary" /><span className="text-sm font-bold">FikirLab</span>
+          <Sparkles size={14} className="text-primary" /><span className="text-sm font-bold flex-1">FikirLab</span>
+          <ThemeToggle />
         </header>
         <Outlet />
       </main>
