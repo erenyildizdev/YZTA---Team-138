@@ -5,10 +5,11 @@ from rest_framework.views import APIView
 
 from apps.ideas.models import Idea
 
-from .models import MoscowScopeAnalysis
+from .models import InterviewNote, MoscowScopeAnalysis
 from .serializers import (
     IdeaAnalysisRequestSerializer,
     IdeaAnalysisResponseSerializer,
+    InterviewNoteSerializer,
     MomTestQuestionRequestSerializer,
     MomTestQuestionResponseSerializer,
     MoscowScopeAnalysisSerializer,
@@ -21,6 +22,22 @@ from .services import (
 )
 from .services.analyzer import analyze_idea
 from .services.llm_client import LLMClientError
+
+
+def _get_owned_idea(request, idea_id):
+    return get_object_or_404(
+        Idea.objects.filter(user=request.user),
+        pk=idea_id,
+    )
+
+
+def _get_owned_note(request, idea_id, note_id):
+    idea = _get_owned_idea(request, idea_id)
+    return get_object_or_404(
+        InterviewNote.objects.filter(idea=idea),
+        pk=note_id,
+    )
+
 
 class IdeaAnalysisView(APIView):
     def post(self, request, *args, **kwargs):
@@ -83,10 +100,7 @@ class MoscowScopeAnalysisView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def _get_owned_idea(self, request, idea_id):
-        return get_object_or_404(
-            Idea.objects.filter(user=request.user),
-            pk=idea_id,
-        )
+        return _get_owned_idea(request, idea_id)
 
     def get(self, request, idea_id, *args, **kwargs):
         idea = self._get_owned_idea(request, idea_id)
@@ -125,3 +139,69 @@ class MoscowScopeAnalysisView(APIView):
             MoscowScopeAnalysisSerializer(analysis).data,
             status=response_status,
         )
+
+
+class InterviewNoteListCreateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, idea_id, *args, **kwargs):
+        idea = _get_owned_idea(request, idea_id)
+        notes = InterviewNote.objects.filter(idea=idea)
+
+        return Response(
+            InterviewNoteSerializer(notes, many=True).data,
+            status=status.HTTP_200_OK,
+        )
+
+    def post(self, request, idea_id, *args, **kwargs):
+        idea = _get_owned_idea(request, idea_id)
+        serializer = InterviewNoteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(idea=idea)
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class InterviewNoteDetailView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, idea_id, note_id, *args, **kwargs):
+        note = _get_owned_note(request, idea_id, note_id)
+        return Response(
+            InterviewNoteSerializer(note).data,
+            status=status.HTTP_200_OK,
+        )
+
+    def put(self, request, idea_id, note_id, *args, **kwargs):
+        note = _get_owned_note(request, idea_id, note_id)
+        serializer = InterviewNoteSerializer(note, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK,
+        )
+
+    def patch(self, request, idea_id, note_id, *args, **kwargs):
+        note = _get_owned_note(request, idea_id, note_id)
+        serializer = InterviewNoteSerializer(
+            note,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK,
+        )
+
+    def delete(self, request, idea_id, note_id, *args, **kwargs):
+        note = _get_owned_note(request, idea_id, note_id)
+        note.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

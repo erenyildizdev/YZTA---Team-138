@@ -1,8 +1,9 @@
 import unicodedata
+from collections.abc import Mapping
 
 from rest_framework import serializers
 
-from .models import MoscowScopeAnalysis
+from .models import InterviewNote, MoscowScopeAnalysis
 
 
 class IdeaAnalysisRequestSerializer(serializers.Serializer):
@@ -22,6 +23,63 @@ class StrictFieldsSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {field: "Unexpected field." for field in sorted(unknown)}
             )
+
+        return super().to_internal_value(data)
+
+
+class InterviewNoteSerializer(serializers.ModelSerializer):
+    idea_id = serializers.IntegerField(read_only=True)
+    interviewee_name = serializers.CharField(
+        max_length=255,
+        required=False,
+        allow_blank=True,
+        trim_whitespace=True,
+    )
+    interviewee_profile = serializers.CharField(
+        max_length=500,
+        required=False,
+        allow_blank=True,
+        trim_whitespace=True,
+    )
+    notes = serializers.CharField(
+        max_length=10_000,
+        allow_blank=False,
+        trim_whitespace=True,
+    )
+    interviewed_at = serializers.DateTimeField(
+        required=False,
+        allow_null=True,
+    )
+
+    class Meta:
+        model = InterviewNote
+        fields = (
+            "id",
+            "idea_id",
+            "interviewee_name",
+            "interviewee_profile",
+            "notes",
+            "interviewed_at",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = (
+            "id",
+            "idea_id",
+            "created_at",
+            "updated_at",
+        )
+
+    def to_internal_value(self, data):
+        if isinstance(data, Mapping):
+            forbidden_fields = {"idea", "idea_id"}.intersection(data)
+            if forbidden_fields:
+                raise serializers.ValidationError(
+                    {
+                        field: "This field may not be provided."
+                        for field in sorted(forbidden_fields)
+                    }
+                )
 
         return super().to_internal_value(data)
 
