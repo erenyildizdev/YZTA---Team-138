@@ -17,6 +17,28 @@ class MoscowScopeAnalysis(models.Model):
     def __str__(self):
         return f"MoSCoW scope for {self.idea}"
 
+
+class InterviewNote(models.Model):
+    idea = models.ForeignKey(
+        "ideas.Idea",
+        on_delete=models.CASCADE,
+        related_name="interview_notes",
+    )
+    interviewee_name = models.CharField(max_length=255, blank=True)
+    interviewee_profile = models.CharField(max_length=500, blank=True)
+    notes = models.TextField()
+    interviewed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        subject = self.interviewee_name or f"Note {self.pk or 'unsaved'}"
+        return f"{subject} - {self.idea.title}"
+
+
 class KnowledgeSource(models.Model):
     title = models.CharField(max_length=255)
     source_type = models.CharField(max_length=50, default="text")

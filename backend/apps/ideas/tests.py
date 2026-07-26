@@ -31,6 +31,9 @@ class IdeaEndpointsTests(APITestCase):
             "title": "EcoMutfak",
             "description": "A sustainable kitchen waste app.",
             "target_audience": "Environmentally conscious households",
+            "problem": "Households struggle to track kitchen waste.",
+            "solution": "Help households measure and reduce their waste.",
+            "sector": "Sustainability",
         }
 
         response = self.client.post(self.list_url, payload, format="json")

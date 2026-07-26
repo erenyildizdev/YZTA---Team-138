@@ -1,10 +1,13 @@
+from datetime import timedelta
+from unittest.mock import patch
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
-from unittest.mock import patch
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from apps.analyses.models import MoscowScopeAnalysis
+from apps.analyses.models import InterviewNote, MoscowScopeAnalysis
 from apps.analyses.services import (
     MoscowGenerationError,
     generate_mom_test_questions,
@@ -332,6 +335,515 @@ class MoscowScopeEndpointTests(APITestCase):
         response = self.client.post(self.url, {})
         self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
         self.assertEqual(response.data, {"detail": "The MoSCoW scope could not be generated."})
+
+
+class InterviewNoteEndpointTests(APITestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user(
+            username="interview-owner",
+            password="pass",
+        )
+        self.other_user = get_user_model().objects.create_user(
+            username="interview-other",
+            password="pass",
+        )
+        self.idea = self._create_idea(
+            self.user,
+            "Interview tracker",
+        )
+        self.second_idea = self._create_idea(
+            self.user,
+            "Second owned idea",
+        )
+        self.other_idea = self._create_idea(
+            self.other_user,
+            "Other user's idea",
+        )
+        self.note = InterviewNote.objects.create(
+            idea=self.idea,
+            interviewee_name="Ada",
+            interviewee_profile="Product manager",
+            notes="Ada described her current workflow.",
+        )
+        self.second_idea_note = InterviewNote.objects.create(
+            idea=self.second_idea,
+            notes="This note belongs to another owned idea.",
+        )
+        self.other_note = InterviewNote.objects.create(
+            idea=self.other_idea,
+            notes="This note belongs to another user.",
+        )
+        self.list_url = reverse(
+            "analyses:interview-note-list-create",
+            kwargs={"idea_id": self.idea.pk},
+        )
+        self.detail_url = reverse(
+            "analyses:interview-note-detail",
+            kwargs={
+                "idea_id": self.idea.pk,
+                "note_id": self.note.pk,
+            },
+        )
+
+    def _create_idea(self, user, title):
+        return Idea.objects.create(
+            user=user,
+            title=title,
+            description="An idea used by the interview note tests.",
+            target_audience="Founders",
+            problem="Interview notes are scattered.",
+            solution="Keep interview notes together.",
+            sector="SaaS",
+        )
+
+    def authenticate(self):
+        self.client.force_authenticate(user=self.user)
+
+    def test_unauthenticated_user_cannot_list_notes(self):
+        response = self.client.get(self.list_url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_unauthenticated_user_cannot_create_note(self):
+        response = self.client.post(
+            self.list_url,
+            {"notes": "Private interview notes."},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_unauthenticated_user_cannot_retrieve_note(self):
+        response = self.client.get(self.detail_url)
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_owner_can_create_note_for_idea_from_url(self):
+        self.authenticate()
+
+        response = self.client.post(
+            self.list_url,
+            {
+                "interviewee_name": "  Grace Hopper  ",
+                "interviewee_profile": "  Technical founder  ",
+                "notes": "  Uses manual reports every Friday.  ",
+                "interviewed_at": "2026-07-20T12:30:00Z",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            set(response.data),
+            {
+                "id",
+                "idea_id",
+                "interviewee_name",
+                "interviewee_profile",
+                "notes",
+                "interviewed_at",
+                "created_at",
+                "updated_at",
+            },
+        )
+        self.assertEqual(response.data["idea_id"], self.idea.pk)
+        self.assertEqual(response.data["interviewee_name"], "Grace Hopper")
+        self.assertEqual(
+            response.data["interviewee_profile"],
+            "Technical founder",
+        )
+        self.assertEqual(
+            response.data["notes"],
+            "Uses manual reports every Friday.",
+        )
+
+        note = InterviewNote.objects.get(pk=response.data["id"])
+        self.assertEqual(note.idea, self.idea)
+        self.assertEqual(note.interviewee_name, "Grace Hopper")
+        self.assertIsNotNone(note.interviewed_at)
+
+    def test_create_requires_notes(self):
+        self.authenticate()
+
+        response = self.client.post(self.list_url, {}, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("notes", response.data)
+
+    def test_create_rejects_empty_notes(self):
+        self.authenticate()
+
+        response = self.client.post(
+            self.list_url,
+            {"notes": ""},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_rejects_whitespace_only_notes(self):
+        self.authenticate()
+
+        response = self.client.post(
+            self.list_url,
+            {"notes": " \t\n "},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_rejects_invalid_interviewed_at(self):
+        self.authenticate()
+
+        response = self.client.post(
+            self.list_url,
+            {
+                "notes": "Valid notes.",
+                "interviewed_at": "not-a-datetime",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("interviewed_at", response.data)
+
+    def test_create_accepts_null_interviewed_at(self):
+        self.authenticate()
+
+        response = self.client.post(
+            self.list_url,
+            {
+                "notes": "Valid notes.",
+                "interviewed_at": None,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNone(response.data["interviewed_at"])
+
+    def test_create_rejects_idea_fields_from_request_body(self):
+        self.authenticate()
+
+        for field in ("idea", "idea_id"):
+            with self.subTest(field=field):
+                before_count = InterviewNote.objects.count()
+                response = self.client.post(
+                    self.list_url,
+                    {
+                        "notes": "Attempted relationship change.",
+                        field: self.second_idea.pk,
+                    },
+                    format="json",
+                )
+
+                self.assertEqual(
+                    response.status_code,
+                    status.HTTP_400_BAD_REQUEST,
+                )
+                self.assertIn(field, response.data)
+                self.assertEqual(
+                    InterviewNote.objects.count(),
+                    before_count,
+                )
+
+    def test_create_enforces_string_length_limits(self):
+        self.authenticate()
+        invalid_values = (
+            ("interviewee_name", "n" * 256),
+            ("interviewee_profile", "p" * 501),
+            ("notes", "x" * 10_001),
+        )
+
+        for field, value in invalid_values:
+            with self.subTest(field=field):
+                payload = {"notes": "Valid notes.", field: value}
+                response = self.client.post(
+                    self.list_url,
+                    payload,
+                    format="json",
+                )
+
+                self.assertEqual(
+                    response.status_code,
+                    status.HTTP_400_BAD_REQUEST,
+                )
+                self.assertIn(field, response.data)
+
+    def test_owner_can_list_only_notes_for_requested_idea(self):
+        self.authenticate()
+
+        response = self.client.get(self.list_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            [item["id"] for item in response.data],
+            [self.note.pk],
+        )
+
+    def test_other_users_idea_is_hidden_from_list(self):
+        self.authenticate()
+        url = reverse(
+            "analyses:interview-note-list-create",
+            kwargs={"idea_id": self.other_idea.pk},
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_other_users_idea_is_hidden_from_create(self):
+        self.authenticate()
+        url = reverse(
+            "analyses:interview-note-list-create",
+            kwargs={"idea_id": self.other_idea.pk},
+        )
+        before_count = InterviewNote.objects.count()
+
+        response = self.client.post(
+            url,
+            {"notes": "Attempted foreign note."},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(InterviewNote.objects.count(), before_count)
+
+    def test_notes_are_listed_newest_first(self):
+        self.authenticate()
+        first_note = self.note
+        second_note = InterviewNote.objects.create(
+            idea=self.idea,
+            notes="A newer interview.",
+        )
+        now = timezone.now()
+        InterviewNote.objects.filter(pk=first_note.pk).update(
+            created_at=now - timedelta(days=1),
+        )
+        InterviewNote.objects.filter(pk=second_note.pk).update(
+            created_at=now,
+        )
+
+        response = self.client.get(self.list_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            [item["id"] for item in response.data],
+            [second_note.pk, first_note.pk],
+        )
+
+    def test_owner_can_retrieve_note(self):
+        self.authenticate()
+
+        response = self.client.get(self.detail_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["id"], self.note.pk)
+        self.assertEqual(response.data["idea_id"], self.idea.pk)
+
+    def test_other_users_note_is_hidden(self):
+        self.authenticate()
+        url = reverse(
+            "analyses:interview-note-detail",
+            kwargs={
+                "idea_id": self.other_idea.pk,
+                "note_id": self.other_note.pk,
+            },
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_note_must_belong_to_idea_in_url(self):
+        self.authenticate()
+        url = reverse(
+            "analyses:interview-note-detail",
+            kwargs={
+                "idea_id": self.idea.pk,
+                "note_id": self.second_idea_note.pk,
+            },
+        )
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_owner_can_patch_note(self):
+        self.authenticate()
+
+        response = self.client.patch(
+            self.detail_url,
+            {
+                "interviewee_profile": "  Engineering manager  ",
+                "notes": "  Updated workflow details.  ",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data["interviewee_profile"],
+            "Engineering manager",
+        )
+        self.assertEqual(
+            response.data["notes"],
+            "Updated workflow details.",
+        )
+        self.note.refresh_from_db()
+        self.assertEqual(self.note.notes, "Updated workflow details.")
+
+    def test_owner_can_put_note(self):
+        self.authenticate()
+
+        response = self.client.put(
+            self.detail_url,
+            {
+                "interviewee_name": "Lin",
+                "interviewee_profile": "Founder",
+                "notes": "A complete replacement of the interview note.",
+                "interviewed_at": None,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.note.refresh_from_db()
+        self.assertEqual(self.note.interviewee_name, "Lin")
+        self.assertEqual(
+            self.note.notes,
+            "A complete replacement of the interview note.",
+        )
+
+    def test_put_requires_notes(self):
+        self.authenticate()
+
+        response = self.client.put(
+            self.detail_url,
+            {"interviewee_name": "Lin"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("notes", response.data)
+
+    def test_other_users_note_cannot_be_updated(self):
+        self.authenticate()
+        url = reverse(
+            "analyses:interview-note-detail",
+            kwargs={
+                "idea_id": self.other_idea.pk,
+                "note_id": self.other_note.pk,
+            },
+        )
+
+        response = self.client.patch(
+            url,
+            {"notes": "Attempted update."},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.other_note.refresh_from_db()
+        self.assertEqual(
+            self.other_note.notes,
+            "This note belongs to another user.",
+        )
+
+    def test_cross_idea_note_cannot_be_updated_or_deleted(self):
+        self.authenticate()
+        url = reverse(
+            "analyses:interview-note-detail",
+            kwargs={
+                "idea_id": self.idea.pk,
+                "note_id": self.second_idea_note.pk,
+            },
+        )
+
+        patch_response = self.client.patch(
+            url,
+            {"notes": "Attempted cross-idea update."},
+            format="json",
+        )
+        delete_response = self.client.delete(url)
+
+        self.assertEqual(
+            patch_response.status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+        self.assertEqual(
+            delete_response.status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+        self.second_idea_note.refresh_from_db()
+        self.assertEqual(
+            self.second_idea_note.notes,
+            "This note belongs to another owned idea.",
+        )
+
+    def test_update_rejects_relationship_changes(self):
+        self.authenticate()
+
+        for field in ("idea", "idea_id"):
+            with self.subTest(field=field):
+                response = self.client.patch(
+                    self.detail_url,
+                    {field: self.second_idea.pk},
+                    format="json",
+                )
+
+                self.assertEqual(
+                    response.status_code,
+                    status.HTTP_400_BAD_REQUEST,
+                )
+                self.assertIn(field, response.data)
+                self.note.refresh_from_db()
+                self.assertEqual(self.note.idea, self.idea)
+
+    def test_update_rejects_empty_notes(self):
+        self.authenticate()
+
+        response = self.client.patch(
+            self.detail_url,
+            {"notes": "   "},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.note.refresh_from_db()
+        self.assertEqual(
+            self.note.notes,
+            "Ada described her current workflow.",
+        )
+
+    def test_owner_can_delete_note(self):
+        self.authenticate()
+        note_id = self.note.pk
+
+        response = self.client.delete(self.detail_url)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(
+            InterviewNote.objects.filter(pk=note_id).exists()
+        )
+
+    def test_other_users_note_cannot_be_deleted(self):
+        self.authenticate()
+        url = reverse(
+            "analyses:interview-note-detail",
+            kwargs={
+                "idea_id": self.other_idea.pk,
+                "note_id": self.other_note.pk,
+            },
+        )
+
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(
+            InterviewNote.objects.filter(pk=self.other_note.pk).exists()
+        )
+
 
 class IdeaAnalysisEndpointTests(APITestCase):
 
