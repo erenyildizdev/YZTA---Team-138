@@ -120,6 +120,49 @@ IDEA_ANALYSIS_SCHEMA = {
     "additionalProperties": False,
 }
 
+INTERVIEW_EVIDENCE_ANALYSIS_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "supporting_evidence": {
+            "type": "array",
+            "items": {
+                "type": "string",
+            },
+        },
+        "contradicting_evidence": {
+            "type": "array",
+            "items": {
+                "type": "string",
+            },
+        },
+        "repeated_needs": {
+            "type": "array",
+            "items": {
+                "type": "string",
+            },
+        },
+        "new_risky_assumptions": {
+            "type": "array",
+            "items": {
+                "type": "string",
+            },
+        },
+        "next_validation_steps": {
+            "type": "array",
+            "items": {
+                "type": "string",
+            },
+        },
+    },
+    "required": [
+        "supporting_evidence",
+        "contradicting_evidence",
+        "repeated_needs",
+        "new_risky_assumptions",
+        "next_validation_steps",
+    ],
+    "additionalProperties": False,
+}
 
 def _get_client() -> genai.Client:
     api_key = getattr(settings, "GEMINI_API_KEY", "")
@@ -297,4 +340,117 @@ def call_llm(prompt: str, idea_text: str) -> dict:
 
     raise LLMRequestError(
         "The AI analysis service could not complete the request."
+    )
+
+def call_interview_analysis_llm(prompt: str) -> dict:
+    clean_prompt = prompt.strip()
+
+    if not clean_prompt:
+        raise LLMConfigurationError(
+            "The interview analysis prompt cannot be empty."
+        )
+
+    client = _get_client()
+    max_attempts = 3
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = client.models.generate_content(
+                model=settings.GEMINI_MODEL_NAME,
+                contents=clean_prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.2,
+                    response_mime_type="application/json",
+                    response_json_schema=INTERVIEW_EVIDENCE_ANALYSIS_SCHEMA,
+                    max_output_tokens=2048,
+                ),
+            )
+
+            result = _parse_response(response)
+
+            required_fields = [
+                "supporting_evidence",
+                "contradicting_evidence",
+                "repeated_needs",
+                "new_risky_assumptions",
+                "next_validation_steps",
+            ]
+
+            for field in required_fields:
+                if not isinstance(result.get(field), list):
+                    raise LLMResponseError(
+                        f"Gemini response field '{field}' must be a list."
+                    )
+
+            if not result["next_validation_steps"]:
+                result["next_validation_steps"] = [
+                    "Mevcut bulguları doğrulamak için yeni müşteri görüşmeleri yap."
+                ]
+
+            return result
+
+        except errors.ClientError as exc:
+            status_code = getattr(exc, "status_code", None)
+
+            if status_code in (401, 403):
+                logger.exception(
+                    "Gemini API authentication failed."
+                )
+                raise LLMConfigurationError(
+                    "Gemini API authentication failed."
+                ) from exc
+
+            if status_code == 429:
+                logger.exception(
+                    "Gemini API usage limit was reached."
+                )
+                raise LLMRequestError(
+                    "Gemini usage limit has been reached. "
+                    "Please try again later."
+                ) from exc
+
+            logger.exception(
+                "Gemini rejected the interview analysis request."
+            )
+            raise LLMRequestError(
+                "The Gemini interview analysis request was rejected."
+            ) from exc
+
+        except errors.ServerError as exc:
+            status_code = getattr(exc, "status_code", None)
+
+            if status_code == 504 and attempt < max_attempts:
+                wait_seconds = 2 ** attempt
+
+                logger.warning(
+                    "Gemini interview analysis request timed out. "
+                    "Retrying in %s seconds. Attempt %s/%s.",
+                    wait_seconds,
+                    attempt,
+                    max_attempts,
+                )
+
+                time.sleep(wait_seconds)
+                continue
+
+            logger.exception(
+                "Gemini API server error during interview analysis."
+            )
+            raise LLMRequestError(
+                "The AI interview analysis service is temporarily unavailable."
+            ) from exc
+
+        except LLMClientError:
+            raise
+
+        except Exception as exc:
+            logger.exception(
+                "Unexpected Gemini interview analysis error."
+            )
+            raise LLMRequestError(
+                "An unexpected AI service error occurred."
+            ) from exc
+
+    raise LLMRequestError(
+        "The AI interview analysis service could not complete the request."
     )

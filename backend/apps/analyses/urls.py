@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     IdeaAnalysisView,
+    InterviewEvidenceAnalysisView,
     InterviewNoteDetailView,
     InterviewNoteListCreateView,
     MomTestQuestionGenerateView,
@@ -35,5 +36,10 @@ urlpatterns = [
         "ideas/<int:idea_id>/interview-notes/<int:note_id>/",
         InterviewNoteDetailView.as_view(),
         name="interview-note-detail",
+    ),
+    path(
+        "ideas/<int:idea_id>/interview-evidence-analysis/",
+        InterviewEvidenceAnalysisView.as_view(),
+        name="interview-evidence-analysis",
     ),
 ]

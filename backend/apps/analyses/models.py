@@ -38,6 +38,31 @@ class InterviewNote(models.Model):
         subject = self.interviewee_name or f"Note {self.pk or 'unsaved'}"
         return f"{subject} - {self.idea.title}"
 
+class InterviewEvidenceAnalysis(models.Model):
+    idea = models.ForeignKey(
+        "ideas.Idea",
+        on_delete=models.CASCADE,
+        related_name="interview_evidence_analyses",
+    )
+    interview_notes = models.ManyToManyField(
+        InterviewNote,
+        related_name="evidence_analyses",
+    )
+    result = models.JSONField()
+    prompt_version = models.CharField(
+        max_length=50,
+        default="interview-evidence-v1",
+    )
+    provider = models.CharField(max_length=100, blank=True)
+    model_name = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Interview evidence analysis for {self.idea}"
+
 
 class KnowledgeSource(models.Model):
     title = models.CharField(max_length=255)
