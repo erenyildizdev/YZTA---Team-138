@@ -12,6 +12,7 @@ from .models import GeneralEvaluation, RiskyAssumptions, ValidationRoadmap
 from .services import (
     GeneralEvaluationGenerationError,
     RiskyAssumptionsGenerationError,
+    RoadmapGenerationError,
     generate_general_evaluation_payload,
     generate_risky_assumptions_payload,
     generate_validation_roadmap_payload,
@@ -44,7 +45,11 @@ def _tool_update_target_audience(idea, args: dict) -> dict:
 
 
 def _tool_regenerate_validation_roadmap(idea, args: dict) -> dict:
-    payload = generate_validation_roadmap_payload(idea)
+    try:
+        payload = generate_validation_roadmap_payload(idea)
+    except RoadmapGenerationError as exc:
+        raise ValueError(str(exc)) from exc
+
     ValidationRoadmap.objects.update_or_create(
         idea=idea,
         defaults={"roadmap_data": payload},

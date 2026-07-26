@@ -14,7 +14,7 @@ from .serializers import (
 from .services import (
     GeneralEvaluationGenerationError,
     RiskyAssumptionsGenerationError,
-    build_validation_roadmap_prompt,
+    RoadmapGenerationError,
     generate_general_evaluation_payload,
     generate_risky_assumptions_payload,
     generate_validation_roadmap_payload,
@@ -53,8 +53,14 @@ class IdeaViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="generate-roadmap")
     def generate_roadmap(self, request, pk=None):
         idea = self.get_object()
-        build_validation_roadmap_prompt(idea)
-        roadmap_data = generate_validation_roadmap_payload(idea)
+
+        try:
+            roadmap_data = generate_validation_roadmap_payload(idea)
+        except RoadmapGenerationError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
 
         roadmap, _ = ValidationRoadmap.objects.update_or_create(
             idea=idea,
