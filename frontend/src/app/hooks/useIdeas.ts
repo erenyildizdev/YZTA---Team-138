@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { getIdeas, type IdeaResponse } from "../lib/api";
+import { deleteIdea, getIdeas, type IdeaResponse } from "../lib/api";
 
 export type IdeasStatus = "loading" | "ready" | "error";
 
@@ -27,5 +27,10 @@ export function useIdeas() {
     void load();
   }, [load]);
 
-  return { status, data, error, reload: load };
+  const removeIdea = useCallback(async (ideaId: number) => {
+    await deleteIdea(ideaId);
+    setData((prev) => prev.filter((idea) => idea.id !== ideaId));
+  }, []);
+
+  return { status, data, error, reload: load, removeIdea };
 }

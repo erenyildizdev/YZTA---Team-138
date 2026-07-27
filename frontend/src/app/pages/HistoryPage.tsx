@@ -1,7 +1,7 @@
 import { AlertCircle, History, LoaderCircle, RefreshCw } from "lucide-react";
 
 import { IdeaListCard } from "../components/ideas/IdeaListCard";
-import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
+import { clearActiveIdeaId, useActiveIdeaId } from "../hooks/useActiveIdeaId";
 import { useIdeas } from "../hooks/useIdeas";
 
 export function HistoryPage({
@@ -11,12 +11,17 @@ export function HistoryPage({
   onOpen: () => void;
   onNew: () => void;
 }) {
-  const { status, data: ideas, error, reload } = useIdeas();
-  const [, setIdeaId] = useActiveIdeaId();
+  const { status, data: ideas, error, reload, removeIdea } = useIdeas();
+  const [activeIdeaId, setIdeaId] = useActiveIdeaId();
 
   const openIdea = (ideaId: number) => {
     setIdeaId(ideaId);
     onOpen();
+  };
+
+  const deleteIdea = async (ideaId: number) => {
+    await removeIdea(ideaId);
+    if (ideaId === activeIdeaId) clearActiveIdeaId();
   };
 
   return (
@@ -83,7 +88,12 @@ export function HistoryPage({
         {status === "ready" && ideas.length > 0 && (
           <div className="grid gap-4">
             {ideas.map((idea) => (
-              <IdeaListCard key={idea.id} idea={idea} onOpen={openIdea} />
+              <IdeaListCard
+                key={idea.id}
+                idea={idea}
+                onOpen={openIdea}
+                onDelete={deleteIdea}
+              />
             ))}
           </div>
         )}

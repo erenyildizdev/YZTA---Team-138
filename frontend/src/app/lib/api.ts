@@ -163,6 +163,12 @@ export function getIdea(ideaId: number): Promise<IdeaResponse> {
   return request<IdeaResponse>(`/ideas/${ideaId}/`);
 }
 
+export function deleteIdea(ideaId: number): Promise<void> {
+  return request<void>(`/ideas/${ideaId}/`, {
+    method: "DELETE",
+  });
+}
+
 interface PaginatedResponse<T> {
   results: T[];
 }
