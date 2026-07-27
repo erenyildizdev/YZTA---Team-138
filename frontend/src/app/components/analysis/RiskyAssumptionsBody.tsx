@@ -8,7 +8,13 @@ const STATUS_CONFIG = {
   untested: { label: "Test edilmedi", cls: "text-muted-foreground border-border bg-secondary", Icon: HelpCircle },
 } as const;
 
-export function RiskyAssumptionsBody({ ideaId }: { ideaId: number }) {
+export function RiskyAssumptionsBody({
+  ideaId,
+  readOnly = false,
+}: {
+  ideaId: number;
+  readOnly?: boolean;
+}) {
   const { status, data, error, generate, reload } = useRiskyAssumptions(ideaId);
 
   return (
@@ -41,12 +47,14 @@ export function RiskyAssumptionsBody({ ideaId }: { ideaId: number }) {
           <p className="text-sm text-muted-foreground mb-4 max-w-xs mx-auto leading-relaxed">
             Bu fikir için henüz riskli varsayımlar oluşturulmadı.
           </p>
-          <button
-            onClick={generate}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-primary text-white hover:bg-blue-600 transition-all"
-          >
-            <Sparkles size={13} />Riskli Varsayımlar Oluştur
-          </button>
+          {!readOnly && (
+            <button
+              onClick={generate}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-primary text-white hover:bg-blue-600 transition-all"
+            >
+              <Sparkles size={13} />Riskli Varsayımlar Oluştur
+            </button>
+          )}
         </div>
       )}
 
@@ -59,14 +67,16 @@ export function RiskyAssumptionsBody({ ideaId }: { ideaId: number }) {
 
       {status === "ready" && data && (
         <div>
-          <div className="flex items-center justify-end mb-3">
-            <button
-              onClick={generate}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-400 hover:text-red-300 transition-colors"
-            >
-              <RefreshCw size={11} />Yeniden Oluştur
-            </button>
-          </div>
+          {!readOnly && (
+            <div className="flex items-center justify-end mb-3">
+              <button
+                onClick={generate}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-400 hover:text-red-300 transition-colors"
+              >
+                <RefreshCw size={11} />Yeniden Oluştur
+              </button>
+            </div>
+          )}
 
           <div className="space-y-3">
             {data.assumptions.map((item, i) => {

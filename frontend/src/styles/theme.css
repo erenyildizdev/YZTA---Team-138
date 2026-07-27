@@ -248,3 +248,24 @@
     line-height: 1.5;
   }
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body,
+  .print-area {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  html,
+  body,
+  main,
+  .hide-scroll {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
+}

@@ -1,7 +1,13 @@
 import { RefreshCw } from "lucide-react";
 import { useMomTestQuestions } from "../../hooks/useMomTestQuestions";
 
-export function MomTestQuestionsBody({ ideaId }: { ideaId: number }) {
+export function MomTestQuestionsBody({
+  ideaId,
+  readOnly = false,
+}: {
+  ideaId: number;
+  readOnly?: boolean;
+}) {
   const { status, data, error, generate } = useMomTestQuestions(ideaId);
 
   return (
@@ -14,7 +20,7 @@ export function MomTestQuestionsBody({ ideaId }: { ideaId: number }) {
         </div>
       )}
 
-      {status === "empty" && (
+      {status === "empty" && !readOnly && (
         <button
           type="button"
           onClick={() => void generate()}
@@ -22,6 +28,12 @@ export function MomTestQuestionsBody({ ideaId }: { ideaId: number }) {
         >
           Müşteri sorularını oluştur
         </button>
+      )}
+
+      {status === "empty" && readOnly && (
+        <p className="text-sm text-muted-foreground">
+          Bu fikir için henüz müşteri görüşme soruları oluşturulmadı.
+        </p>
       )}
 
       {status === "error" && (
@@ -38,14 +50,16 @@ export function MomTestQuestionsBody({ ideaId }: { ideaId: number }) {
 
       {status === "ready" && data && (
         <div>
-          <div className="flex items-center justify-end mb-2.5">
-            <button
-              onClick={generate}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 transition-colors"
-            >
-              <RefreshCw size={11} />Yeniden Oluştur
-            </button>
-          </div>
+          {!readOnly && (
+            <div className="flex items-center justify-end mb-2.5">
+              <button
+                onClick={generate}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 transition-colors"
+              >
+                <RefreshCw size={11} />Yeniden Oluştur
+              </button>
+            </div>
+          )}
           <div className="space-y-2.5">
             {data.map((q, i) => (
               <div key={i} className="flex items-start gap-3">

@@ -13,9 +13,11 @@ const SECTION_CONFIG: { key: string; label: string; icon: any }[] = [
 export function ValidationRoadmapBody({
   ideaId,
   onIdeaIdChange,
+  readOnly = false,
 }: {
   ideaId: number;
   onIdeaIdChange?: (id: number) => void;
+  readOnly?: boolean;
 }) {
   const { status, data, error, generate, reload } = useValidationRoadmap(ideaId);
 
@@ -35,7 +37,7 @@ export function ValidationRoadmapBody({
       )}
 
       {status === "loading" && (
-        <div className="space-y-2.5">
+        <div data-pdf-block className="space-y-2.5">
           {[0, 1, 2].map((i) => (
             <div key={i} className="h-14 rounded-xl bg-muted/40 border border-border animate-pulse" />
           ))}
@@ -43,7 +45,7 @@ export function ValidationRoadmapBody({
       )}
 
       {status === "error" && (
-        <div className="bg-muted border border-destructive/30 rounded-xl p-4">
+        <div data-pdf-block className="bg-muted border border-destructive/30 rounded-xl p-4">
           <p className="text-xs text-destructive mb-2.5">{error}</p>
           <button
             onClick={reload}
@@ -55,24 +57,26 @@ export function ValidationRoadmapBody({
       )}
 
       {status === "empty" && (
-        <div className="text-center py-6">
+        <div data-pdf-block className="text-center py-6">
           <div className="w-11 h-11 rounded-xl bg-accent border border-border flex items-center justify-center mx-auto mb-3">
             <Map size={18} className="text-foreground" />
           </div>
           <p className="text-sm text-muted-foreground mb-4 max-w-xs mx-auto leading-relaxed">
             Bu fikir için henüz bir doğrulama yol haritası oluşturulmadı.
           </p>
-          <button
-            onClick={generate}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary-hover transition-all"
-          >
-            <Sparkles size={13} />Yol Haritası Oluştur
-          </button>
+          {!readOnly && (
+            <button
+              onClick={generate}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary-hover transition-all"
+            >
+              <Sparkles size={13} />Yol Haritası Oluştur
+            </button>
+          )}
         </div>
       )}
 
       {status === "generating" && (
-        <div className="text-center py-6">
+        <div data-pdf-block className="text-center py-6">
           <RefreshCw size={18} className="text-foreground mx-auto mb-3 animate-spin" />
           <p className="text-xs text-muted-foreground">Yol haritası oluşturuluyor...</p>
         </div>
@@ -80,16 +84,18 @@ export function ValidationRoadmapBody({
 
       {status === "ready" && data && (
         <div>
-          <div className="flex items-center justify-between mb-3">
+          <div data-pdf-block className="flex items-center justify-between mb-3">
             <span className="text-[11px] text-muted-foreground">
               {data.phases.length} {data.roadmap_type === "weekly" ? "haftalık aşama" : "aşama"}
             </span>
-            <button
-              onClick={generate}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-foreground hover:text-muted-foreground transition-colors"
-            >
-              <RefreshCw size={11} />Yeniden Oluştur
-            </button>
+            {!readOnly && (
+              <button
+                onClick={generate}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-foreground hover:text-muted-foreground transition-colors"
+              >
+                <RefreshCw size={11} />Yeniden Oluştur
+              </button>
+            )}
           </div>
 
           <Accordion type="multiple" defaultValue={["phase-0"]} className="space-y-2.5">
@@ -101,6 +107,7 @@ export function ValidationRoadmapBody({
                 <AccordionItem
                   key={i}
                   value={`phase-${i}`}
+                  data-pdf-block={readOnly ? true : undefined}
                   className="bg-muted/30 border border-border rounded-xl px-4 border-b"
                 >
                   <AccordionTrigger className="hover:no-underline py-3">

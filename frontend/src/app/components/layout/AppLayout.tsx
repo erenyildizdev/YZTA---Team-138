@@ -325,6 +325,7 @@ export function AppLayout() {
             : undefined
         }
         className={[
+          "no-print",
           "fixed inset-y-0 left-0 z-50",
           "transform transition-transform duration-300",
           "md:relative md:inset-auto md:h-dvh md:shrink-0 md:translate-x-0",
@@ -337,7 +338,7 @@ export function AppLayout() {
       </div>
 
       <main className="flex min-h-dvh min-w-0 flex-1 flex-col overflow-x-hidden md:h-dvh md:min-h-0 md:overflow-hidden">
-        <header className="sticky top-0 z-30 flex shrink-0 items-center gap-3 border-b border-border bg-sidebar/95 px-4 py-3 backdrop-blur md:hidden">
+        <header className="no-print sticky top-0 z-30 flex shrink-0 items-center gap-3 border-b border-border bg-sidebar/95 px-4 py-3 backdrop-blur md:hidden">
           <button
             ref={menuButtonRef}
             type="button"

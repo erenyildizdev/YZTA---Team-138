@@ -1,4 +1,7 @@
+import { useRef, useState } from "react";
 import { Download } from "lucide-react";
+import html2canvas from "html2canvas-pro";
+import jsPDF from "jspdf";
 
 import { GeneralEvaluationBody } from "../components/analysis/GeneralEvaluationBody";
 import { MomTestQuestionsBody } from "../components/analysis/MomTestQuestionsBody";
@@ -15,6 +18,131 @@ interface ReportPageProps {
 export function ReportPage({ onBack }: ReportPageProps) {
   const [ideaId] = useActiveIdeaId();
   const { data: idea } = useIdea(ideaId);
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
+  const handleDownloadPdf = async () => {
+    const element = reportRef.current;
+    if (!element || isDownloading) return;
+
+    setIsDownloading(true);
+    setDownloadError(null);
+    const hiddenEls = Array.from(
+      element.querySelectorAll<HTMLElement>(".no-print"),
+    );
+    hiddenEls.forEach((el) => {
+      el.style.visibility = "hidden";
+    });
+
+    // Radix's open/close CSS animations (e.g. accordion) can be captured
+    // mid-transition by html2canvas. Freeze all animations/transitions so
+    // every block is captured in its final, settled visual state.
+    const styleTag = document.createElement("style");
+    styleTag.textContent =
+      "*, *::before, *::after { animation: none !important; transition: none !important; }";
+    document.head.appendChild(styleTag);
+
+    try {
+      const blockEls = Array.from(
+        element.querySelectorAll<HTMLElement>("[data-pdf-block]"),
+      );
+
+      const pageWidth = 595.28;
+      const pageHeight = 841.89;
+      const margin = 24;
+      const contentWidth = pageWidth - margin * 2;
+      const usableHeight = pageHeight - margin * 2;
+      const gap = 16;
+
+      const pdf = new jsPDF({ unit: "pt", format: "a4" });
+      let cursorY = margin;
+      let pageHasContent = false;
+
+      for (const blockEl of blockEls) {
+        const canvas = await html2canvas(blockEl, {
+          scale: 1.5,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+        });
+
+        const imgHeight = (canvas.height * contentWidth) / canvas.width;
+        const imgData = canvas.toDataURL("image/jpeg", 0.85);
+
+        if (imgHeight > usableHeight) {
+          // Block taller than a full page: give it its own page(s), sliced.
+          if (pageHasContent) {
+            pdf.addPage();
+          }
+
+          let sliceOffset = 0;
+          let heightLeft = imgHeight;
+
+          pdf.addImage(
+            imgData,
+            "JPEG",
+            margin,
+            margin - sliceOffset,
+            contentWidth,
+            imgHeight,
+          );
+          heightLeft -= usableHeight;
+
+          while (heightLeft > 0) {
+            sliceOffset += usableHeight;
+            pdf.addPage();
+            pdf.addImage(
+              imgData,
+              "JPEG",
+              margin,
+              margin - sliceOffset,
+              contentWidth,
+              imgHeight,
+            );
+            heightLeft -= usableHeight;
+          }
+
+          cursorY = margin;
+          pageHasContent = false;
+          continue;
+        }
+
+        if (cursorY + imgHeight > pageHeight - margin) {
+          pdf.addPage();
+          cursorY = margin;
+        }
+
+        pdf.addImage(imgData, "JPEG", margin, cursorY, contentWidth, imgHeight);
+        cursorY += imgHeight + gap;
+        pageHasContent = true;
+      }
+
+      const rawName = idea?.title?.trim() || "Fikir";
+      const safeName = rawName
+        .replace(/[\\/:*?"<>|]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
+      const blob = pdf.output("blob");
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${safeName} analiz raporu.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(error);
+      setDownloadError("PDF oluşturulamadı. Lütfen tekrar dener misin?");
+    } finally {
+      hiddenEls.forEach((el) => {
+        el.style.visibility = "";
+      });
+      styleTag.remove();
+      setIsDownloading(false);
+    }
+  };
 
   const Divider = ({ label }: { label: string }) => (
     <div className="mb-4 flex items-center gap-2">
@@ -28,12 +156,15 @@ export function ReportPage({ onBack }: ReportPageProps) {
 
   return (
     <div
-      className="hide-scroll flex-1 overflow-y-auto"
+      className="print-area hide-scroll flex-1 overflow-y-auto"
       style={{ animation: "page-in 0.3s ease-out" }}
     >
-      <div className="mx-auto max-w-3xl px-4 py-7 sm:px-7 sm:py-10">
+      <div
+        ref={reportRef}
+        className="mx-auto max-w-3xl px-4 py-7 sm:px-7 sm:py-10"
+      >
         <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
+          <div data-pdf-block>
             <div className="mb-1 text-xs uppercase tracking-widest text-muted-foreground">
               FikirLab — Doğrulama Raporu
             </div>
@@ -51,27 +182,33 @@ export function ReportPage({ onBack }: ReportPageProps) {
             </p>
           </div>
 
-          <button
-            type="button"
-            disabled
-            title="Backend entegrasyonu sonrasında kullanılabilir"
-            className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground opacity-45"
-          >
-            <Download size={14} />
-            PDF İndir
-          </button>
+          <div className="no-print flex flex-col items-end gap-1.5">
+            <button
+              type="button"
+              onClick={handleDownloadPdf}
+              disabled={isDownloading}
+              className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <Download size={14} />
+              {isDownloading ? "Hazırlanıyor..." : "PDF İndir"}
+            </button>
+
+            {downloadError && (
+              <p className="text-xs text-destructive">{downloadError}</p>
+            )}
+          </div>
         </div>
 
         <button
           type="button"
           onClick={onBack}
-          className="mb-6 text-xs font-semibold text-foreground transition-colors hover:text-muted-foreground"
+          className="no-print mb-6 text-xs font-semibold text-foreground transition-colors hover:text-muted-foreground"
         >
           ← Fikir analizine dön
         </button>
 
         <div className="space-y-9">
-          <section>
+          <section data-pdf-block>
             <Divider label="Fikir Özeti" />
 
             <p className="text-sm leading-relaxed text-muted-foreground">
@@ -79,7 +216,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
             </p>
           </section>
 
-          <section>
+          <section data-pdf-block>
             <Divider label="Problem ve Hedef Kitle" />
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -105,29 +242,31 @@ export function ReportPage({ onBack }: ReportPageProps) {
             </div>
           </section>
 
-          <section>
+          <section data-pdf-block>
             <Divider label="Riskli Varsayımlar" />
-            <RiskyAssumptionsBody ideaId={ideaId} />
+            <RiskyAssumptionsBody ideaId={ideaId} readOnly />
           </section>
 
-          <section>
+          <section data-pdf-block>
             <Divider label="Müşteri Görüşme Soruları" />
-            <MomTestQuestionsBody ideaId={ideaId} />
+            <MomTestQuestionsBody ideaId={ideaId} readOnly />
           </section>
 
-          <section>
+          <section data-pdf-block>
             <Divider label="MVP Kapsamı (MoSCoW)" />
-            <MoscowScopeBody ideaId={ideaId} />
+            <MoscowScopeBody ideaId={ideaId} readOnly />
           </section>
 
           <section>
-            <Divider label="Doğrulama Yol Haritası" />
-            <ValidationRoadmapBody ideaId={ideaId} />
+            <div data-pdf-block>
+              <Divider label="Doğrulama Yol Haritası" />
+            </div>
+            <ValidationRoadmapBody ideaId={ideaId} readOnly />
           </section>
 
-          <section>
+          <section data-pdf-block>
             <Divider label="Genel Değerlendirme" />
-            <GeneralEvaluationBody ideaId={ideaId} />
+            <GeneralEvaluationBody ideaId={ideaId} readOnly />
           </section>
         </div>
       </div>

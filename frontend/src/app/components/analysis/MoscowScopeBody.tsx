@@ -8,7 +8,13 @@ const CATEGORY_CONFIG = [
   { key: "wont_have" as const, label: "Won't Have", bg: "bg-slate-800/30 border-slate-700/30", lc: "text-slate-700 dark:text-slate-300", dot: "bg-slate-500" },
 ];
 
-export function MoscowScopeBody({ ideaId }: { ideaId: number }) {
+export function MoscowScopeBody({
+  ideaId,
+  readOnly = false,
+}: {
+  ideaId: number;
+  readOnly?: boolean;
+}) {
   const { status, data, error, generate, reload } = useMoscowScope(ideaId);
 
   return (
@@ -41,12 +47,14 @@ export function MoscowScopeBody({ ideaId }: { ideaId: number }) {
           <p className="text-sm text-muted-foreground mb-4 max-w-xs mx-auto leading-relaxed">
             Bu fikir için henüz MVP kapsamı oluşturulmadı.
           </p>
-          <button
-            onClick={generate}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-primary text-white hover:bg-blue-600 transition-all"
-          >
-            <Sparkles size={13} />MVP Kapsamı Oluştur
-          </button>
+          {!readOnly && (
+            <button
+              onClick={generate}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold bg-primary text-white hover:bg-blue-600 transition-all"
+            >
+              <Sparkles size={13} />MVP Kapsamı Oluştur
+            </button>
+          )}
         </div>
       )}
 
@@ -61,12 +69,14 @@ export function MoscowScopeBody({ ideaId }: { ideaId: number }) {
         <div>
           <div className="flex items-start justify-between gap-3 mb-3">
             <p className="text-sm text-muted-foreground leading-relaxed">{data.summary}</p>
-            <button
-              onClick={generate}
-              className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 transition-colors flex-shrink-0"
-            >
-              <RefreshCw size={11} />Yeniden Oluştur
-            </button>
+            {!readOnly && (
+              <button
+                onClick={generate}
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 transition-colors flex-shrink-0"
+              >
+                <RefreshCw size={11} />Yeniden Oluştur
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
