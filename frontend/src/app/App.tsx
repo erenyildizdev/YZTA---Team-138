@@ -4,7 +4,6 @@ import { AppLayout } from "./components/layout/AppLayout";
 import { AnalysisPage } from "./pages/AnalysisPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { HistoryPage } from "./pages/HistoryPage";
-import { LoadingPage } from "./pages/LoadingPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MentorPage } from "./pages/MentorPage";
 import { NewIdeaPage } from "./pages/NewIdeaPage";
@@ -48,12 +47,19 @@ function AppRoutes() {
             />
           }
         />
-        <Route path="mentor" element={<MentorPage onAnalyze={() => navigate("/analysis/loading")} />} />
+        <Route path="mentor" element={<MentorPage />} />
         <Route path="ideas/new" element={<NewIdeaPage onCreated={() => navigate("/analysis")} />} />
-        <Route path="analysis/loading" element={<LoadingPage onDone={() => navigate("/analysis")} />} />
         <Route path="analysis" element={<AnalysisPage onReport={() => navigate("/report")} />} />
         <Route path="report" element={<ReportPage onBack={() => navigate("/analysis")} />} />
-        <Route path="history" element={<HistoryPage onOpen={() => navigate("/analysis")} />} />
+        <Route
+          path="history"
+          element={
+            <HistoryPage
+              onOpen={() => navigate("/analysis")}
+              onNew={() => navigate("/ideas/new")}
+            />
+          }
+        />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

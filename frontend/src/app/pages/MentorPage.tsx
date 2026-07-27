@@ -1,43 +1,62 @@
 import { useEffect, useRef, useState } from "react";
-import { LayoutDashboard, Bot, BarChart3, FileText, History, Settings, ChevronRight, AlertTriangle, CheckCircle, Clock, Users, Target, MessageSquare, RefreshCw, Download, Send, Sparkles, TrendingUp, Calendar, Tag, Map, HelpCircle, Zap, Star, Menu, X, ArrowRight, Plus } from "lucide-react";
-import { analysisData, initialMessages, sampleIdeas } from "../data/mockData";
-import type { ChatMessage } from "../types";
-import { RiskBadge, StatusBadge } from "../components/common/Badges";
+import { Bot, Send } from "lucide-react";
 import { MentorCharacter } from "../components/mentor/MentorCharacter";
+import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
+import { useIdea } from "../hooks/useIdea";
+import { ApiError, sendMentorMessage } from "../lib/api";
 
-export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
+export function MentorPage() {
   type MsgRole = "user" | "ai";
   const [msgs, setMsgs] = useState<{ role: MsgRole; text: string }[]>([]);
   const [input, setInput] = useState("");
-  const [showAnalyze, setShowAnalyze] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [ideaId] = useActiveIdeaId();
+  const { data: idea } = useIdea(ideaId);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const shouldAutoScrollRef = useRef(true);
 
   const suggestions = [
-    "Restoranlar için AI destekli stok yönetimi uygulaması",
-    "Freelancer'lar için proje ve fatura takip platformu",
-    "Girişimciler için interaktif iş planı oluşturma aracı",
-    "E-ticaret satıcıları için fiyat optimizasyon motoru",
+    "Bu fikrin en riskli varsayımı ne?",
+    "MVP kapsamını nasıl daraltabilirim?",
+    "İlk müşteri görüşmesine nasıl hazırlanmalıyım?",
+    "Doğrulama yol haritasındaki ilk adım ne olmalı?",
   ];
 
-  const send = (text?: string) => {
+  const send = async (text?: string) => {
     const msg = (text ?? input).trim();
     if (!msg || isSending) return;
     setInput("");
     setIsSending(true);
     setMsgs((p) => [...p, { role: "user" as const, text: msg }]);
-    setTimeout(() => {
+
+    const history = msgs.slice(-6).map((message) => ({
+      role: message.role === "ai" ? ("assistant" as const) : ("user" as const),
+      content: message.text,
+    }));
+
+    try {
+      const response = await sendMentorMessage(ideaId, msg, history);
       setMsgs((p) => [
         ...p,
         {
           role: "ai" as const,
-          text: "Bu fikir ilginç! Hedef kitlenizi, yaşanan problemi ve önerdiğiniz çözümü daha iyi anlarsam çok daha kapsamlı bir analiz hazırlayabilirim. Fikrinizle ilgili birkaç ek bilgi verebilir misiniz?",
+          text: response.reply,
         },
       ]);
-      setShowAnalyze(true);
+    } catch (error) {
+      setMsgs((p) => [
+        ...p,
+        {
+          role: "ai" as const,
+          text:
+            error instanceof ApiError
+              ? error.message
+              : "Mesaj gönderilemedi. Lütfen tekrar dene.",
+        },
+      ]);
+    } finally {
       setIsSending(false);
-    }, 900);
+    }
   };
 
   useEffect(() => {
@@ -88,7 +107,8 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
             }}
           />
           {/* Character */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mentor-enter">\n            <div className="mentor-float"><MentorCharacter /></div>
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 mentor-enter">
+            <div className="mentor-float"><MentorCharacter /></div>
           </div>
         </div>
 
@@ -123,10 +143,11 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
               <span className="text-xs font-semibold text-primary">FikirLab Asistanı</span>
             </div>
             <p className="text-sm text-foreground leading-relaxed">
-              Merhaba! Ben FikirLab Asistanı. İş fikrinizi analiz etmek, riskli varsayımları belirlemek ve doğrulama yol haritanızı oluşturmak için buradayım.
+              Merhaba! {idea?.title ? <><strong>{idea.title}</strong> fikrin üzerinde birlikte çalışabiliriz.</> : "Aktif fikrin üzerinde birlikte çalışabiliriz."}
             </p>
             <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-              Fikrinizi birkaç cümleyle anlatın; sizi analiz aşamasına yönlendireyim. 👇
+              Analiz sonuçlarını yorumlamak, kapsamı iyileştirmek veya sonraki adımlarını
+              netleştirmek için bana soru sor. 👇
             </p>
           </div>
 
@@ -150,19 +171,6 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
                 </div>
               </div>
             ))}
-
-            {showAnalyze && (
-              <div className="flex justify-start pt-1">
-                <button
-                  type="button"
-                  onClick={onAnalyze}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-semibold rounded-xl transition-all"
-                  style={{ animation: "step-appear 0.4s ease-out" }}
-                >
-                  <Sparkles size={14} />Fikri Analiz Et<ArrowRight size={13} />
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
@@ -206,7 +214,7 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
             />
             <button
               type="button"
-              onClick={() => send()}
+              onClick={() => void send()}
               disabled={!input.trim() || isSending}
               aria-label="Mesaj gönder"
               className="w-11 h-11 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl flex items-center justify-center transition-all disabled:opacity-40 flex-shrink-0"

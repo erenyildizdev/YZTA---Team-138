@@ -26,7 +26,17 @@ class IdeaViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        return Idea.objects.filter(user=self.request.user).order_by("-created_at")
+        return (
+            Idea.objects.filter(user=self.request.user)
+            .select_related(
+                "risky_assumptions",
+                "mom_test_questions_analysis",
+                "moscow_scope_analysis",
+                "validation_roadmap",
+                "general_evaluation",
+            )
+            .order_by("-created_at", "-id")
+        )
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

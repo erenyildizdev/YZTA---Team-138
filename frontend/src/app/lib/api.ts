@@ -147,6 +147,9 @@ export interface IdeaPayload {
 export interface IdeaResponse extends IdeaPayload {
   id: number;
   created_at: string;
+  analysis_status: "draft" | "in_progress" | "completed";
+  completed_analysis_count: number;
+  total_analysis_count: number;
 }
 
 export function createIdea(payload: IdeaPayload): Promise<IdeaResponse> {
@@ -158,6 +161,15 @@ export function createIdea(payload: IdeaPayload): Promise<IdeaResponse> {
 
 export function getIdea(ideaId: number): Promise<IdeaResponse> {
   return request<IdeaResponse>(`/ideas/${ideaId}/`);
+}
+
+interface PaginatedResponse<T> {
+  results: T[];
+}
+
+export async function getIdeas(): Promise<IdeaResponse[]> {
+  const response = await request<IdeaResponse[] | PaginatedResponse<IdeaResponse>>("/ideas/");
+  return Array.isArray(response) ? response : response.results;
 }
 
 export interface RiskyAssumptionItem {
@@ -239,6 +251,10 @@ export function generateMomTestQuestions(
     method: "POST",
     body: JSON.stringify({ question_count: questionCount }),
   });
+}
+
+export function getMomTestQuestions(ideaId: number): Promise<MomTestQuestionsResponse> {
+  return request<MomTestQuestionsResponse>(`/analyses/ideas/${ideaId}/mom-test-questions/`);
 }
 
 export interface GeneralEvaluationData {

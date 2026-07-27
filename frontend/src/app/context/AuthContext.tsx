@@ -7,6 +7,7 @@ import {
   setAccessToken,
   type AuthUser,
 } from "../lib/api";
+import { clearActiveIdeaId } from "../hooks/useActiveIdeaId";
 
 const USER_STORAGE_KEY = "fikirlab_user";
 
@@ -47,6 +48,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const persistSession = (accessToken: string, authUser: AuthUser) => {
+    const previousUser = readStoredUser();
+    if (previousUser?.id !== authUser.id) clearActiveIdeaId();
     setAccessToken(accessToken);
     localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(authUser));
     setToken(accessToken);
@@ -90,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    clearActiveIdeaId();
     setAccessToken(null);
     localStorage.removeItem(USER_STORAGE_KEY);
     setToken(null);

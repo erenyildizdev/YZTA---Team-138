@@ -8,6 +8,7 @@ from apps.ideas.models import Idea
 from .models import (
     InterviewEvidenceAnalysis,
     InterviewNote,
+    MomTestQuestionsAnalysis,
     MoscowScopeAnalysis,
 )
 
@@ -76,6 +77,20 @@ class IdeaAnalysisView(APIView):
 class MomTestQuestionGenerateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    def get(self, request, idea_id, *args, **kwargs):
+        idea = _get_owned_idea(request, idea_id)
+        analysis = get_object_or_404(MomTestQuestionsAnalysis, idea=idea)
+        questions = analysis.questions if isinstance(analysis.questions, list) else []
+        return Response(
+            {
+                "idea_id": idea.id,
+                "framework": "the_mom_test",
+                "question_count": len(questions),
+                "questions": questions,
+            },
+            status=status.HTTP_200_OK,
+        )
+
     def post(self, request, idea_id, *args, **kwargs):
         request_serializer = MomTestQuestionRequestSerializer(data=request.data)
         request_serializer.is_valid(raise_exception=True)
@@ -89,6 +104,10 @@ class MomTestQuestionGenerateView(APIView):
         questions = generate_mom_test_questions(
             idea,
             question_count=question_count,
+        )
+        MomTestQuestionsAnalysis.objects.update_or_create(
+            idea=idea,
+            defaults={"questions": questions},
         )
 
         response_serializer = MomTestQuestionResponseSerializer(

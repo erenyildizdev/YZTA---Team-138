@@ -4,6 +4,10 @@ from .models import GeneralEvaluation, Idea, RiskyAssumptions, ValidationRoadmap
 
 
 class IdeaSerializer(serializers.ModelSerializer):
+    analysis_status = serializers.SerializerMethodField()
+    completed_analysis_count = serializers.SerializerMethodField()
+    total_analysis_count = serializers.IntegerField(default=5, read_only=True)
+
     class Meta:
         model = Idea
         fields = [
@@ -15,8 +19,33 @@ class IdeaSerializer(serializers.ModelSerializer):
             "solution",
             "sector",
             "created_at",
+            "analysis_status",
+            "completed_analysis_count",
+            "total_analysis_count",
         ]
         read_only_fields = ["id", "created_at", "user"]
+
+    required_analysis_relations = (
+            "risky_assumptions",
+            "mom_test_questions_analysis",
+            "moscow_scope_analysis",
+            "validation_roadmap",
+            "general_evaluation",
+    )
+
+    def get_completed_analysis_count(self, obj):
+        return sum(
+            hasattr(obj, relation)
+            for relation in self.required_analysis_relations
+        )
+
+    def get_analysis_status(self, obj):
+        completed_count = self.get_completed_analysis_count(obj)
+        if completed_count == 0:
+            return "draft"
+        if completed_count == len(self.required_analysis_relations):
+            return "completed"
+        return "in_progress"
 
 
 class ValidationRoadmapSerializer(serializers.ModelSerializer):
