@@ -56,6 +56,22 @@ class MomTestQuestionEndpointTests(APITestCase):
             target_audience="Other users",
         )
         self.url = reverse("analyses:mom-test-question-generate", kwargs={"idea_id": self.idea.pk})
+        self.generate_patcher = patch(
+            "apps.analyses.views.generate_mom_test_questions",
+            side_effect=self._generated_questions,
+        )
+        self.mock_generate = self.generate_patcher.start()
+        self.addCleanup(self.generate_patcher.stop)
+
+    @staticmethod
+    def _generated_questions(_idea, question_count=10):
+        return [
+            {
+                "category": f"category_{index}",
+                "question": f"Fikre özel soru {index}?",
+            }
+            for index in range(question_count)
+        ]
 
     def authenticate(self):
         self.client.force_authenticate(user=self.user)
@@ -214,6 +230,28 @@ class MomTestQuestionEndpointTests(APITestCase):
 
         self.assertEqual(result, mock_questions)
         mock_call_mom_test_llm.assert_called_once()
+
+    @patch(
+        "apps.analyses.services.mom_test_questions.call_mom_test_llm",
+        return_value={"questions": [{"category": "only", "question": "Tek soru?"}]},
+    )
+    def test_invalid_provider_response_uses_deterministic_fallback(self, mock_call):
+        result = generate_mom_test_questions(self.idea, question_count=8)
+
+        self.assertEqual(len(result), 8)
+        self.assertEqual(result[0]["category"], "problem_context")
+        mock_call.assert_called_once()
+
+    @patch(
+        "apps.analyses.services.mom_test_questions.call_mom_test_llm",
+        side_effect=LLMClientError("provider unavailable"),
+    )
+    def test_provider_error_uses_deterministic_fallback(self, mock_call):
+        result = generate_mom_test_questions(self.idea, question_count=10)
+
+        self.assertEqual(len(result), 10)
+        self.assertEqual(result[-1]["category"], "commitment_signal")
+        mock_call.assert_called_once()
 
 
 def valid_moscow_result():

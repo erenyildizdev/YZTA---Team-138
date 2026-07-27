@@ -2,10 +2,10 @@ import { RefreshCw, Sparkles } from "lucide-react";
 import { useMoscowScope } from "../../hooks/useMoscowScope";
 
 const CATEGORY_CONFIG = [
-  { key: "must_have" as const, label: "Must Have", bg: "bg-red-900/20 border-red-800/30", lc: "text-red-400", dot: "bg-red-500" },
-  { key: "should_have" as const, label: "Should Have", bg: "bg-amber-900/20 border-amber-800/30", lc: "text-amber-400", dot: "bg-amber-500" },
-  { key: "could_have" as const, label: "Could Have", bg: "bg-blue-900/20 border-blue-800/30", lc: "text-blue-400", dot: "bg-blue-500" },
-  { key: "wont_have" as const, label: "Won't Have", bg: "bg-slate-800/30 border-slate-700/30", lc: "text-slate-400", dot: "bg-slate-500" },
+  { key: "must_have" as const, label: "Must Have", bg: "bg-red-900/20 border-red-800/30", lc: "text-red-700 dark:text-red-300", dot: "bg-red-500" },
+  { key: "should_have" as const, label: "Should Have", bg: "bg-amber-900/20 border-amber-800/30", lc: "text-amber-700 dark:text-amber-300", dot: "bg-amber-500" },
+  { key: "could_have" as const, label: "Could Have", bg: "bg-blue-900/20 border-blue-800/30", lc: "text-blue-700 dark:text-blue-300", dot: "bg-blue-500" },
+  { key: "wont_have" as const, label: "Won't Have", bg: "bg-slate-800/30 border-slate-700/30", lc: "text-slate-700 dark:text-slate-300", dot: "bg-slate-500" },
 ];
 
 export function MoscowScopeBody({ ideaId }: { ideaId: number }) {
@@ -78,7 +78,7 @@ export function MoscowScopeBody({ ideaId }: { ideaId: number }) {
                 </div>
                 <ul className="space-y-1.5">
                   {data[key].map((item, i) => (
-                    <li key={i} className={`text-xs leading-relaxed ${lc} opacity-75`} title={item.reason}>
+                    <li key={i} className="text-xs leading-relaxed text-foreground/80" title={item.reason}>
                       {item.title}
                     </li>
                   ))}

@@ -16,10 +16,17 @@ export function RiskBadge({ level }: { level: RiskLevel }) {
 }
 
 export function StatusBadge({ status }: { status: IdeaStatus }) {
-  if (status === "complete") {
+  if (status === "completed") {
     return (
       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success border border-success/30">
         <CheckCircle size={10} />Analiz Tamamlandı
+      </span>
+    );
+  }
+  if (status === "in_progress") {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning/10 text-warning border border-warning/30">
+        <Clock size={10} />Devam Ediyor
       </span>
     );
   }

@@ -9,8 +9,21 @@ import {
   Target,
   Users,
 } from "lucide-react";
-import { ApiError, createIdea } from "../lib/api";
+import {
+  ApiError,
+  createIdea,
+  generateGeneralEvaluation,
+  generateMomTestQuestions,
+  generateMoscowScope,
+  generateRiskyAssumptions,
+  generateValidationRoadmap,
+  type IdeaPayload,
+} from "../lib/api";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
+import {
+  IdeaAnalysisProgress,
+  type AnalysisStep,
+} from "../components/analysis/IdeaAnalysisProgress";
 
 const SECTORS = [
   "SaaS / Prodüktivite",
@@ -118,6 +131,15 @@ const initialValues: Record<FieldKey, string> = {
   solution: "",
 };
 
+const INITIAL_ANALYSIS_STEPS: AnalysisStep[] = [
+  { id: "idea", label: "Fikir özeti çıkarılıyor", status: "pending" },
+  { id: "risks", label: "Riskli varsayımlar belirleniyor", status: "pending" },
+  { id: "questions", label: "Müşteri soruları hazırlanıyor", status: "pending" },
+  { id: "scope", label: "MVP kapsamı oluşturuluyor", status: "pending" },
+  { id: "roadmap", label: "Yol haritası hazırlanıyor", status: "pending" },
+  { id: "evaluation", label: "Genel değerlendirme hazırlanıyor", status: "pending" },
+];
+
 export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
   const [, setIdeaId] = useActiveIdeaId();
 
@@ -127,6 +149,11 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisSteps, setAnalysisSteps] = useState(INITIAL_ANALYSIS_STEPS);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [createdIdeaId, setCreatedIdeaId] = useState<number | null>(null);
+  const [failedStepIndex, setFailedStepIndex] = useState<number | null>(null);
 
   const step = STEPS[stepIndex];
   const isLastStep = stepIndex === STEPS.length - 1;
@@ -157,6 +184,93 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
     setStepIndex((i) => i - 1);
   };
 
+  const setAnalysisStepStatus = (index: number, status: AnalysisStep["status"]) => {
+    setAnalysisSteps((current) =>
+      current.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, status } : item,
+      ),
+    );
+  };
+
+  const runAnalysis = async (ideaId: number, startIndex = 1) => {
+    const operations = [
+      () => Promise.resolve(),
+      () => generateRiskyAssumptions(ideaId),
+      () => generateMomTestQuestions(ideaId),
+      () => generateMoscowScope(ideaId),
+      () => generateValidationRoadmap(ideaId),
+      () => generateGeneralEvaluation(ideaId),
+    ];
+
+    setAnalysisError(null);
+    setFailedStepIndex(null);
+
+    for (let index = startIndex; index < operations.length; index += 1) {
+      setAnalysisStepStatus(index, "active");
+      try {
+        await operations[index]();
+        setAnalysisStepStatus(index, "completed");
+      } catch (error) {
+        setAnalysisStepStatus(index, "error");
+        setFailedStepIndex(index);
+        setAnalysisError(
+          error instanceof ApiError
+            ? error.message
+            : "Analiz tamamlanamadı. Lütfen tekrar dene.",
+        );
+        return;
+      }
+    }
+
+    onCreated();
+  };
+
+  const createAndAnalyze = async (payload: IdeaPayload) => {
+    setIsAnalyzing(true);
+    setAnalysisError(null);
+    setAnalysisSteps(
+      INITIAL_ANALYSIS_STEPS.map((item, index) => ({
+        ...item,
+        status: index === 0 ? "active" : "pending",
+      })),
+    );
+
+    try {
+      const idea = await createIdea(payload);
+      setCreatedIdeaId(idea.id);
+      setIdeaId(idea.id);
+      setAnalysisStepStatus(0, "completed");
+      await runAnalysis(idea.id);
+    } catch (error) {
+      setAnalysisStepStatus(0, "error");
+      setFailedStepIndex(0);
+      setAnalysisError(
+        error instanceof ApiError
+          ? error.message
+          : "Fikir kaydedilemedi. Lütfen tekrar dene.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRetry = () => {
+    if (failedStepIndex === null) return;
+    if (failedStepIndex === 0 || createdIdeaId === null) {
+      void createAndAnalyze({
+        title: values.title.trim(),
+        description: values.description.trim(),
+        target_audience: values.target_audience.trim(),
+        problem: values.problem.trim(),
+        solution: values.solution.trim(),
+        sector: values.sector.trim(),
+      });
+      return;
+    }
+
+    void runAnalysis(createdIdeaId, failedStepIndex);
+  };
+
   const handleNext = async () => {
     if (isSubmitting) return;
     if (!validateStep(step.key)) return;
@@ -168,22 +282,14 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
 
     setFormError(null);
     setIsSubmitting(true);
-    try {
-      const idea = await createIdea({
-        title: values.title.trim(),
-        description: values.description.trim(),
-        target_audience: values.target_audience.trim(),
-        problem: values.problem.trim(),
-        solution: values.solution.trim(),
-        sector: values.sector,
-      });
-      setIdeaId(idea.id);
-      onCreated();
-    } catch (err) {
-      setFormError(err instanceof ApiError ? err.message : "Fikir kaydedilemedi. Lütfen tekrar dene.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    void createAndAnalyze({
+      title: values.title.trim(),
+      description: values.description.trim(),
+      target_audience: values.target_audience.trim(),
+      problem: values.problem.trim(),
+      solution: values.solution.trim(),
+      sector: values.sector.trim(),
+    });
   };
 
   const handleTextKeyDown = (event: KeyboardEvent) => {
@@ -220,6 +326,16 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
       ? "border-destructive/50 focus:border-destructive focus:ring-destructive/30"
       : "border-border focus:border-primary/50 focus:ring-primary/20"
   }`;
+
+  if (isAnalyzing) {
+    return (
+      <IdeaAnalysisProgress
+        steps={analysisSteps}
+        error={analysisError}
+        onRetry={analysisError ? handleRetry : undefined}
+      />
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto hide-scroll" style={{ animation: "page-in 0.3s ease-out" }}>

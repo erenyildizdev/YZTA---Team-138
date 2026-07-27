@@ -91,10 +91,10 @@ export function GeneralEvaluationBody({ ideaId }: { ideaId: number }) {
 
           <div className="bg-blue-900/20 border border-blue-800/30 rounded-xl p-4">
             <div className="flex items-center gap-1.5 mb-1.5">
-              <Zap size={12} className="text-blue-400" />
-              <span className="text-xs font-bold text-blue-300">İlk Yapılacak Aksiyon</span>
+              <Zap size={12} className="text-foreground" />
+              <span className="text-xs font-bold text-foreground">İlk Yapılacak Aksiyon</span>
             </div>
-            <p className="text-sm text-blue-300/80 leading-relaxed">{data.next_action}</p>
+            <p className="text-sm text-foreground/80 leading-relaxed">{data.next_action}</p>
           </div>
         </div>
       )}

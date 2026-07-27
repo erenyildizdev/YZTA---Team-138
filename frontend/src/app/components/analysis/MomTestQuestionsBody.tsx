@@ -6,12 +6,22 @@ export function MomTestQuestionsBody({ ideaId }: { ideaId: number }) {
 
   return (
     <div>
-      {status === "generating" && (
+      {(status === "loading" || status === "generating") && (
         <div className="space-y-2.5">
           {[0, 1, 2].map((i) => (
             <div key={i} className="h-9 rounded-xl bg-muted/40 border border-border animate-pulse" />
           ))}
         </div>
+      )}
+
+      {status === "empty" && (
+        <button
+          type="button"
+          onClick={() => void generate()}
+          className="rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary-hover"
+        >
+          Müşteri sorularını oluştur
+        </button>
       )}
 
       {status === "error" && (

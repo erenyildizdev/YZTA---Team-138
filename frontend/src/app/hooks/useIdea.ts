@@ -10,6 +10,7 @@ export function useIdea(ideaId: number) {
 
   const load = useCallback(async () => {
     setStatus("loading");
+    setData(null);
     setError(null);
 
     try {

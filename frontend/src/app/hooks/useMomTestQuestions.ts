@@ -2,15 +2,34 @@ import { useCallback, useEffect, useState } from "react";
 import {
   ApiError,
   generateMomTestQuestions,
+  getMomTestQuestions,
   type MomTestQuestionItem,
 } from "../lib/api";
 
-export type MomTestQuestionsStatus = "generating" | "ready" | "error";
+export type MomTestQuestionsStatus = "loading" | "empty" | "generating" | "ready" | "error";
 
 export function useMomTestQuestions(ideaId: number) {
-  const [status, setStatus] = useState<MomTestQuestionsStatus>("generating");
+  const [status, setStatus] = useState<MomTestQuestionsStatus>("loading");
   const [data, setData] = useState<MomTestQuestionItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setStatus("loading");
+    setError(null);
+    try {
+      const res = await getMomTestQuestions(ideaId);
+      setData(res.questions);
+      setStatus("ready");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) {
+        setData(null);
+        setStatus("empty");
+      } else {
+        setError(err instanceof ApiError ? err.message : "Görüşme soruları yüklenemedi.");
+        setStatus("error");
+      }
+    }
+  }, [ideaId]);
 
   const generate = useCallback(async () => {
     setStatus("generating");
@@ -27,8 +46,8 @@ export function useMomTestQuestions(ideaId: number) {
   }, [ideaId]);
 
   useEffect(() => {
-    generate();
-  }, [generate]);
+    void load();
+  }, [load]);
 
-  return { status, data, error, generate };
+  return { status, data, error, generate, reload: load };
 }

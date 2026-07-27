@@ -1,99 +1,151 @@
-import { useEffect, useRef, useState } from "react";
-import { LayoutDashboard, Bot, BarChart3, FileText, History, Settings, ChevronRight, AlertTriangle, CheckCircle, Clock, Users, Target, MessageSquare, RefreshCw, Download, Send, Sparkles, TrendingUp, Calendar, Tag, Map, HelpCircle, Zap, Star, Menu, X, ArrowRight, Plus } from "lucide-react";
-import { analysisData, initialMessages, sampleIdeas } from "../data/mockData";
-import type { ChatMessage } from "../types";
-import { RiskBadge, StatusBadge } from "../components/common/Badges";
-import { MentorCharacter } from "../components/mentor/MentorCharacter";
+import {
+  AlertCircle,
+  BarChart3,
+  LoaderCircle,
+  Plus,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react";
+
+import { IdeaListCard } from "../components/ideas/IdeaListCard";
+import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
+import { useIdeas } from "../hooks/useIdeas";
 
 export function DashboardPage({
-  onNew, onViewAll, onOpenDetail,
+  onNew,
+  onViewAll,
+  onOpenDetail,
 }: {
   onNew: () => void;
   onViewAll: () => void;
   onOpenDetail: () => void;
 }) {
+  const { status, data: ideas, error } = useIdeas();
+  const [, setIdeaId] = useActiveIdeaId();
+  const completedCount = ideas.filter(
+    (idea) => idea.analysis_status === "completed",
+  ).length;
   const stats = [
-    { label: "Toplam Fikir",   value: "3", Icon: Sparkles,   accent: "text-foreground", bg: "bg-accent",      border: "border-border" },
-    { label: "Analiz Edildi",  value: "2", Icon: BarChart3,   accent: "text-success",    bg: "bg-success/10",  border: "border-success/20" },
-    { label: "Devam Eden",     value: "1", Icon: TrendingUp,  accent: "text-warning",    bg: "bg-warning/10",  border: "border-warning/20" },
+    {
+      label: "Toplam Fikir",
+      value: ideas.length,
+      Icon: Sparkles,
+      accent: "text-foreground",
+      bg: "bg-accent",
+      border: "border-border",
+    },
+    {
+      label: "Analiz Edildi",
+      value: completedCount,
+      Icon: BarChart3,
+      accent: "text-success",
+      bg: "bg-success/10",
+      border: "border-success/20",
+    },
+    {
+      label: "Devam Eden",
+      value: ideas.length - completedCount,
+      Icon: TrendingUp,
+      accent: "text-warning",
+      bg: "bg-warning/10",
+      border: "border-warning/20",
+    },
   ];
 
+  const openIdea = (ideaId: number) => {
+    setIdeaId(ideaId);
+    onOpenDetail();
+  };
+
   return (
-    <div className="flex-1 overflow-y-auto hide-scroll" style={{ animation: "page-in 0.3s ease-out" }}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-7 py-7 sm:py-10">
+    <div
+      className="hide-scroll flex-1 overflow-y-auto"
+      style={{ animation: "page-in 0.3s ease-out" }}
+    >
+      <div className="mx-auto max-w-4xl px-4 py-7 sm:px-7 sm:py-10">
         <div className="mb-10">
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Fikirlerini doğrulamaya hazır mısın? 👋
           </h1>
-          <p className="text-sm text-muted-foreground mt-2 leading-relaxed max-w-lg">
-            AI destekli analizlerle iş fikirlerindeki riskleri keşfet, müşteri görüşme sorularını oluştur ve MVP kapsamını daralt.
+          <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
+            AI destekli analizlerle iş fikirlerindeki riskleri keşfet, müşteri
+            görüşme sorularını oluştur ve MVP kapsamını daralt.
           </p>
           <button
+            type="button"
             onClick={onNew}
-            className="mt-5 inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
+            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary-hover"
           >
-            <Plus size={15} />Yeni Fikir Oluştur
+            <Plus size={15} />
+            Yeni Fikir Oluştur
           </button>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          {stats.map((s) => (
-            <div key={s.label} className={`bg-card rounded-xl p-5 border ${s.border}`}>
-              <div className={`w-9 h-9 rounded-xl ${s.bg} flex items-center justify-center mb-3 border ${s.border}`}>
-                <s.Icon size={17} className={s.accent} />
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className={`rounded-xl border bg-card p-5 ${stat.border}`}
+            >
+              <div
+                className={`mb-3 flex h-9 w-9 items-center justify-center rounded-xl border ${stat.bg} ${stat.border}`}
+              >
+                <stat.Icon size={17} className={stat.accent} />
               </div>
-              <div className={`text-2xl font-bold ${s.accent}`}>{s.value}</div>
-              <div className="text-sm text-muted-foreground mt-0.5">{s.label}</div>
+              <div className={`text-2xl font-bold ${stat.accent}`}>
+                {status === "loading" ? "—" : stat.value}
+              </div>
+              <div className="mt-0.5 text-sm text-muted-foreground">
+                {stat.label}
+              </div>
             </div>
           ))}
         </div>
 
-        {/* Recent ideas */}
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-foreground">Son Fikirler</h2>
-            <button onClick={onViewAll} className="text-xs text-primary hover:text-primary-hover font-medium transition-colors">
+            <button
+              type="button"
+              onClick={onViewAll}
+              className="text-xs font-medium text-primary transition-colors hover:text-primary-hover"
+            >
               Tümünü Gör
             </button>
           </div>
-          <div className="space-y-3">
-            {sampleIdeas.map((idea) => (
-              <div
-                key={idea.id}
-                className="bg-card rounded-xl p-5 border border-border hover:border-foreground/30 transition-all group"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
-                      <StatusBadge status={idea.status} />
-                      <span className="text-xs text-muted-foreground flex items-center gap-1">
-                        <Calendar size={10} />{idea.date}
-                      </span>
-                    </div>
-                    <h3 className="font-semibold text-foreground text-sm">{idea.title}</h3>
-                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed line-clamp-1">{idea.description}</p>
-                    <div className="flex items-center gap-3 mt-2.5">
-                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                        <Tag size={10} />{idea.sector}
-                      </span>
-                      <span className="text-border">·</span>
-                      <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                        <Users size={10} />{idea.targetAudience}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => idea.status === "complete" && onOpenDetail()}
-                    disabled={idea.status === "draft"}
-                    className="flex-shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-muted text-muted-foreground hover:bg-hover hover:text-foreground border border-border hover:border-foreground/30 transition-all disabled:opacity-35 disabled:cursor-not-allowed"
-                  >
-                    Detaya Git<ChevronRight size={12} />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+
+          {status === "loading" && (
+            <div className="flex items-center gap-2 rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
+              <LoaderCircle size={16} className="animate-spin text-primary" />
+              Son fikirler yükleniyor...
+            </div>
+          )}
+
+          {status === "error" && (
+            <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-5 text-sm text-destructive">
+              <AlertCircle size={16} />
+              {error}
+            </div>
+          )}
+
+          {status === "ready" && ideas.length === 0 && (
+            <div className="rounded-xl border border-dashed border-border bg-card p-6 text-sm text-muted-foreground">
+              Henüz bir fikir oluşturmadın.
+            </div>
+          )}
+
+          {status === "ready" && ideas.length > 0 && (
+            <div className="space-y-3">
+              {ideas.slice(0, 3).map((idea) => (
+                <IdeaListCard
+                  key={idea.id}
+                  idea={idea}
+                  onOpen={openIdea}
+                  compact
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

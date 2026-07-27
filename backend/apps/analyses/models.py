@@ -18,6 +18,20 @@ class MoscowScopeAnalysis(models.Model):
         return f"MoSCoW scope for {self.idea}"
 
 
+class MomTestQuestionsAnalysis(models.Model):
+    idea = models.OneToOneField(
+        "ideas.Idea",
+        on_delete=models.CASCADE,
+        related_name="mom_test_questions_analysis",
+    )
+    questions = models.JSONField(default=list)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Mom Test questions for {self.idea}"
+
+
 class InterviewNote(models.Model):
     idea = models.ForeignKey(
         "ideas.Idea",

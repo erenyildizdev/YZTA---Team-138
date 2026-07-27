@@ -1,52 +1,92 @@
-import { useEffect, useRef, useState } from "react";
-import { LayoutDashboard, Bot, BarChart3, FileText, History, Settings, ChevronRight, AlertTriangle, CheckCircle, Clock, Users, Target, MessageSquare, RefreshCw, Download, Send, Sparkles, TrendingUp, Calendar, Tag, Map, HelpCircle, Zap, Star, Menu, X, ArrowRight, Plus } from "lucide-react";
-import { analysisData, initialMessages, sampleIdeas } from "../data/mockData";
-import type { ChatMessage } from "../types";
-import { RiskBadge, StatusBadge } from "../components/common/Badges";
-import { MentorCharacter } from "../components/mentor/MentorCharacter";
+import { AlertCircle, History, LoaderCircle, RefreshCw } from "lucide-react";
 
-export function HistoryPage({ onOpen }: { onOpen: () => void }) {
+import { IdeaListCard } from "../components/ideas/IdeaListCard";
+import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
+import { useIdeas } from "../hooks/useIdeas";
+
+export function HistoryPage({
+  onOpen,
+  onNew,
+}: {
+  onOpen: () => void;
+  onNew: () => void;
+}) {
+  const { status, data: ideas, error, reload } = useIdeas();
+  const [, setIdeaId] = useActiveIdeaId();
+
+  const openIdea = (ideaId: number) => {
+    setIdeaId(ideaId);
+    onOpen();
+  };
+
   return (
-    <div className="flex-1 overflow-y-auto hide-scroll" style={{ animation: "page-in 0.3s ease-out" }}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-7 py-7 sm:py-10">
+    <div
+      className="hide-scroll flex-1 overflow-y-auto"
+      style={{ animation: "page-in 0.3s ease-out" }}
+    >
+      <div className="mx-auto max-w-4xl px-4 py-7 sm:px-7 sm:py-10">
         <div className="mb-7">
           <h1 className="text-xl font-bold text-foreground">Geçmiş Fikirler</h1>
-          <p className="text-sm text-muted-foreground mt-1">Daha önce oluşturduğunuz tüm fikirler ve analiz durumları.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Daha önce oluşturduğunuz tüm fikirler ve analiz durumları.
+          </p>
         </div>
-        <div className="grid gap-4">
-          {sampleIdeas.map((idea) => (
-            <div key={idea.id} className="bg-card rounded-xl border border-border p-5 hover:border-foreground/30 transition-all">
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2.5">
-                    <StatusBadge status={idea.status} />
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Calendar size={10} />{idea.date}
-                    </span>
-                  </div>
-                  <h3 className="font-semibold text-foreground">{idea.title}</h3>
-                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{idea.description}</p>
-                  <div className="flex items-center gap-3 mt-3">
-                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                      <Tag size={10} />{idea.sector}
-                    </span>
-                    <span className="text-border text-xs">·</span>
-                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                      <Users size={10} />{idea.targetAudience}
-                    </span>
-                  </div>
-                </div>
+
+        {status === "loading" && (
+          <div className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card py-14 text-sm text-muted-foreground">
+            <LoaderCircle size={17} className="animate-spin text-primary" />
+            Fikirler yükleniyor...
+          </div>
+        )}
+
+        {status === "error" && (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-5">
+            <div className="flex items-start gap-3">
+              <AlertCircle size={18} className="mt-0.5 flex-shrink-0 text-destructive" />
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  Fikirler yüklenemedi
+                </p>
+                <p className="mt-1 text-sm text-destructive">{error}</p>
                 <button
-                  onClick={() => idea.status === "complete" && onOpen()}
-                  disabled={idea.status === "draft"}
-                  className="flex-shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 hover:bg-hover transition-all disabled:opacity-35 disabled:cursor-not-allowed"
+                  type="button"
+                  onClick={() => void reload()}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary-hover"
                 >
-                  Detaya Git<ChevronRight size={12} />
+                  <RefreshCw size={12} />
+                  Yeniden dene
                 </button>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
+
+        {status === "ready" && ideas.length === 0 && (
+          <div className="rounded-xl border border-dashed border-border bg-card px-6 py-14 text-center">
+            <History size={24} className="mx-auto text-muted-foreground" />
+            <h2 className="mt-3 text-sm font-semibold text-foreground">
+              Henüz bir fikrin yok
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Oluşturduğun fikirler burada görünecek.
+            </p>
+            <button
+              type="button"
+              onClick={onNew}
+              className="mt-4 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary-hover"
+            >
+              Yeni Fikir Ekle
+            </button>
+          </div>
+        )}
+
+        {status === "ready" && ideas.length > 0 && (
+          <div className="grid gap-4">
+            {ideas.map((idea) => (
+              <IdeaListCard key={idea.id} idea={idea} onOpen={openIdea} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
