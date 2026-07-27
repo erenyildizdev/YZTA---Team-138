@@ -1,4 +1,4 @@
-import { type KeyboardEvent, useState } from "react";
+import { type FormEvent, type KeyboardEvent, useState } from "react";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -158,6 +158,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
   };
 
   const handleNext = async () => {
+    if (isSubmitting) return;
     if (!validateStep(step.key)) return;
 
     if (!isLastStep) {
@@ -186,10 +187,31 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
   };
 
   const handleTextKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter") {
+    if (
+      event.key === "Enter" &&
+      !event.nativeEvent.isComposing &&
+      event.keyCode !== 229
+    ) {
       event.preventDefault();
-      handleNext();
+      void handleNext();
     }
+  };
+
+  const handleTextareaKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (
+      event.key === "Enter" &&
+      (event.ctrlKey || event.metaKey) &&
+      !event.nativeEvent.isComposing &&
+      event.keyCode !== 229
+    ) {
+      event.preventDefault();
+      void handleNext();
+    }
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void handleNext();
   };
 
   const error = fieldErrors[step.key];
@@ -224,7 +246,11 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
           ))}
         </div>
 
-        <div className="bg-card border border-border rounded-2xl p-6" style={{ minHeight: 280 }}>
+        <form
+          onSubmit={handleSubmit}
+          className="bg-card border border-border rounded-2xl p-6"
+          style={{ minHeight: 280 }}
+        >
           <div key={step.key} style={{ animation: "step-appear 0.35s ease-out" }}>
             <span className="text-[11px] font-semibold text-primary uppercase tracking-widest">
               Adım {stepIndex + 1} / {STEPS.length}
@@ -294,6 +320,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
                 autoFocus
                 value={values[step.key]}
                 onChange={(e) => setValue(step.key, e.target.value)}
+                onKeyDown={handleTextareaKeyDown}
                 rows={4}
                 placeholder={step.placeholder}
                 className={`${inputClass} resize-none`}
@@ -321,8 +348,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
             </button>
 
             <button
-              type="button"
-              onClick={handleNext}
+              type="submit"
               disabled={isSubmitting}
               className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl px-5 py-2.5 text-sm font-semibold transition-all disabled:opacity-50"
             >
@@ -330,7 +356,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
               {!isSubmitting && <ArrowRight size={14} />}
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

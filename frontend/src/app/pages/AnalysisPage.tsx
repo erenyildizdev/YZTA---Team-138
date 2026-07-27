@@ -78,7 +78,8 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
   const [ideaId, setIdeaId] = useActiveIdeaId();
   const { data: idea, reload: reloadIdea } = useIdea(ideaId);
 
-  const endRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScrollRef = useRef(true);
 
   const quickActions = [
     "Riskleri güncelle",
@@ -206,7 +207,16 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
   };
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = messagesContainerRef.current;
+
+    if (!container || !shouldAutoScrollRef.current) {
+      return;
+    }
+
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: "auto",
+    });
   }, [msgs, isSending]);
 
   const CardHeader = ({
@@ -228,11 +238,11 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
 
   return (
     <div
-      className="flex min-h-0 flex-1 flex-col overflow-x-hidden lg:flex-row lg:overflow-hidden"
+      className="flex min-h-0 flex-1 flex-col overflow-x-hidden overflow-y-auto lg:flex-row lg:overflow-hidden"
       style={{ animation: "page-in 0.3s ease-out" }}
     >
       {/* Sol taraf: Analiz */}
-      <div className="hide-scroll flex-1 overflow-y-auto">
+      <div className="hide-scroll flex-1 lg:min-h-0 lg:overflow-y-auto">
         <div className="mx-auto max-w-2xl px-6 py-8">
           <div className="mb-7 flex items-start justify-between gap-4">
             <div className="flex-1">
@@ -402,8 +412,8 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
       </div>
 
       {/* Sağ taraf: AI sohbet */}
-      <div className="flex min-h-[480px] w-full flex-shrink-0 flex-col border-t border-border bg-card lg:min-h-0 lg:w-[320px] lg:border-l lg:border-t-0">
-        <div className="border-b border-border px-4 py-4">
+      <div className="flex min-h-[480px] w-full flex-shrink-0 flex-col border-t border-border bg-card lg:h-full lg:min-h-0 lg:w-[320px] lg:border-l lg:border-t-0">
+        <div className="shrink-0 border-b border-border px-4 py-4">
           <div className="mb-2 flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
               <Bot size={13} className="text-primary-foreground" />
@@ -421,7 +431,7 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
         </div>
 
         {/* Hızlı aksiyonlar */}
-        <div className="flex flex-wrap gap-1.5 border-b border-border px-3 py-3">
+        <div className="flex shrink-0 flex-wrap gap-1.5 border-b border-border px-3 py-3">
           {quickActions.map((action) => (
             <button
               key={action}
@@ -436,7 +446,18 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
         </div>
 
         {/* Mesajlar */}
-        <div className="hide-scroll flex-1 space-y-4 overflow-y-auto px-4 py-4">
+        <div
+          ref={messagesContainerRef}
+          onScroll={(event) => {
+            const container = event.currentTarget;
+            const distanceFromBottom =
+              container.scrollHeight -
+              container.scrollTop -
+              container.clientHeight;
+            shouldAutoScrollRef.current = distanceFromBottom < 80;
+          }}
+          className="hide-scroll min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4"
+        >
           {msgs.map((message) => (
             <div
               key={message.id}
@@ -548,17 +569,21 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
             </div>
           )}
 
-          <div ref={endRef} />
         </div>
 
         {/* Mesaj giriş alanı */}
-        <div className="border-t border-border px-4 py-3">
+        <div className="shrink-0 border-t border-border px-4 py-3">
           <div className="flex items-end gap-2">
             <textarea
               value={input}
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={(event) => {
-                if (event.key === "Enter" && !event.shiftKey) {
+                if (
+                  event.key === "Enter" &&
+                  !event.shiftKey &&
+                  !event.nativeEvent.isComposing &&
+                  event.keyCode !== 229
+                ) {
                   event.preventDefault();
                   void sendMsg();
                 }

@@ -82,8 +82,8 @@ function Sidebar({ onClose }: SidebarProps) {
     : "Kullanıcı";
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
-      <div className="flex items-center justify-between border-b border-sidebar-border px-5 py-5">
+    <aside className="flex h-full min-h-0 w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+      <div className="flex shrink-0 items-center justify-between border-b border-sidebar-border px-5 py-5">
         <NavLink
           to="/"
           onClick={onClose}
@@ -108,7 +108,7 @@ function Sidebar({ onClose }: SidebarProps) {
 
       <nav
         aria-label="Ana navigasyon"
-        className="flex-1 space-y-1 p-3"
+        className="min-h-0 flex-1 space-y-1 overflow-y-auto p-3"
       >
         {navigation.map(({ to, label, Icon, end }) => (
           <NavLink
@@ -132,7 +132,7 @@ function Sidebar({ onClose }: SidebarProps) {
         ))}
       </nav>
 
-      <div className="border-t border-sidebar-border p-3">
+      <div className="shrink-0 border-t border-sidebar-border p-3">
         <button
           type="button"
           role="switch"
@@ -302,7 +302,7 @@ export function AppLayout() {
   }, [closeSidebar, mobileDialogOpen]);
 
   return (
-    <div className="flex min-h-dvh w-full overflow-x-hidden bg-background">
+    <div className="flex min-h-dvh w-full overflow-x-hidden bg-background md:h-dvh md:overflow-hidden">
       {mobileDialogOpen && (
         <button
           type="button"
@@ -327,7 +327,7 @@ export function AppLayout() {
         className={[
           "fixed inset-y-0 left-0 z-50",
           "transform transition-transform duration-300",
-          "md:sticky md:top-0 md:h-dvh md:translate-x-0",
+          "md:relative md:inset-auto md:h-dvh md:shrink-0 md:translate-x-0",
           open
             ? "translate-x-0"
             : "-translate-x-full",
@@ -336,8 +336,8 @@ export function AppLayout() {
         <Sidebar onClose={closeSidebar} />
       </div>
 
-      <main className="flex min-h-dvh min-w-0 flex-1 flex-col overflow-x-hidden">
-        <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-sidebar/95 px-4 py-3 backdrop-blur md:hidden">
+      <main className="flex min-h-dvh min-w-0 flex-1 flex-col overflow-x-hidden md:h-dvh md:min-h-0 md:overflow-hidden">
+        <header className="sticky top-0 z-30 flex shrink-0 items-center gap-3 border-b border-border bg-sidebar/95 px-4 py-3 backdrop-blur md:hidden">
           <button
             ref={menuButtonRef}
             type="button"
