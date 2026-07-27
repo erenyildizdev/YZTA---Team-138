@@ -164,6 +164,35 @@ INTERVIEW_EVIDENCE_ANALYSIS_SCHEMA = {
     "additionalProperties": False,
 }
 
+MOM_TEST_QUESTIONS_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "questions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "category": {
+                        "type": "string",
+                    },
+                    "question": {
+                        "type": "string",
+                    },
+                },
+                "required": [
+                    "category",
+                    "question",
+                ],
+                "additionalProperties": False,
+            },
+        },
+    },
+    "required": [
+        "questions",
+    ],
+    "additionalProperties": False,
+}
+
 def _get_client() -> genai.Client:
     api_key = getattr(settings, "GEMINI_API_KEY", "")
 
@@ -453,4 +482,130 @@ def call_interview_analysis_llm(prompt: str) -> dict:
 
     raise LLMRequestError(
         "The AI interview analysis service could not complete the request."
+    )
+
+def call_mom_test_llm(prompt: str) -> dict:
+    clean_prompt = prompt.strip()
+
+    if not clean_prompt:
+        raise LLMConfigurationError(
+            "The Mom Test prompt cannot be empty."
+        )
+
+    client = _get_client()
+    max_attempts = 3
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = client.models.generate_content(
+                model=settings.GEMINI_MODEL_NAME,
+                contents=clean_prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.2,
+                    response_mime_type="application/json",
+                    response_json_schema=MOM_TEST_QUESTIONS_SCHEMA,
+                    max_output_tokens=2048,
+                ),
+            )
+
+            result = _parse_response(response)
+
+            questions = result.get("questions")
+
+            if not isinstance(questions, list):
+                raise LLMResponseError(
+                    "Gemini response field 'questions' must be a list."
+                )
+
+            if not questions:
+                raise LLMResponseError(
+                    "Gemini returned no Mom Test questions."
+                )
+
+            for question in questions:
+                if not isinstance(question, dict):
+                    raise LLMResponseError(
+                        "Each question must be an object."
+                    )
+
+                if (
+                    not isinstance(
+                        question.get("category"),
+                        str,
+                    )
+                    or not isinstance(
+                        question.get("question"),
+                        str,
+                    )
+                ):
+                    raise LLMResponseError(
+                        "Each question must contain 'category' and 'question'."
+                    )
+
+            return result
+
+        except errors.ClientError as exc:
+            status_code = getattr(exc, "status_code", None)
+
+            if status_code in (401, 403):
+                logger.exception(
+                    "Gemini API authentication failed."
+                )
+                raise LLMConfigurationError(
+                    "Gemini API authentication failed."
+                ) from exc
+
+            if status_code == 429:
+                logger.exception(
+                    "Gemini API usage limit was reached."
+                )
+                raise LLMRequestError(
+                    "Gemini usage limit has been reached. "
+                    "Please try again later."
+                ) from exc
+
+            logger.exception(
+                "Gemini rejected the Mom Test request."
+            )
+            raise LLMRequestError(
+                "The Gemini Mom Test request was rejected."
+            ) from exc
+
+        except errors.ServerError as exc:
+            status_code = getattr(exc, "status_code", None)
+
+            if status_code == 504 and attempt < max_attempts:
+                wait_seconds = 2 ** attempt
+
+                logger.warning(
+                    "Gemini Mom Test request timed out. "
+                    "Retrying in %s seconds. Attempt %s/%s.",
+                    wait_seconds,
+                    attempt,
+                    max_attempts,
+                )
+
+                time.sleep(wait_seconds)
+                continue
+
+            logger.exception(
+                "Gemini API server error during Mom Test generation."
+            )
+            raise LLMRequestError(
+                "The AI Mom Test service is temporarily unavailable."
+            ) from exc
+
+        except LLMClientError:
+            raise
+
+        except Exception as exc:
+            logger.exception(
+                "Unexpected Gemini Mom Test error."
+            )
+            raise LLMRequestError(
+                "An unexpected AI service error occurred."
+            ) from exc
+
+    raise LLMRequestError(
+        "The AI Mom Test service could not complete the request."
     )

@@ -188,11 +188,32 @@ class MomTestQuestionEndpointTests(APITestCase):
         questions = [question["question"] for question in response.data["questions"]]
         self.assertEqual(len(questions), len(set(questions)))
 
-    def test_service_returns_deterministic_questions_for_same_input(self):
-        first_result = generate_mom_test_questions(self.idea, question_count=10)
-        second_result = generate_mom_test_questions(self.idea, question_count=10)
+    @patch(
+        "apps.analyses.services.mom_test_questions.call_mom_test_llm"
+    )
+    def test_service_returns_generated_questions(
+        self,
+        mock_call_mom_test_llm,
+    ):
+        mock_questions = [
+            {
+                "category": f"category_{i}",
+                "question": f"Fikre özel soru {i}?",
+            }
+            for i in range(10)
+        ]
 
-        self.assertEqual(first_result, second_result)
+        mock_call_mom_test_llm.return_value = {
+            "questions": mock_questions,
+        }
+
+        result = generate_mom_test_questions(
+            self.idea,
+            question_count=10,
+        )
+
+        self.assertEqual(result, mock_questions)
+        mock_call_mom_test_llm.assert_called_once()
 
 
 def valid_moscow_result():

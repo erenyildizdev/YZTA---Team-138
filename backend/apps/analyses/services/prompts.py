@@ -198,3 +198,74 @@ Bu fikre ait müşteri görüşmesi notları:
 
 {clean_notes_text}
 """.strip()
+
+MOM_TEST_QUESTIONS_PROMPT = """
+Sen deneyimli bir müşteri keşfi ve girişim doğrulama danışmanısın.
+
+Görevin, verilen iş fikrine özel Mom Test görüşme soruları üretmektir.
+
+Cevabı SADECE aşağıdaki JSON formatında üret:
+
+{
+  "questions": [
+    {
+      "category": "string",
+      "question": "string"
+    }
+  ]
+}
+
+Kurallar:
+
+- Sadece geçerli JSON döndür.
+- Markdown, açıklama veya ekstra metin ekleme.
+- Tüm sorular Türkçe olmalı.
+- Sorular verilen iş fikrine, hedef kitleye ve probleme özel olmalı.
+- Sorular geçmişte yaşanmış gerçek davranışları sorgulamalı.
+- Geleceğe yönelik veya varsayımsal soru sorma.
+- Kullanıcıyı yönlendiren ifadeler kullanma.
+- Ürün fikrini öven veya doğrulamaya zorlayan sorular üretme.
+- "Bu ürünü kullanır mıydınız?" gibi sorular üretme.
+- Her soru farklı bir konuyu araştırmalı.
+- Aynı veya çok benzer soruları tekrar etme.
+- Her sorunun category alanı benzersiz olmalı.
+- Gerçek veri, istatistik veya kullanıcı davranışı uydurma.
+
+Sorular şu konulara odaklanabilir:
+
+- Problemin en son ne zaman yaşandığı
+- Kullanıcının o sırada ne yaptığı
+- Problemin ne sıklıkla tekrarlandığı
+- Kullanılan mevcut çözümler
+- Daha önce denenen çözümler
+- Mevcut çözümlerde yaşanan zorluklar
+- Harcanan zaman, para veya emek
+- Karar verme süreci
+- Problemi çözmek için atılan somut adımlar
+"""
+
+
+def build_mom_test_questions_prompt(
+    idea,
+    question_count: int,
+) -> str:
+    idea_text = f"""
+Fikir başlığı: {idea.title}
+Fikir açıklaması: {idea.description}
+Hedef kitle: {idea.target_audience}
+Problem: {idea.problem}
+Önerilen çözüm: {idea.solution}
+Sektör: {idea.sector}
+""".strip()
+
+    return f"""
+{MOM_TEST_QUESTIONS_PROMPT.strip()}
+
+Analiz edilecek iş fikri:
+
+{idea_text}
+
+Üretilecek soru sayısı: {question_count}
+
+Tam olarak {question_count} adet soru üret.
+""".strip()
