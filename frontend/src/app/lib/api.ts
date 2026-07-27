@@ -175,6 +175,8 @@ export async function getIdeas(): Promise<IdeaResponse[]> {
 export interface RiskyAssumptionItem {
   text: string;
   level: "high" | "medium" | "low";
+  status?: "validated" | "refuted" | "untested";
+  evidence_quote?: string;
 }
 
 export interface RiskyAssumptionsData {
@@ -278,6 +280,59 @@ export function generateGeneralEvaluation(ideaId: number): Promise<GeneralEvalua
   return request<GeneralEvaluationResponse>(`/ideas/${ideaId}/generate-evaluation/`, {
     method: "POST",
   });
+}
+
+export interface InterviewNotePayload {
+  interviewee_name?: string;
+  interviewee_profile?: string;
+  notes: string;
+  interviewed_at?: string | null;
+}
+
+export interface InterviewNoteResponse extends InterviewNotePayload {
+  id: number;
+  idea_id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export function getInterviewNotes(ideaId: number): Promise<InterviewNoteResponse[]> {
+  return request<InterviewNoteResponse[]>(`/analyses/ideas/${ideaId}/interview-notes/`);
+}
+
+export function createInterviewNote(
+  ideaId: number,
+  payload: InterviewNotePayload,
+): Promise<InterviewNoteResponse> {
+  return request<InterviewNoteResponse>(`/analyses/ideas/${ideaId}/interview-notes/`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteInterviewNote(ideaId: number, noteId: number): Promise<void> {
+  return request<void>(`/analyses/ideas/${ideaId}/interview-notes/${noteId}/`, {
+    method: "DELETE",
+  });
+}
+
+export interface InterviewEvidenceAnalysisData {
+  supporting_evidence: string[];
+  contradicting_evidence: string[];
+  repeated_needs: string[];
+  new_risky_assumptions: string[];
+  next_validation_steps: string[];
+}
+
+export interface InterviewEvidenceAnalysisResponse {
+  id: number;
+  idea: number;
+  result: InterviewEvidenceAnalysisData;
+  created_at: string;
+}
+
+export function getInterviewEvidenceAnalysis(ideaId: number): Promise<InterviewEvidenceAnalysisResponse> {
+  return request<InterviewEvidenceAnalysisResponse>(`/analyses/ideas/${ideaId}/interview-evidence-analysis/`);
 }
 
 export interface MentorChatHistoryTurn {

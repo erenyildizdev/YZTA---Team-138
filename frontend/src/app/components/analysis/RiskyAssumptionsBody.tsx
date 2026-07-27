@@ -1,6 +1,12 @@
-import { AlertTriangle, RefreshCw, Sparkles } from "lucide-react";
+import { AlertTriangle, CheckCircle2, HelpCircle, RefreshCw, Sparkles, XCircle } from "lucide-react";
 import { RiskBadge } from "../common/Badges";
 import { useRiskyAssumptions } from "../../hooks/useRiskyAssumptions";
+
+const STATUS_CONFIG = {
+  validated: { label: "Doğrulandı", cls: "text-emerald-400 border-emerald-800/40 bg-emerald-900/10", Icon: CheckCircle2 },
+  refuted: { label: "Çürütüldü", cls: "text-red-400 border-red-800/40 bg-red-900/10", Icon: XCircle },
+  untested: { label: "Test edilmedi", cls: "text-muted-foreground border-border bg-secondary", Icon: HelpCircle },
+} as const;
 
 export function RiskyAssumptionsBody({ ideaId }: { ideaId: number }) {
   const { status, data, error, generate, reload } = useRiskyAssumptions(ideaId);
@@ -63,12 +69,28 @@ export function RiskyAssumptionsBody({ ideaId }: { ideaId: number }) {
           </div>
 
           <div className="space-y-3">
-            {data.assumptions.map((item, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <RiskBadge level={item.level} />
-                <p className="text-sm text-muted-foreground leading-relaxed">{item.text}</p>
-              </div>
-            ))}
+            {data.assumptions.map((item, i) => {
+              const statusConfig = item.status ? STATUS_CONFIG[item.status] : null;
+              return (
+                <div key={i} className="flex items-start gap-3 flex-wrap">
+                  <RiskBadge level={item.level} />
+                  {statusConfig && (
+                    <span
+                      className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border flex-shrink-0 ${statusConfig.cls}`}
+                    >
+                      <statusConfig.Icon size={10} />
+                      {statusConfig.label}
+                    </span>
+                  )}
+                  <div className="flex-1 min-w-[200px]">
+                    <p className="text-sm text-muted-foreground leading-relaxed">{item.text}</p>
+                    {item.evidence_quote && (
+                      <p className="text-xs text-muted-foreground/70 italic mt-1">"{item.evidence_quote}"</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

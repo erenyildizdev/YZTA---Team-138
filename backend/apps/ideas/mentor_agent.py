@@ -13,6 +13,7 @@ from .services import (
     GeneralEvaluationGenerationError,
     RiskyAssumptionsGenerationError,
     RoadmapGenerationError,
+    apply_interview_evidence_to_risky_assumptions,
     generate_general_evaluation_payload,
     generate_risky_assumptions_payload,
     generate_validation_roadmap_payload,
@@ -105,6 +106,64 @@ def _tool_regenerate_general_evaluation(idea, args: dict) -> dict:
     return payload
 
 
+def _tool_save_interview_note(idea, args: dict) -> dict:
+    from apps.analyses.models import InterviewNote
+
+    notes = str(args.get("notes") or "").strip()
+    if len(notes) < 10:
+        raise ValueError(
+            "Görüşme notu çok kısa görünüyor. Görüşmede konuşulanları biraz daha "
+            "detaylandırıp tekrar gönderir misin?"
+        )
+
+    interviewee_name = str(args.get("interviewee_name") or "").strip()[:255]
+    interviewee_profile = str(args.get("interviewee_profile") or "").strip()[:500]
+
+    note = InterviewNote.objects.create(
+        idea=idea,
+        interviewee_name=interviewee_name,
+        interviewee_profile=interviewee_profile,
+        notes=notes[:10_000],
+    )
+    return {
+        "note_id": note.id,
+        "interviewee_name": interviewee_name or "Belirtilmedi",
+    }
+
+
+def _tool_analyze_interview_evidence(idea, args: dict) -> dict:
+    from apps.analyses.models import InterviewNote
+
+    notes = list(InterviewNote.objects.filter(idea=idea).order_by("created_at"))
+    if not notes:
+        raise ValueError(
+            "Bu fikir için henüz görüşme notu eklenmemiş. Önce en az bir müşteri "
+            "görüşmesi notu ekle, sonra tekrar dener misin?"
+        )
+
+    interview_notes_text = "\n\n---\n\n".join(
+        f"Görüşme {index} ({note.interviewee_name.strip() or 'Belirtilmedi'}):\n{note.notes.strip()}"
+        for index, note in enumerate(notes, start=1)
+    )
+
+    try:
+        result = apply_interview_evidence_to_risky_assumptions(idea, interview_notes_text)
+    except RiskyAssumptionsGenerationError as exc:
+        raise ValueError(str(exc)) from exc
+
+    assumptions = result["assumptions"]
+    return {
+        "interview_count": len(notes),
+        "validated_count": sum(1 for a in assumptions if a["status"] == "validated"),
+        "refuted_count": sum(1 for a in assumptions if a["status"] == "refuted"),
+        "untested_count": sum(1 for a in assumptions if a["status"] == "untested"),
+        "new_assumptions_count": result["new_assumptions_count"],
+        "assumptions": [
+            f"[{a['status']}] {a['text']} — {a.get('evidence_quote', '')}" for a in assumptions
+        ],
+    }
+
+
 TOOL_HANDLERS = {
     "update_target_audience": _tool_update_target_audience,
     "regenerate_validation_roadmap": _tool_regenerate_validation_roadmap,
@@ -112,6 +171,8 @@ TOOL_HANDLERS = {
     "generate_mom_test_questions": _tool_generate_mom_test_questions,
     "regenerate_risky_assumptions": _tool_regenerate_risky_assumptions,
     "regenerate_general_evaluation": _tool_regenerate_general_evaluation,
+    "save_interview_note": _tool_save_interview_note,
+    "analyze_interview_evidence": _tool_analyze_interview_evidence,
 }
 
 TOOL_DECLARATIONS = [
@@ -162,6 +223,43 @@ TOOL_DECLARATIONS = [
         description="Fikrin genel değerlendirmesini (güçlü yönler, belirsiz noktalar, ilk aksiyon) yeniden oluşturur.",
         parameters={"type": "object", "properties": {}},
     ),
+    types.FunctionDeclaration(
+        name="save_interview_note",
+        description=(
+            "Kullanıcı bir müşteri görüşmesinin notunu veya özetini doğrudan sohbete "
+            "serbest metin olarak yapıştırırsa (bir form doldurmadan), bu notu kalıcı "
+            "olarak kaydeder. Notu kaydettikten sonra kanıtları değerlendirmek istersen "
+            "aynı yanıtta analyze_interview_evidence aracını da çağırabilirsin."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "notes": {
+                    "type": "string",
+                    "description": "Görüşmede konuşulanların serbest metin özeti.",
+                },
+                "interviewee_name": {
+                    "type": "string",
+                    "description": "Görüşülen kişinin adı (biliniyorsa).",
+                },
+                "interviewee_profile": {
+                    "type": "string",
+                    "description": "Görüşülen kişinin profili/rolü (biliniyorsa).",
+                },
+            },
+            "required": ["notes"],
+        },
+    ),
+    types.FunctionDeclaration(
+        name="analyze_interview_evidence",
+        description=(
+            "Fikre eklenmiş müşteri görüşme notlarını okuyup mevcut riskli varsayımların "
+            "her birinin doğrulandı/çürütüldü/test edilmedi durumunu günceller ve notlardan "
+            "çıkan yeni riskli varsayımları ekler. Kullanıcı 'görüşme notlarını analiz et', "
+            "'kanıtları değerlendir' veya benzeri bir şey isterse bu aracı kullan."
+        ),
+        parameters={"type": "object", "properties": {}},
+    ),
 ]
 
 SYSTEM_INSTRUCTION_TEMPLATE = """Sen FikirLab uygulamasında bir girişim doğrulama danışmanısın.
@@ -179,7 +277,9 @@ gereksiz açıklama yapma. Bir araç sonucu liste (sorular, özellikler vb.) iç
 özetlemek yerine kullanıcıya olduğu gibi göster. Araç sonucu döndükten sonra en fazla birkaç
 cümlelik, Türkçe, net bir kapanış mesajı ver. Kullanıcının isteği elindeki araçlardan hiçbiriyle
 karşılanamıyorsa bunu dürüstçe belirt ve araç çağırma. Bir turda gerekmedikçe birden fazla araç
-çağırma.
+çağırma — TEK İSTİSNA: kullanıcı bir görüşme notunu/özetini doğrudan sohbete yapıştırırsa, önce
+save_interview_note ile notu kaydet, ardından aynı yanıtta analyze_interview_evidence aracını
+çağırarak kanıtları hemen değerlendir.
 """
 
 

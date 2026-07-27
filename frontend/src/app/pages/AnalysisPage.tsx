@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   Bot,
   CheckCircle2,
+  ClipboardList,
   FileText,
   Map,
   MessageSquare,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { GeneralEvaluationBody } from "../components/analysis/GeneralEvaluationBody";
+import { InterviewNotesBody } from "../components/analysis/InterviewNotesBody";
 import { MomTestQuestionsBody } from "../components/analysis/MomTestQuestionsBody";
 import { MoscowScopeBody } from "../components/analysis/MoscowScopeBody";
 import { RiskyAssumptionsBody } from "../components/analysis/RiskyAssumptionsBody";
@@ -33,6 +35,8 @@ const ACTION_LABELS: Record<string, string> = {
   generate_mom_test_questions: "Görüşme soruları üretildi",
   regenerate_risky_assumptions: "Riskli varsayımlar güncellendi",
   regenerate_general_evaluation: "Genel değerlendirme güncellendi",
+  save_interview_note: "Görüşme notu kaydedildi",
+  analyze_interview_evidence: "Görüşme kanıtları analiz edildi",
 };
 
 function nowLabel() {
@@ -74,6 +78,7 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
   const [moscowRefreshKey, setMoscowRefreshKey] = useState(0);
   const [questionsRefreshKey, setQuestionsRefreshKey] = useState(0);
   const [evaluationRefreshKey, setEvaluationRefreshKey] = useState(0);
+  const [notesRefreshKey, setNotesRefreshKey] = useState(0);
 
   const [ideaId, setIdeaId] = useActiveIdeaId();
   const { data: idea, reload: reloadIdea } = useIdea(ideaId);
@@ -87,6 +92,7 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
     "Müşteri soruları üret",
     "Hedef kitleyi değiştir",
     "Yol haritasını yenile",
+    "Görüşme notlarını analiz et",
   ];
 
   const sendMsg = async () => {
@@ -187,6 +193,25 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
         )
       ) {
         reloadIdea();
+      }
+
+      if (
+        response.actions.some(
+          (action) =>
+            action.tool === "analyze_interview_evidence" &&
+            action.status === "success",
+        )
+      ) {
+        setRisksRefreshKey((key) => key + 1);
+      }
+
+      if (
+        response.actions.some(
+          (action) =>
+            action.tool === "save_interview_note" && action.status === "success",
+        )
+      ) {
+        setNotesRefreshKey((key) => key + 1);
       }
     } catch (error) {
       setMsgs((previous) => [
@@ -347,6 +372,18 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
               />
             </div>
 
+            {/* Görüşme notları */}
+            <div className="rounded-xl border border-border bg-card p-5">
+              <CardHeader
+                bg="bg-muted"
+                Icon={ClipboardList}
+                iconColor="text-foreground"
+                title="Görüşme Notları"
+              />
+
+              <InterviewNotesBody key={notesRefreshKey} ideaId={ideaId} />
+            </div>
+
             {/* Mom Test soruları */}
             <div className="rounded-xl border border-border bg-card p-5">
               <CardHeader
@@ -501,6 +538,17 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
                               | undefined)
                           : undefined;
 
+                      const evidenceSummary =
+                        action.status === "success" &&
+                        action.tool === "analyze_interview_evidence"
+                          ? (action.result as {
+                              validated_count?: number;
+                              refuted_count?: number;
+                              untested_count?: number;
+                              new_assumptions_count?: number;
+                            } | undefined)
+                          : undefined;
+
                       return (
                         <div
                           key={`${action.tool}-${index}`}
@@ -525,6 +573,17 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
                           {newAudience && (
                             <span className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-xs text-secondary-foreground">
                               &quot;{newAudience}&quot;
+                            </span>
+                          )}
+
+                          {evidenceSummary && (
+                            <span className="rounded-lg border border-border bg-secondary px-2.5 py-1.5 text-xs text-secondary-foreground">
+                              ✅ {evidenceSummary.validated_count ?? 0} doğrulandı · ❌{" "}
+                              {evidenceSummary.refuted_count ?? 0} çürütüldü · ⏳{" "}
+                              {evidenceSummary.untested_count ?? 0} test edilmedi
+                              {evidenceSummary.new_assumptions_count
+                                ? ` · +${evidenceSummary.new_assumptions_count} yeni`
+                                : ""}
                             </span>
                           )}
 
