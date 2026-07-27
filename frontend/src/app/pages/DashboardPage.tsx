@@ -13,9 +13,9 @@ export function DashboardPage({
   onOpenDetail: () => void;
 }) {
   const stats = [
-    { label: "Toplam Fikir",   value: "3", Icon: Sparkles,   accent: "text-blue-400",    bg: "bg-blue-500/10",    border: "border-blue-500/20" },
-    { label: "Analiz Edildi",  value: "2", Icon: BarChart3,   accent: "text-violet-400",  bg: "bg-violet-500/10",  border: "border-violet-500/20" },
-    { label: "Devam Eden",     value: "1", Icon: TrendingUp,  accent: "text-amber-400",   bg: "bg-amber-500/10",   border: "border-amber-500/20" },
+    { label: "Toplam Fikir",   value: "3", Icon: Sparkles,   accent: "text-foreground", bg: "bg-accent",      border: "border-border" },
+    { label: "Analiz Edildi",  value: "2", Icon: BarChart3,   accent: "text-success",    bg: "bg-success/10",  border: "border-success/20" },
+    { label: "Devam Eden",     value: "1", Icon: TrendingUp,  accent: "text-warning",    bg: "bg-warning/10",  border: "border-warning/20" },
   ];
 
   return (
@@ -30,7 +30,7 @@ export function DashboardPage({
           </p>
           <button
             onClick={onNew}
-            className="mt-5 inline-flex items-center gap-2 bg-primary hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
+            className="mt-5 inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
           >
             <Plus size={15} />Yeni Fikir Oluştur
           </button>
@@ -53,7 +53,7 @@ export function DashboardPage({
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-foreground">Son Fikirler</h2>
-            <button onClick={onViewAll} className="text-xs text-blue-400 hover:text-blue-300 font-medium transition-colors">
+            <button onClick={onViewAll} className="text-xs text-primary hover:text-primary-hover font-medium transition-colors">
               Tümünü Gör
             </button>
           </div>
@@ -61,7 +61,7 @@ export function DashboardPage({
             {sampleIdeas.map((idea) => (
               <div
                 key={idea.id}
-                className="bg-card rounded-xl p-5 border border-border hover:border-blue-500/30 transition-all group"
+                className="bg-card rounded-xl p-5 border border-border hover:border-foreground/30 transition-all group"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                   <div className="flex-1 min-w-0">
@@ -86,7 +86,7 @@ export function DashboardPage({
                   <button
                     onClick={() => idea.status === "complete" && onOpenDetail()}
                     disabled={idea.status === "draft"}
-                    className="flex-shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-secondary text-muted-foreground hover:bg-primary/20 hover:text-blue-400 border border-border hover:border-blue-500/40 transition-all disabled:opacity-35 disabled:cursor-not-allowed"
+                    className="flex-shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-muted text-muted-foreground hover:bg-hover hover:text-foreground border border-border hover:border-foreground/30 transition-all disabled:opacity-35 disabled:cursor-not-allowed"
                   >
                     Detaya Git<ChevronRight size={12} />
                   </button>

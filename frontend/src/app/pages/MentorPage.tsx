@@ -49,7 +49,7 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
             className="absolute rounded-full border border-dashed"
             style={{
               width: 220, height: 220,
-              borderColor: "rgba(37,99,235,0.28)",
+              borderColor: "var(--border)",
               top: "50%", left: "50%",
               animation: "ring-cw 16s linear infinite, ring-pulse 4s ease-in-out infinite",
               transform: "translate(-50%,-50%) translateY(-18px)",
@@ -59,7 +59,7 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
             className="absolute rounded-full border"
             style={{
               width: 250, height: 250,
-              borderColor: "rgba(37,99,235,0.13)",
+              borderColor: "var(--surface-elevated)",
               top: "50%", left: "50%",
               animation: "ring-ccw 24s linear infinite",
               transform: "translate(-50%,-50%) translateY(-18px)",
@@ -70,7 +70,7 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
             className="absolute rounded-full pointer-events-none"
             style={{
               width: 180, height: 180,
-              background: "radial-gradient(circle, rgba(37,99,235,0.22) 0%, transparent 70%)",
+              background: "radial-gradient(circle, var(--accent) 0%, transparent 70%)",
               top: "50%", left: "50%",
               transform: "translate(-50%, -65%)",
             }}
@@ -82,7 +82,7 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
 
         {/* Label */}
         <div className="text-center mt-1">
-          <p className="text-sm font-semibold text-blue-400">FikirLab Asistanı</p>
+          <p className="text-sm font-semibold text-primary">FikirLab Asistanı</p>
           <p className="text-xs text-muted-foreground mt-0.5">Girişim Mentörünüz</p>
         </div>
       </div>
@@ -95,9 +95,9 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
           <div className="bg-secondary border border-border rounded-2xl rounded-tl-sm p-4 mb-5" style={{ animation: "mentor-enter 0.6s ease-out" }}>
             <div className="flex items-center gap-2 mb-2">
               <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                <Bot size={11} className="text-white" />
+                <Bot size={11} className="text-primary-foreground" />
               </div>
-              <span className="text-xs font-semibold text-blue-400">FikirLab Asistanı</span>
+              <span className="text-xs font-semibold text-primary">FikirLab Asistanı</span>
             </div>
             <p className="text-sm text-foreground leading-relaxed">
               Merhaba! Ben FikirLab Asistanı. İş fikrinizi analiz etmek, riskli varsayımları belirlemek ve doğrulama yol haritanızı oluşturmak için buradayım.
@@ -113,13 +113,13 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 {m.role === "ai" && (
                   <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center mr-2 mt-1 flex-shrink-0">
-                    <Bot size={11} className="text-white" />
+                    <Bot size={11} className="text-primary-foreground" />
                   </div>
                 )}
                 <div
                   className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                     m.role === "user"
-                      ? "bg-primary text-white rounded-tr-sm"
+                      ? "bg-primary text-primary-foreground rounded-tr-sm"
                       : "bg-secondary border border-border text-foreground rounded-tl-sm"
                   }`}
                 >
@@ -132,7 +132,7 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
               <div className="flex justify-start pt-1">
                 <button
                   onClick={onAnalyze}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-all"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-semibold rounded-xl transition-all"
                   style={{ animation: "step-appear 0.4s ease-out" }}
                 >
                   <Sparkles size={14} />Fikri Analiz Et<ArrowRight size={13} />
@@ -150,7 +150,7 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
               <button
                 key={s}
                 onClick={() => setInput(s)}
-                className="text-left text-xs px-3.5 py-2.5 rounded-xl border border-border bg-muted text-muted-foreground hover:text-foreground hover:border-blue-500/40 hover:bg-secondary transition-all leading-relaxed"
+                className="text-left text-xs px-3.5 py-2.5 rounded-xl border border-border bg-muted text-muted-foreground hover:text-accent-foreground hover:border-accent-foreground/40 hover:bg-accent transition-all leading-relaxed"
               >
                 {s}
               </button>
@@ -172,7 +172,7 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
             <button
               onClick={() => send()}
               disabled={!input.trim()}
-              className="w-11 h-11 bg-primary hover:bg-blue-600 text-white rounded-xl flex items-center justify-center transition-all disabled:opacity-40 flex-shrink-0"
+              className="w-11 h-11 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl flex items-center justify-center transition-all disabled:opacity-40 flex-shrink-0"
             >
               <Send size={15} />
             </button>

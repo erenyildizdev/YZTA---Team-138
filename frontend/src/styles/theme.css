@@ -1,110 +1,167 @@
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
   --font-size: 16px;
-  /* Light theme (default) */
-  --background: #F6F8FB;
-  --foreground: #0F172A;
-  --card: #FFFFFF;
-  --card-foreground: #0F172A;
-  --popover: #FFFFFF;
-  --popover-foreground: #0F172A;
-  --primary: #2563EB;
-  --primary-foreground: #FFFFFF;
-  --secondary: #EEF2F8;
-  --secondary-foreground: #0F172A;
-  --muted: #EEF2F8;
-  --muted-foreground: #64748B;
-  --accent: #E8F0FE;
-  --accent-foreground: #1D4ED8;
-  --destructive: #DC2626;
-  --destructive-foreground: #FFFFFF;
-  --border: #E2E8F0;
-  --input: transparent;
-  --input-background: #F1F5F9;
-  --switch-background: #E2E8F0;
+
+  /* Product palette */
+  --palette-carbon-black: #1C1C1C;
+  --palette-alabaster-grey: #DADDD8;
+  --palette-soft-linen: #ECEBE4;
+  --palette-platinum: #EEF0F2;
+  --palette-ghost-white: #FAFAFF;
+
+  /* Semantic application tokens — light is the default theme. */
+  --background: var(--palette-ghost-white);
+  --surface: var(--palette-ghost-white);
+  --surface-elevated: var(--palette-platinum);
+  --foreground: var(--palette-carbon-black);
+  --text-secondary: rgb(28 28 28 / 0.68);
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --primary: var(--palette-carbon-black);
+  --primary-hover: rgb(28 28 28 / 0.88);
+  --primary-foreground: var(--palette-ghost-white);
+  --secondary: var(--palette-soft-linen);
+  --secondary-foreground: var(--palette-carbon-black);
+  --muted: var(--palette-platinum);
+  --muted-foreground: var(--text-secondary);
+  --accent: var(--palette-soft-linen);
+  --accent-foreground: var(--palette-carbon-black);
+  --hover: var(--palette-soft-linen);
+  --border: var(--palette-alabaster-grey);
+  --input: var(--palette-alabaster-grey);
+  --input-background: var(--palette-platinum);
+  --switch-background: var(--palette-alabaster-grey);
+  --ring: var(--palette-carbon-black);
+  --overlay: rgb(28 28 28 / 0.62);
+
+  /* Status colors are reserved for semantic feedback. */
+  --destructive: #B42318;
+  --destructive-foreground: var(--palette-ghost-white);
+  --success: #176B38;
+  --warning: #765A00;
+
   --font-weight-medium: 500;
   --font-weight-normal: 400;
-  --ring: #2563EB;
-  --chart-1: #2563EB;
-  --chart-2: #0EA5E9;
-  --chart-3: #6366F1;
-  --chart-4: #10B981;
-  --chart-5: #F59E0B;
   --radius: 0.75rem;
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #0F172A;
-  --sidebar-primary: #2563EB;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: rgba(37, 99, 235, 0.08);
-  --sidebar-accent-foreground: #1D4ED8;
-  --sidebar-border: #E2E8F0;
-  --sidebar-ring: #2563EB;
+
+  /* Neutral chart steps, derived from the product palette. */
+  --chart-1: var(--palette-carbon-black);
+  --chart-2: rgb(28 28 28 / 0.78);
+  --chart-3: rgb(28 28 28 / 0.58);
+  --chart-4: var(--palette-alabaster-grey);
+  --chart-5: var(--palette-soft-linen);
+
+  --sidebar: var(--palette-platinum);
+  --sidebar-foreground: var(--palette-carbon-black);
+  --sidebar-primary: var(--palette-carbon-black);
+  --sidebar-primary-foreground: var(--palette-ghost-white);
+  --sidebar-accent: var(--palette-soft-linen);
+  --sidebar-accent-foreground: var(--palette-carbon-black);
+  --sidebar-surface: var(--palette-soft-linen);
+  --sidebar-border: var(--palette-alabaster-grey);
+  --sidebar-ring: var(--palette-carbon-black);
+
+  /* The mentor illustration keeps skin tones, while clothing follows the theme. */
+  --illustration-suit-start: var(--palette-carbon-black);
+  --illustration-suit-end: rgb(28 28 28 / 0.86);
+  --illustration-shirt: var(--palette-soft-linen);
+  --illustration-detail: var(--palette-alabaster-grey);
+  --illustration-shadow: rgb(28 28 28 / 0.45);
 }
 
-.dark {
-  /* Dark theme (FikirLab original navy palette) */
-  --background: #08111F;
-  --foreground: #E8EDF5;
-  --card: #111B2B;
-  --card-foreground: #E8EDF5;
-  --popover: #111B2B;
-  --popover-foreground: #E8EDF5;
-  --primary: #2563EB;
-  --primary-foreground: #FFFFFF;
-  --secondary: #151F30;
-  --secondary-foreground: #E8EDF5;
-  --muted: #0D1929;
-  --muted-foreground: #8896AE;
-  --accent: #1B3461;
-  --accent-foreground: #93C5FD;
-  --destructive: #DC2626;
-  --destructive-foreground: #FFFFFF;
-  --border: #243149;
-  --input: transparent;
-  --input-background: #0D1929;
-  --switch-background: #243149;
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: #2563EB;
-  --chart-1: #3B82F6;
-  --chart-2: #22D3EE;
-  --chart-3: #818CF8;
-  --chart-4: #34D399;
-  --chart-5: #F59E0B;
-  --radius: 0.75rem;
-  --sidebar: #0A1322;
-  --sidebar-foreground: #E8EDF5;
-  --sidebar-primary: #2563EB;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent: rgba(37, 99, 235, 0.14);
-  --sidebar-accent-foreground: #93C5FD;
-  --sidebar-border: #152035;
-  --sidebar-ring: #2563EB;
+:root[data-theme="dark"] {
+  --background: var(--palette-carbon-black);
+  --surface: rgb(250 250 255 / 0.055);
+  --surface-elevated: rgb(250 250 255 / 0.09);
+  --foreground: var(--palette-ghost-white);
+  --text-secondary: var(--palette-alabaster-grey);
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface-elevated);
+  --popover-foreground: var(--foreground);
+  --primary: var(--palette-ghost-white);
+  --primary-hover: rgb(250 250 255 / 0.86);
+  --primary-foreground: var(--palette-carbon-black);
+  --secondary: rgb(236 235 228 / 0.1);
+  --secondary-foreground: var(--palette-ghost-white);
+  --muted: rgb(238 240 242 / 0.07);
+  --muted-foreground: var(--palette-alabaster-grey);
+  --accent: rgb(236 235 228 / 0.1);
+  --accent-foreground: var(--palette-ghost-white);
+  --hover: rgb(236 235 228 / 0.1);
+  --border: rgb(218 221 216 / 0.18);
+  --input: rgb(218 221 216 / 0.22);
+  --input-background: rgb(238 240 242 / 0.07);
+  --switch-background: rgb(218 221 216 / 0.2);
+  --ring: var(--palette-alabaster-grey);
+  --overlay: rgb(28 28 28 / 0.78);
+
+  --destructive: #FFB4AB;
+  --destructive-foreground: var(--palette-carbon-black);
+  --success: #9DD7AD;
+  --warning: #F3CF76;
+
+  --chart-1: var(--palette-ghost-white);
+  --chart-2: var(--palette-alabaster-grey);
+  --chart-3: rgb(236 235 228 / 0.72);
+  --chart-4: rgb(238 240 242 / 0.5);
+  --chart-5: rgb(250 250 255 / 0.28);
+
+  --sidebar: rgb(238 240 242 / 0.045);
+  --sidebar-foreground: var(--palette-ghost-white);
+  --sidebar-primary: var(--palette-ghost-white);
+  --sidebar-primary-foreground: var(--palette-carbon-black);
+  --sidebar-accent: rgb(236 235 228 / 0.1);
+  --sidebar-accent-foreground: var(--palette-ghost-white);
+  --sidebar-surface: rgb(250 250 255 / 0.06);
+  --sidebar-border: rgb(218 221 216 / 0.16);
+  --sidebar-ring: var(--palette-alabaster-grey);
+
+  --illustration-suit-start: var(--palette-alabaster-grey);
+  --illustration-suit-end: rgb(218 221 216 / 0.72);
+  --illustration-shirt: var(--palette-ghost-white);
+  --illustration-detail: var(--palette-carbon-black);
+  --illustration-shadow: rgb(28 28 28 / 0.7);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
   --color-foreground: var(--foreground);
+  --color-text-primary: var(--foreground);
+  --color-text-secondary: var(--text-secondary);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
+  --color-button-primary: var(--primary);
+  --color-button-primary-text: var(--primary-foreground);
+  --color-button-secondary: var(--secondary);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-hover: var(--hover);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-input-background: var(--input-background);
   --color-switch-background: var(--switch-background);
   --color-ring: var(--ring);
+  --color-focus-ring: var(--ring);
+  --color-overlay: var(--overlay);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -120,6 +177,7 @@
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-surface: var(--sidebar-surface);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 }
@@ -127,6 +185,15 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+
+  html {
+    color-scheme: light;
+    font-size: var(--font-size);
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
   }
 
   body {
@@ -138,10 +205,6 @@
   * Default typography styles for HTML elements (h1-h4, p, label, button, input).
   * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
   */
-
-  html {
-    font-size: var(--font-size);
-  }
 
   h1 {
     font-size: var(--text-2xl);

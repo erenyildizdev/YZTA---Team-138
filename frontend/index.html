@@ -1,24 +1,34 @@
 
   <!DOCTYPE html>
-  <html lang="en">
+  <html lang="tr" data-theme="light">
     <head>
 
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <title>AI Destekli Fikir Doğrulama Paneli</title>
+      <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='9' fill='%231C1C1C'/%3E%3Cpath d='M16 7l2.1 6.9L25 16l-6.9 2.1L16 25l-2.1-6.9L7 16l6.9-2.1L16 7z' fill='%23FAFAFF'/%3E%3C/svg%3E" />
       <meta name="description" content="AI destekli panel, girişimcilerin iş fikirlerini analiz eder, riskleri belirler, müşteri soruları oluşturur ve MVP kapsamını optimize ederek doğrulama sürecini kolaylaştırır." />
       <meta name="robots" content="noindex, nofollow" />
       <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
       <script>
-        (function () {
-          try {
-            var stored = localStorage.getItem("fikirlab_theme");
-            if (stored !== "light") document.documentElement.classList.add("dark");
-          } catch (e) {
-            document.documentElement.classList.add("dark");
-          }
-        })();
-      </script>
+  (function () {
+    var root = document.documentElement;
+    var theme = "light";
+
+    try {
+      var storedTheme = window.localStorage.getItem("fikirlab-theme");
+      if (storedTheme === "dark" || storedTheme === "light") {
+        theme = storedTheme;
+      }
+    } catch (_) {
+      // Keep the explicit light default when storage is unavailable.
+    }
+
+    root.dataset.theme = theme;
+    root.classList.toggle("dark", theme === "dark");
+    root.style.colorScheme = theme;
+  })();
+</script>
 
     </head>
 

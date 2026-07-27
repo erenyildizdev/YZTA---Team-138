@@ -8,24 +8,24 @@ export function MentorCharacter() {
           <stop offset="100%" stopColor="#CE8E5C" />
         </radialGradient>
         <linearGradient id="mc-suit" x1="15%" y1="0%" x2="85%" y2="100%">
-          <stop offset="0%" stopColor="#1D3A6A" />
-          <stop offset="100%" stopColor="#0B1D40" />
+          <stop offset="0%" stopColor="var(--illustration-suit-start)" />
+          <stop offset="100%" stopColor="var(--illustration-suit-end)" />
         </linearGradient>
         <linearGradient id="mc-lapel" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#162E58" />
-          <stop offset="100%" stopColor="#0A1830" />
+          <stop offset="0%" stopColor="var(--illustration-suit-end)" />
+          <stop offset="100%" stopColor="var(--illustration-suit-start)" />
         </linearGradient>
         <linearGradient id="mc-hair" x1="10%" y1="0%" x2="90%" y2="100%">
           <stop offset="0%" stopColor="#3A1E10" />
           <stop offset="100%" stopColor="#170A04" />
         </linearGradient>
         <filter id="mc-drop" x="-20%" y="-10%" width="140%" height="130%">
-          <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#000B18" floodOpacity="0.55" />
+          <feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="var(--illustration-shadow)" floodOpacity="0.55" />
         </filter>
       </defs>
 
       {/* Floor shadow */}
-      <ellipse cx="120" cy="284" rx="62" ry="7" fill="#000B18" opacity="0.45" />
+      <ellipse cx="120" cy="284" rx="62" ry="7" fill="var(--illustration-shadow)" opacity="0.45" />
 
       {/* ── Body / Suit ── */}
       <path
@@ -38,15 +38,15 @@ export function MentorCharacter() {
       {/* Right lapel */}
       <path d="M160 157 L132 149 L139 178 L178 192 Z" fill="url(#mc-lapel)" />
       {/* Shirt strip */}
-      <path d="M108 149 L120 167 L132 149 L126 146 L120 161 L114 146 Z" fill="#DDE5F4" opacity="0.92" />
+      <path d="M108 149 L120 167 L132 149 L126 146 L120 161 L114 146 Z" fill="var(--illustration-shirt)" opacity="0.92" />
       {/* Tie */}
-      <polygon points="116,149 124,149 127,194 120,201 113,194" fill="#1D4ED8" />
-      <polygon points="113,147 127,147 124,149 116,149" fill="#1E40AF" />
+      <polygon points="116,149 124,149 127,194 120,201 113,194" fill="var(--illustration-detail)" />
+      <polygon points="113,147 127,147 124,149 116,149" fill="var(--illustration-shadow)" />
       {/* Pocket square */}
-      <path d="M57 178 L66 174 L70 182 L59 186 Z" fill="#DDE5F4" opacity="0.28" />
+      <path d="M57 178 L66 174 L70 182 L59 186 Z" fill="var(--illustration-shirt)" opacity="0.28" />
       {/* Suit buttons */}
-      <circle cx="120" cy="218" r="2.5" fill="#0F1E3A" stroke="#1E3564" strokeWidth="0.8" />
-      <circle cx="120" cy="233" r="2.5" fill="#0F1E3A" stroke="#1E3564" strokeWidth="0.8" />
+      <circle cx="120" cy="218" r="2.5" fill="var(--illustration-detail)" stroke="var(--illustration-shadow)" strokeWidth="0.8" />
+      <circle cx="120" cy="233" r="2.5" fill="var(--illustration-detail)" stroke="var(--illustration-shadow)" strokeWidth="0.8" />
 
       {/* ── Neck ── */}
       <rect x="108" y="134" width="24" height="20" rx="8" fill="url(#mc-skin)" />
@@ -76,24 +76,24 @@ export function MentorCharacter() {
       <path d="M130 81 Q141 78 151 82" stroke="#3A1E10" strokeWidth="3" strokeLinecap="round" />
 
       {/* ── Eye whites ── */}
-      <ellipse cx="100" cy="95" rx="10" ry="11" fill="white" />
-      <ellipse cx="140" cy="95" rx="10" ry="11" fill="white" />
+      <ellipse cx="100" cy="95" rx="10" ry="11" fill="var(--illustration-shirt)" />
+      <ellipse cx="140" cy="95" rx="10" ry="11" fill="var(--illustration-shirt)" />
       {/* Irises */}
-      <circle cx="101" cy="96" r="7" fill="#3D5070" />
-      <circle cx="141" cy="96" r="7" fill="#3D5070" />
+      <circle cx="101" cy="96" r="7" fill="var(--illustration-shadow)" opacity="0.55" />
+      <circle cx="141" cy="96" r="7" fill="var(--illustration-shadow)" opacity="0.55" />
       {/* Pupils */}
-      <circle cx="102" cy="97" r="4" fill="#0E1520" />
-      <circle cx="142" cy="97" r="4" fill="#0E1520" />
+      <circle cx="102" cy="97" r="4" fill="var(--illustration-shadow)" />
+      <circle cx="142" cy="97" r="4" fill="var(--illustration-shadow)" />
       {/* Highlights */}
-      <circle cx="104" cy="94" r="2" fill="white" />
-      <circle cx="144" cy="94" r="2" fill="white" />
+      <circle cx="104" cy="94" r="2" fill="var(--illustration-shirt)" />
+      <circle cx="144" cy="94" r="2" fill="var(--illustration-shirt)" />
 
       {/* ── Glasses ── */}
-      <rect x="87" y="86" width="26" height="18" rx="6" stroke="#3A5070" strokeWidth="1.5" fill="rgba(37,99,235,0.07)" />
-      <rect x="127" y="86" width="26" height="18" rx="6" stroke="#3A5070" strokeWidth="1.5" fill="rgba(37,99,235,0.07)" />
-      <path d="M113 95 Q120 93 127 95" stroke="#3A5070" strokeWidth="1.5" />
-      <path d="M87 93 Q79 91 73 93" stroke="#3A5070" strokeWidth="1.5" />
-      <path d="M153 93 Q161 91 167 93" stroke="#3A5070" strokeWidth="1.5" />
+      <rect x="87" y="86" width="26" height="18" rx="6" stroke="var(--illustration-shadow)" strokeWidth="1.5" fill="var(--illustration-detail)" fillOpacity="0.12" />
+      <rect x="127" y="86" width="26" height="18" rx="6" stroke="var(--illustration-shadow)" strokeWidth="1.5" fill="var(--illustration-detail)" fillOpacity="0.12" />
+      <path d="M113 95 Q120 93 127 95" stroke="var(--illustration-shadow)" strokeWidth="1.5" />
+      <path d="M87 93 Q79 91 73 93" stroke="var(--illustration-shadow)" strokeWidth="1.5" />
+      <path d="M153 93 Q161 91 167 93" stroke="var(--illustration-shadow)" strokeWidth="1.5" />
 
       {/* ── Nose ── */}
       <path d="M117 109 Q115 117 120 119 Q125 117 123 109" stroke="#B07848" strokeWidth="1.5" fill="none" strokeLinecap="round" opacity="0.65" />
