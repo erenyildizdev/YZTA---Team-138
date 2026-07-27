@@ -20,6 +20,7 @@ export function RegisterPage() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    if (isLoading) return;
     setFormError(null);
 
     if (password.length < 8) {

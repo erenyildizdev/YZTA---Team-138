@@ -19,6 +19,7 @@ export function LoginPage() {
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    if (isLoading) return;
     const ok = await login(email, password);
     if (ok) navigate(from, { replace: true });
   };

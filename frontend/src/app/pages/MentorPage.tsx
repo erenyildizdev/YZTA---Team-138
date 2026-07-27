@@ -10,7 +10,9 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
   const [msgs, setMsgs] = useState<{ role: MsgRole; text: string }[]>([]);
   const [input, setInput] = useState("");
   const [showAnalyze, setShowAnalyze] = useState(false);
-  const endRef = useRef<HTMLDivElement>(null);
+  const [isSending, setIsSending] = useState(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const shouldAutoScrollRef = useRef(true);
 
   const suggestions = [
     "Restoranlar için AI destekli stok yönetimi uygulaması",
@@ -21,8 +23,9 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
 
   const send = (text?: string) => {
     const msg = (text ?? input).trim();
-    if (!msg) return;
+    if (!msg || isSending) return;
     setInput("");
+    setIsSending(true);
     setMsgs((p) => [...p, { role: "user" as const, text: msg }]);
     setTimeout(() => {
       setMsgs((p) => [
@@ -33,13 +36,22 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
         },
       ]);
       setShowAnalyze(true);
+      setIsSending(false);
     }, 900);
   };
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs]);
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container || !shouldAutoScrollRef.current) return;
+
+    container.scrollTo({
+      top: container.scrollHeight,
+      behavior: "auto",
+    });
+  }, [msgs, isSending]);
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row overflow-x-hidden md:overflow-hidden" style={{ animation: "page-in 0.3s ease-out" }}>
+    <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden md:flex-row md:overflow-hidden" style={{ animation: "page-in 0.3s ease-out" }}>
 
       {/* Left: Character */}
       <div className="flex-shrink-0 md:w-[44%] flex flex-col items-center justify-center py-5 md:py-8 px-4 md:px-6 relative border-b md:border-b-0 md:border-r border-border">
@@ -90,7 +102,18 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
       {/* Right: Chat area */}
       <div className="flex-1 flex flex-col min-h-0">
         {/* Greeting / chat messages */}
-        <div className="flex-1 overflow-y-auto hide-scroll px-5 pt-6 pb-2">
+        <div
+          ref={messagesContainerRef}
+          onScroll={(event) => {
+            const container = event.currentTarget;
+            const distanceFromBottom =
+              container.scrollHeight -
+              container.scrollTop -
+              container.clientHeight;
+            shouldAutoScrollRef.current = distanceFromBottom < 80;
+          }}
+          className="hide-scroll min-h-0 flex-1 overflow-y-auto px-5 pt-6 pb-2"
+        >
           {/* Always-visible greeting bubble */}
           <div className="bg-secondary border border-border rounded-2xl rounded-tl-sm p-4 mb-5" style={{ animation: "mentor-enter 0.6s ease-out" }}>
             <div className="flex items-center gap-2 mb-2">
@@ -131,6 +154,7 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
             {showAnalyze && (
               <div className="flex justify-start pt-1">
                 <button
+                  type="button"
                   onClick={onAnalyze}
                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-hover text-primary-foreground text-sm font-semibold rounded-xl transition-all"
                   style={{ animation: "step-appear 0.4s ease-out" }}
@@ -140,7 +164,6 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
               </div>
             )}
           </div>
-          <div ref={endRef} />
         </div>
 
         {/* Suggestion chips */}
@@ -149,7 +172,9 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
             {suggestions.map((s) => (
               <button
                 key={s}
+                type="button"
                 onClick={() => setInput(s)}
+                disabled={isSending}
                 className="text-left text-xs px-3.5 py-2.5 rounded-xl border border-border bg-muted text-muted-foreground hover:text-accent-foreground hover:border-accent-foreground/40 hover:bg-accent transition-all leading-relaxed"
               >
                 {s}
@@ -164,14 +189,26 @@ export function MentorPage({ onAnalyze }: { onAnalyze: () => void }) {
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+              onKeyDown={(event) => {
+                if (
+                  event.key === "Enter" &&
+                  !event.shiftKey &&
+                  !event.nativeEvent.isComposing &&
+                  event.keyCode !== 229
+                ) {
+                  event.preventDefault();
+                  send();
+                }
+              }}
               placeholder="İş fikrinizi birkaç cümleyle anlatın..."
               rows={2}
               className="flex-1 bg-muted border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 resize-none transition-all"
             />
             <button
+              type="button"
               onClick={() => send()}
-              disabled={!input.trim()}
+              disabled={!input.trim() || isSending}
+              aria-label="Mesaj gönder"
               className="w-11 h-11 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl flex items-center justify-center transition-all disabled:opacity-40 flex-shrink-0"
             >
               <Send size={15} />
