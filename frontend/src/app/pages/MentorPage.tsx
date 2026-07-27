@@ -3,15 +3,15 @@ import { Bot, Send } from "lucide-react";
 import { MentorCharacter } from "../components/mentor/MentorCharacter";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 import { useIdea } from "../hooks/useIdea";
+import { useMentorChatHistory } from "../hooks/useMentorChatHistory";
 import { ApiError, sendMentorMessage } from "../lib/api";
 
 export function MentorPage() {
-  type MsgRole = "user" | "ai";
-  const [msgs, setMsgs] = useState<{ role: MsgRole; text: string }[]>([]);
-  const [input, setInput] = useState("");
-  const [isSending, setIsSending] = useState(false);
   const [ideaId] = useActiveIdeaId();
   const { data: idea } = useIdea(ideaId);
+  const [msgs, setMsgs] = useMentorChatHistory(ideaId);
+  const [input, setInput] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const shouldAutoScrollRef = useRef(true);
 
