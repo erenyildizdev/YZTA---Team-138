@@ -4,17 +4,20 @@ from rest_framework.response import Response
 from apps.analyses.services.analyzer import analyze_idea
 
 from .mentor_agent import MentorAgentError, run_mentor_chat
-from .models import GeneralEvaluation, Idea, RiskyAssumptions, ValidationRoadmap
+from .models import CompetitorAnalysis, GeneralEvaluation, Idea, RiskyAssumptions, ValidationRoadmap
 from .serializers import (
+    CompetitorAnalysisSerializer,
     GeneralEvaluationSerializer,
     IdeaSerializer,
     RiskyAssumptionsSerializer,
     ValidationRoadmapSerializer,
 )
 from .services import (
+    CompetitorAnalysisGenerationError,
     GeneralEvaluationGenerationError,
     RiskyAssumptionsGenerationError,
     RoadmapGenerationError,
+    generate_competitor_analysis_payload,
     generate_general_evaluation_payload,
     generate_risky_assumptions_payload,
     generate_validation_roadmap_payload,
@@ -34,6 +37,7 @@ class IdeaViewSet(viewsets.ModelViewSet):
                 "moscow_scope_analysis",
                 "validation_roadmap",
                 "general_evaluation",
+                "competitor_analysis",
             )
             .order_by("-created_at", "-id")
         )
@@ -154,6 +158,38 @@ class IdeaViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Evaluation not found."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = GeneralEvaluationSerializer(evaluation)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="generate-competitor-analysis")
+    def generate_competitor_analysis(self, request, pk=None):
+        idea = self.get_object()
+
+        try:
+            analysis_data = generate_competitor_analysis_payload(idea)
+        except CompetitorAnalysisGenerationError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        analysis, _ = CompetitorAnalysis.objects.update_or_create(
+            idea=idea,
+            defaults={"analysis_data": analysis_data},
+        )
+
+        serializer = CompetitorAnalysisSerializer(analysis)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["get"], url_path="competitor-analysis")
+    def competitor_analysis(self, request, pk=None):
+        idea = self.get_object()
+
+        try:
+            analysis = idea.competitor_analysis
+        except CompetitorAnalysis.DoesNotExist:
+            return Response({"detail": "Competitor analysis not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = CompetitorAnalysisSerializer(analysis)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="mentor-chat")

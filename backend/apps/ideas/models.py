@@ -38,3 +38,11 @@ class GeneralEvaluation(models.Model):
 
     def __str__(self):
         return f"General evaluation for {self.idea.title}"
+
+class CompetitorAnalysis(models.Model):
+    idea = models.OneToOneField(Idea, on_delete=models.CASCADE, related_name="competitor_analysis")
+    analysis_data = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Competitor analysis for {self.idea.title}"

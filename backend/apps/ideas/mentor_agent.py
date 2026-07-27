@@ -8,12 +8,14 @@ from apps.analyses.services import (
     generate_moscow_scope,
 )
 
-from .models import GeneralEvaluation, RiskyAssumptions, ValidationRoadmap
+from .models import CompetitorAnalysis, GeneralEvaluation, RiskyAssumptions, ValidationRoadmap
 from .services import (
+    CompetitorAnalysisGenerationError,
     GeneralEvaluationGenerationError,
     RiskyAssumptionsGenerationError,
     RoadmapGenerationError,
     apply_interview_evidence_to_risky_assumptions,
+    generate_competitor_analysis_payload,
     generate_general_evaluation_payload,
     generate_risky_assumptions_payload,
     generate_validation_roadmap_payload,
@@ -106,6 +108,22 @@ def _tool_regenerate_general_evaluation(idea, args: dict) -> dict:
     return payload
 
 
+def _tool_regenerate_competitor_analysis(idea, args: dict) -> dict:
+    try:
+        payload = generate_competitor_analysis_payload(idea)
+    except CompetitorAnalysisGenerationError as exc:
+        raise ValueError(str(exc)) from exc
+
+    CompetitorAnalysis.objects.update_or_create(
+        idea=idea,
+        defaults={"analysis_data": payload},
+    )
+    return {
+        "competitors": [c["name"] for c in payload["competitors"]],
+        "differentiation": payload["differentiation"],
+    }
+
+
 def _tool_save_interview_note(idea, args: dict) -> dict:
     from apps.analyses.models import InterviewNote
 
@@ -171,6 +189,7 @@ TOOL_HANDLERS = {
     "generate_mom_test_questions": _tool_generate_mom_test_questions,
     "regenerate_risky_assumptions": _tool_regenerate_risky_assumptions,
     "regenerate_general_evaluation": _tool_regenerate_general_evaluation,
+    "regenerate_competitor_analysis": _tool_regenerate_competitor_analysis,
     "save_interview_note": _tool_save_interview_note,
     "analyze_interview_evidence": _tool_analyze_interview_evidence,
 }
@@ -221,6 +240,14 @@ TOOL_DECLARATIONS = [
     types.FunctionDeclaration(
         name="regenerate_general_evaluation",
         description="Fikrin genel değerlendirmesini (güçlü yönler, belirsiz noktalar, ilk aksiyon) yeniden oluşturur.",
+        parameters={"type": "object", "properties": {}},
+    ),
+    types.FunctionDeclaration(
+        name="regenerate_competitor_analysis",
+        description=(
+            "Fikrin rakip/pazar analizini (olası rakipler, güçlü-zayıf yönleri, pazar boşluğu ve "
+            "farklılaşma noktası) yeniden oluşturur."
+        ),
         parameters={"type": "object", "properties": {}},
     ),
     types.FunctionDeclaration(

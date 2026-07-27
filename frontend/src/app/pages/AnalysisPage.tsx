@@ -13,10 +13,12 @@ import {
   Star,
   Tag,
   Target,
+  TrendingUp,
   Users,
   XCircle,
 } from "lucide-react";
 
+import { CompetitorAnalysisBody } from "../components/analysis/CompetitorAnalysisBody";
 import { GeneralEvaluationBody } from "../components/analysis/GeneralEvaluationBody";
 import { InterviewNotesBody } from "../components/analysis/InterviewNotesBody";
 import { MomTestQuestionsBody } from "../components/analysis/MomTestQuestionsBody";
@@ -35,6 +37,7 @@ const ACTION_LABELS: Record<string, string> = {
   generate_mom_test_questions: "Görüşme soruları üretildi",
   regenerate_risky_assumptions: "Riskli varsayımlar güncellendi",
   regenerate_general_evaluation: "Genel değerlendirme güncellendi",
+  regenerate_competitor_analysis: "Rakip analizi güncellendi",
   save_interview_note: "Görüşme notu kaydedildi",
   analyze_interview_evidence: "Görüşme kanıtları analiz edildi",
 };
@@ -78,6 +81,7 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
   const [moscowRefreshKey, setMoscowRefreshKey] = useState(0);
   const [questionsRefreshKey, setQuestionsRefreshKey] = useState(0);
   const [evaluationRefreshKey, setEvaluationRefreshKey] = useState(0);
+  const [competitorRefreshKey, setCompetitorRefreshKey] = useState(0);
   const [notesRefreshKey, setNotesRefreshKey] = useState(0);
 
   const [ideaId, setIdeaId] = useActiveIdeaId();
@@ -93,6 +97,7 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
     "Hedef kitleyi değiştir",
     "Yol haritasını yenile",
     "Görüşme notlarını analiz et",
+    "Rakip analizini oluştur",
   ];
 
   const sendMsg = async () => {
@@ -212,6 +217,16 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
         )
       ) {
         setNotesRefreshKey((key) => key + 1);
+      }
+
+      if (
+        response.actions.some(
+          (action) =>
+            action.tool === "regenerate_competitor_analysis" &&
+            action.status === "success",
+        )
+      ) {
+        setCompetitorRefreshKey((key) => key + 1);
       }
     } catch (error) {
       setMsgs((previous) => [
@@ -441,6 +456,21 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
 
               <GeneralEvaluationBody
                 key={evaluationRefreshKey}
+                ideaId={ideaId}
+              />
+            </div>
+
+            {/* Rakip / Pazar Analizi */}
+            <div className="rounded-xl border border-border bg-card p-5">
+              <CardHeader
+                bg="bg-muted"
+                Icon={TrendingUp}
+                iconColor="text-foreground"
+                title="Rakip / Pazar Analizi"
+              />
+
+              <CompetitorAnalysisBody
+                key={competitorRefreshKey}
                 ideaId={ideaId}
               />
             </div>

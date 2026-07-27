@@ -13,6 +13,10 @@ class GeneralEvaluationGenerationError(Exception):
     """Raised when the general evaluation cannot be generated from the AI response."""
 
 
+class CompetitorAnalysisGenerationError(Exception):
+    """Raised when the competitor analysis cannot be generated from the AI response."""
+
+
 GENERAL_EVALUATION_SCHEMA = {
     "type": "object",
     "properties": {
@@ -79,6 +83,91 @@ def generate_general_evaluation_payload(idea) -> dict:
         key in result for key in ("strengths", "uncertainties", "next_action")
     ):
         raise GeneralEvaluationGenerationError("AI response was incomplete.")
+
+    return result
+
+
+COMPETITOR_ANALYSIS_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "competitors": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "description": {"type": "string"},
+                    "strengths": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                    "weaknesses": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                },
+                "required": ["name", "description", "strengths", "weaknesses"],
+            },
+        },
+        "market_gap": {"type": "string"},
+        "differentiation": {"type": "string"},
+    },
+    "required": ["competitors", "market_gap", "differentiation"],
+}
+
+
+def build_competitor_analysis_prompt(idea) -> str:
+    return (
+        "Sen deneyimli bir pazar araştırması danışmanısın. SADECE geçerli JSON döndür, "
+        "markdown veya ek açıklama ekleme. Aşağıdaki iş fikri için bir rakip/pazar analizi yap: "
+        "bu sektörde ve problemde faaliyet gösteren veya benzer bir ihtiyacı karşılayan tam olarak "
+        "3 gerçekçi rakip/alternatif çözüm belirle (doğrudan rakip, dolaylı rakip veya mevcut manuel "
+        "alternatif olabilir). Her rakip için kısa bir tanım, tam olarak 2 güçlü yön ve tam olarak "
+        "2 zayıf yön yaz. Ardından genel pazardaki boşluğu (market_gap) ve bu fikrin rakiplerden "
+        "somut olarak nasıl farklılaşabileceğini (differentiation) birer paragrafta özetle. "
+        "Genel geçer laf kalabalığından kaçın, fikre özgü ve spesifik ol.\n\n"
+        f"Fikir başlığı: {idea.title}\n"
+        f"Açıklama: {idea.description}\n"
+        f"Hedef kitle: {idea.target_audience}\n"
+        f"Problem: {idea.problem}\n"
+        f"Çözüm önerisi: {idea.solution}\n"
+        f"Sektör: {idea.sector}\n"
+    )
+
+
+def generate_competitor_analysis_payload(idea) -> dict:
+    api_key = getattr(settings, "GEMINI_API_KEY", "")
+    if not api_key:
+        raise CompetitorAnalysisGenerationError("GEMINI_API_KEY is not configured.")
+
+    client = genai.Client(
+        api_key=api_key,
+        http_options=types.HttpOptions(timeout=60_000),
+    )
+
+    try:
+        response = client.models.generate_content(
+            model=settings.GEMINI_MODEL_NAME,
+            contents=build_competitor_analysis_prompt(idea),
+            config=types.GenerateContentConfig(
+                temperature=0.4,
+                response_mime_type="application/json",
+                response_schema=COMPETITOR_ANALYSIS_SCHEMA,
+                max_output_tokens=1536,
+            ),
+        )
+    except Exception as exc:
+        raise CompetitorAnalysisGenerationError("AI provider request failed.") from exc
+
+    try:
+        result = json.loads(response.text)
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise CompetitorAnalysisGenerationError("AI response was not valid JSON.") from exc
+
+    if not isinstance(result, dict) or not all(
+        key in result for key in ("competitors", "market_gap", "differentiation")
+    ):
+        raise CompetitorAnalysisGenerationError("AI response was incomplete.")
 
     return result
 

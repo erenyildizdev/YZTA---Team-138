@@ -3,6 +3,7 @@ import { Download } from "lucide-react";
 import html2canvas from "html2canvas-pro";
 import jsPDF from "jspdf";
 
+import { CompetitorAnalysisBody } from "../components/analysis/CompetitorAnalysisBody";
 import { GeneralEvaluationBody } from "../components/analysis/GeneralEvaluationBody";
 import { MomTestQuestionsBody } from "../components/analysis/MomTestQuestionsBody";
 import { MoscowScopeBody } from "../components/analysis/MoscowScopeBody";
@@ -267,6 +268,13 @@ export function ReportPage({ onBack }: ReportPageProps) {
           <section data-pdf-block>
             <Divider label="Genel Değerlendirme" />
             <GeneralEvaluationBody ideaId={ideaId} readOnly />
+          </section>
+
+          <section>
+            <div data-pdf-block>
+              <Divider label="Rakip / Pazar Analizi" />
+            </div>
+            <CompetitorAnalysisBody ideaId={ideaId} readOnly />
           </section>
         </div>
       </div>

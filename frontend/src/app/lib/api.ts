@@ -288,6 +288,36 @@ export function generateGeneralEvaluation(ideaId: number): Promise<GeneralEvalua
   });
 }
 
+export interface CompetitorItem {
+  name: string;
+  description: string;
+  strengths: string[];
+  weaknesses: string[];
+}
+
+export interface CompetitorAnalysisData {
+  competitors: CompetitorItem[];
+  market_gap: string;
+  differentiation: string;
+}
+
+export interface CompetitorAnalysisResponse {
+  id: number;
+  idea: number;
+  analysis_data: CompetitorAnalysisData;
+  created_at: string;
+}
+
+export function getCompetitorAnalysis(ideaId: number): Promise<CompetitorAnalysisResponse> {
+  return request<CompetitorAnalysisResponse>(`/ideas/${ideaId}/competitor-analysis/`);
+}
+
+export function generateCompetitorAnalysis(ideaId: number): Promise<CompetitorAnalysisResponse> {
+  return request<CompetitorAnalysisResponse>(`/ideas/${ideaId}/generate-competitor-analysis/`, {
+    method: "POST",
+  });
+}
+
 export interface InterviewNotePayload {
   interviewee_name?: string;
   interviewee_profile?: string;
