@@ -195,7 +195,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
   const error = fieldErrors[step.key];
   const inputClass = `w-full bg-muted border rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 transition-all ${
     error
-      ? "border-red-800/50 focus:border-red-700 focus:ring-red-800/30"
+      ? "border-destructive/50 focus:border-destructive focus:ring-destructive/30"
       : "border-border focus:border-primary/50 focus:ring-primary/20"
   }`;
 
@@ -204,7 +204,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
       <div className="max-w-xl mx-auto px-4 sm:px-7 py-7 sm:py-10">
         <div className="flex items-center gap-2.5 mb-2">
           <span className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-            <Lightbulb size={16} className="text-blue-400" />
+            <Lightbulb size={16} className="text-primary" />
           </span>
           <h1 className="text-xl font-bold text-foreground">Yeni Fikir Ekle</h1>
         </div>
@@ -226,7 +226,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
 
         <div className="bg-card border border-border rounded-2xl p-6" style={{ minHeight: 280 }}>
           <div key={step.key} style={{ animation: "step-appear 0.35s ease-out" }}>
-            <span className="text-[11px] font-semibold text-blue-400 uppercase tracking-widest">
+            <span className="text-[11px] font-semibold text-primary uppercase tracking-widest">
               Adım {stepIndex + 1} / {STEPS.length}
             </span>
 
@@ -300,12 +300,12 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
               />
             )}
 
-            {error && <p className="text-xs text-red-400 mt-1.5">{error}</p>}
+            {error && <p className="text-xs text-destructive mt-1.5">{error}</p>}
 
             {isLastStep && formError && (
-              <div className="flex items-start gap-2 bg-red-900/10 border border-red-800/30 rounded-xl px-3 py-2.5 mt-4">
-                <AlertTriangle size={13} className="text-red-400 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-red-400 leading-relaxed">{formError}</p>
+              <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2.5 mt-4">
+                <AlertTriangle size={13} className="text-destructive mt-0.5 flex-shrink-0" />
+                <p className="text-xs text-destructive leading-relaxed">{formError}</p>
               </div>
             )}
           </div>
@@ -315,7 +315,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
               type="button"
               onClick={handleBack}
               disabled={stepIndex === 0}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary transition-all disabled:opacity-0 disabled:pointer-events-none"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-hover transition-all disabled:opacity-0 disabled:pointer-events-none"
             >
               <ArrowLeft size={13} />Geri
             </button>
@@ -324,7 +324,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
               type="button"
               onClick={handleNext}
               disabled={isSubmitting}
-              className="inline-flex items-center gap-2 bg-primary hover:bg-blue-600 text-white rounded-xl px-5 py-2.5 text-sm font-semibold transition-all disabled:opacity-50"
+              className="inline-flex items-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl px-5 py-2.5 text-sm font-semibold transition-all disabled:opacity-50"
             >
               {isSubmitting ? "Kaydediliyor..." : isLastStep ? "Kaydet ve Analize Geç" : "İleri"}
               {!isSubmitting && <ArrowRight size={14} />}

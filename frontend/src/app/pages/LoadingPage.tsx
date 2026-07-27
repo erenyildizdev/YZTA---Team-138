@@ -26,7 +26,7 @@ export function LoadingPage({ onDone }: { onDone: () => void }) {
     <div className="flex-1 flex items-center justify-center" style={{ animation: "page-in 0.3s ease-out" }}>
       <div className="text-center max-w-sm px-6">
         <div className="w-16 h-16 rounded-2xl bg-primary/15 border border-primary/20 flex items-center justify-center mx-auto mb-7">
-          <Sparkles size={26} className="text-blue-400 animate-pulse" />
+          <Sparkles size={26} className="text-primary animate-pulse" />
         </div>
         <h1 className="text-xl font-bold text-foreground">Fikrin analiz ediliyor</h1>
         <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
@@ -40,10 +40,10 @@ export function LoadingPage({ onDone }: { onDone: () => void }) {
               style={i <= step ? { animation: `step-appear 0.4s ease-out` } : {}}
             >
               <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
-                i < step ? "bg-emerald-500" : i === step ? "bg-primary" : "bg-border"
+                i < step ? "bg-success" : i === step ? "bg-primary" : "bg-border"
               }`}>
-                {i < step && <CheckCircle size={11} className="text-white" />}
-                {i === step && <div className="w-2 h-2 rounded-full bg-white animate-pulse" />}
+                {i < step && <CheckCircle size={11} className="text-primary-foreground" />}
+                {i === step && <div className="w-2 h-2 rounded-full bg-primary-foreground animate-pulse" />}
               </div>
               <span className={`text-sm ${i <= step ? "text-foreground font-medium" : "text-muted-foreground"}`}>{s}</span>
             </div>

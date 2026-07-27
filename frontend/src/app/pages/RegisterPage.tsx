@@ -43,7 +43,7 @@ export function RegisterPage() {
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-7">
           <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary mb-3">
-            <Sparkles size={20} className="text-white" />
+            <Sparkles size={20} className="text-primary-foreground" />
           </span>
           <h1 className="text-lg font-bold text-foreground">FikirLab</h1>
           <p className="text-sm text-muted-foreground mt-1">Hesap oluştur</p>
@@ -117,16 +117,16 @@ export function RegisterPage() {
           </div>
 
           {displayError && (
-            <div className="flex items-start gap-2 bg-red-900/10 border border-red-800/30 rounded-xl px-3 py-2.5">
-              <AlertTriangle size={13} className="text-red-400 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-red-400 leading-relaxed">{displayError}</p>
+            <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2.5">
+              <AlertTriangle size={13} className="text-destructive mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-destructive leading-relaxed">{displayError}</p>
             </div>
           )}
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full inline-flex items-center justify-center gap-2 bg-primary hover:bg-blue-600 text-white rounded-xl py-2.5 text-sm font-semibold transition-all disabled:opacity-50"
+            className="w-full inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-primary-foreground rounded-xl py-2.5 text-sm font-semibold transition-all disabled:opacity-50"
           >
             {isLoading ? "Hesap oluşturuluyor..." : "Kayıt Ol"}
           </button>
@@ -134,7 +134,7 @@ export function RegisterPage() {
 
         <p className="text-center text-xs text-muted-foreground mt-5">
           Zaten hesabın var mı?{" "}
-          <Link to="/login" className="text-blue-400 hover:text-blue-300 font-semibold">
+          <Link to="/login" className="text-primary hover:text-primary-hover font-semibold">
             Giriş Yap
           </Link>
         </p>
