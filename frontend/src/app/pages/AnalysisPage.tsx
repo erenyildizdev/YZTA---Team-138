@@ -446,7 +446,10 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
                 title="Görüşme Notları"
               />
 
-              <InterviewNotesBody key={notesRefreshKey} ideaId={ideaId} />
+              <InterviewNotesBody
+                ideaId={ideaId}
+                refreshToken={notesRefreshKey}
+              />
             </div>
 
             {/* Mom Test soruları */}
