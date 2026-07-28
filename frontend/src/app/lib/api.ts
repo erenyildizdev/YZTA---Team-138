@@ -130,6 +130,36 @@ export function register(payload: RegisterPayload): Promise<RegisterResponse> {
   });
 }
 
+export function getProfile(): Promise<AuthUser> {
+  return request<AuthUser>("/auth/me/");
+}
+
+export interface UpdateProfilePayload {
+  first_name?: string;
+  last_name?: string;
+}
+
+export function updateProfile(payload: UpdateProfilePayload): Promise<AuthUser> {
+  return request<AuthUser>("/auth/me/", {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export interface ChangePasswordPayload {
+  current_password: string;
+  new_password: string;
+}
+
+export function changePassword(
+  payload: ChangePasswordPayload,
+): Promise<{ message: string }> {
+  return request<{ message: string }>("/auth/change-password/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export interface ValidationRoadmapPhase {
   week?: number;
   phase?: number;

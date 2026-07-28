@@ -1,10 +1,15 @@
-from rest_framework import status
+from rest_framework import permissions, status
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import LoginSerializer, RegisterSerializer
+from .serializers import (
+    ChangePasswordSerializer,
+    LoginSerializer,
+    ProfileSerializer,
+    RegisterSerializer,
+)
 
 
 class RegisterView(APIView):
@@ -50,5 +55,42 @@ class LoginView(APIView):
                     "last_name": user.last_name,
                 },
             },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ProfileView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [JSONParser]
+
+    def get(self, request, *args, **kwargs):
+        serializer = ProfileSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def patch(self, request, *args, **kwargs):
+        serializer = ProfileSerializer(
+            request.user,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ChangePasswordView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [JSONParser]
+
+    def post(self, request, *args, **kwargs):
+        serializer = ChangePasswordSerializer(
+            data=request.data,
+            context={"request": request},
+        )
+        serializer.is_valid(raise_exception=True)
+        request.user.set_password(serializer.validated_data["new_password"])
+        request.user.save(update_fields=["password"])
+        return Response(
+            {"message": "Şifre güncellendi."},
             status=status.HTTP_200_OK,
         )

@@ -170,15 +170,22 @@ function Sidebar({ onClose }: SidebarProps) {
           </span>
         </button>
 
-        <button
-          type="button"
-          disabled
-          title="Backend entegrasyonu sonrasında kullanılabilir"
-          className="flex w-full cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sidebar-foreground/30"
+        <NavLink
+          to="/account"
+          onClick={onClose}
+          className={({ isActive }) =>
+            [
+              "flex w-full items-center gap-3 rounded-xl px-3 py-2.5",
+              "text-sm transition-colors",
+              isActive
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/65 hover:bg-sidebar-accent hover:text-sidebar-foreground",
+            ].join(" ")
+          }
         >
           <Settings size={17} />
           Hesap Ayarları
-        </button>
+        </NavLink>
 
         <button
           type="button"

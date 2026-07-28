@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from "react-router";
 import { AppLayout } from "./components/layout/AppLayout";
+import { AccountSettingsPage } from "./pages/AccountSettingsPage";
 import { AnalysisPage } from "./pages/AnalysisPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { HistoryPage } from "./pages/HistoryPage";
@@ -60,6 +61,7 @@ function AppRoutes() {
             />
           }
         />
+        <Route path="account" element={<AccountSettingsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

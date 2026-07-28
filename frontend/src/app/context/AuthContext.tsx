@@ -37,6 +37,7 @@ interface AuthContextValue {
   register: (input: RegisterInput) => Promise<boolean>;
   logout: () => void;
   clearError: () => void;
+  updateUser: (user: AuthUser) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -102,8 +103,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const clearError = () => setError(null);
 
+  const updateUser = (nextUser: AuthUser) => {
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(nextUser));
+    setUser(nextUser);
+  };
+
   const value = useMemo<AuthContextValue>(
-    () => ({ user, isAuthenticated: !!token, isLoading, error, login, register, logout, clearError }),
+    () => ({ user, isAuthenticated: !!token, isLoading, error, login, register, logout, clearError, updateUser }),
     [user, token, isLoading, error],
   );
 
