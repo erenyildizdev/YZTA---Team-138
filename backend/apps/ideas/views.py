@@ -2,7 +2,6 @@ import unicodedata
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from apps.analyses.services.analyzer import analyze_idea
 from apps.analyses.services.llm_client import LLMClientError
 
 from .mentor_agent import MentorAgentError, run_mentor_chat
@@ -135,28 +134,6 @@ class IdeaViewSet(viewsets.ModelViewSet):
             )
 
         return Response({"ideas": results}, status=status.HTTP_200_OK)
-
-    @action(detail=True, methods=["post"], url_path="analyze")
-    def analyze(self, request, pk=None):
-        idea = self.get_object()
-
-        idea_text = "\n".join(
-            [
-                f"Title: {idea.title}",
-                f"Description: {idea.description}",
-                f"Target audience: {idea.target_audience}",
-                f"Problem: {idea.problem}",
-                f"Solution: {idea.solution}",
-                f"Sector: {idea.sector}",
-            ]
-        )
-
-        result = analyze_idea(idea_text=idea_text)
-
-        idea.rag_sources = result.get("sources", [])
-        idea.save(update_fields=["rag_sources"])
-
-        return Response(result, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="generate-roadmap")
     def generate_roadmap(self, request, pk=None):

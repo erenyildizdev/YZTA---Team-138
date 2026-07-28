@@ -13,8 +13,6 @@ from .models import (
 )
 
 from .serializers import (
-    IdeaAnalysisRequestSerializer,
-    IdeaAnalysisResponseSerializer,
     InterviewEvidenceAnalysisSerializer,
     InterviewNoteSerializer,
     MomTestQuestionRequestSerializer,
@@ -29,7 +27,6 @@ from .services import (
     generate_mom_test_questions,
     generate_moscow_scope,
 )
-from .services.analyzer import analyze_idea
 from .services.llm_client import LLMClientError
 from .services.validation_workflow import (
     INTERNAL_ERROR,
@@ -90,29 +87,6 @@ class ValidationWorkflowView(APIView):
             status=status.HTTP_200_OK,
         )
 
-
-class IdeaAnalysisView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = IdeaAnalysisRequestSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        try:
-            result = analyze_idea(
-                serializer.validated_data["idea_text"]
-            )
-        except LLMClientError as exc:
-            return Response(
-                {"detail": str(exc)},
-                status=status.HTTP_503_SERVICE_UNAVAILABLE,
-            )
-
-        response_serializer = IdeaAnalysisResponseSerializer(data=result)
-        response_serializer.is_valid(raise_exception=True)
-
-        return Response(
-            response_serializer.validated_data,
-            status=status.HTTP_200_OK,
-        )
 
 class MomTestQuestionGenerateView(APIView):
     permission_classes = [permissions.IsAuthenticated]

@@ -1,7 +1,6 @@
 from django.urls import path
 
 from .views import (
-    IdeaAnalysisView,
     InterviewEvidenceAnalysisView,
     InterviewNoteDetailView,
     InterviewNoteListCreateView,
@@ -13,11 +12,6 @@ from .views import (
 app_name = "analyses"
 
 urlpatterns = [
-    path(
-        "analyze/",
-        IdeaAnalysisView.as_view(),
-        name="idea-analysis",
-    ),
     path(
         "ideas/<int:idea_id>/mom-test-questions/",
         MomTestQuestionGenerateView.as_view(),

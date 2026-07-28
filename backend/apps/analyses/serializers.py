@@ -14,10 +14,6 @@ from .services.validation_workflow_contract import (
 )
 
 
-class IdeaAnalysisRequestSerializer(serializers.Serializer):
-    idea_text = serializers.CharField(min_length=10)
-
-
 class StrictFieldsSerializer(serializers.Serializer):
     """Reject unknown structured-output fields instead of silently dropping them."""
 
@@ -397,70 +393,3 @@ class MomTestQuestionResponseSerializer(serializers.Serializer):
     question_count = serializers.IntegerField()
     questions = MomTestQuestionSerializer(many=True)
 
-class MoscowResultSerializer(serializers.Serializer):
-    must = serializers.ListField(
-        child=serializers.CharField(),
-        allow_empty=False,
-    )
-    should = serializers.ListField(
-        child=serializers.CharField(),
-        allow_empty=False,
-    )
-    could = serializers.ListField(
-        child=serializers.CharField(),
-        allow_empty=False,
-    )
-    wont = serializers.ListField(
-        child=serializers.CharField(),
-        allow_empty=False,
-    )
-
-class RagSourceSerializer(serializers.Serializer):
-    title = serializers.CharField()
-    source_type = serializers.CharField()
-    source_url = serializers.URLField(
-        allow_null=True,
-        required=False,
-    )
-    chunk_id = serializers.IntegerField()
-    chunk_index = serializers.IntegerField()
-    distance = serializers.FloatField()
-
-class IdeaAnalysisResponseSerializer(serializers.Serializer):
-    idea_summary = serializers.CharField()
-    target_customer = serializers.CharField()
-    problem_statement = serializers.CharField()
-    value_proposition = serializers.CharField()
-
-    risky_assumptions = serializers.ListField(
-        child=serializers.CharField(),
-        allow_empty=False,
-    )
-    mom_test_questions = serializers.ListField(
-        child=serializers.CharField(),
-        allow_empty=False,
-    )
-
-    moscow = MoscowResultSerializer()
-
-    validation_roadmap = serializers.ListField(
-        child=serializers.CharField(),
-        allow_empty=False,
-    )
-    evidence_to_collect = serializers.ListField(
-        child=serializers.CharField(),
-        allow_empty=False,
-    )
-
-    final_recommendation = serializers.CharField()
-
-    rag_used = serializers.BooleanField(
-        required=False,
-        default=False,
-    )
-
-    sources = RagSourceSerializer(
-        many=True,
-        required=False,
-        default=list,
-    )
