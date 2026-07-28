@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 import { IdeaListCard } from "../components/ideas/IdeaListCard";
+import { useAuth } from "../context/AuthContext";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 import { useIdeas } from "../hooks/useIdeas";
 
@@ -22,6 +23,8 @@ export function DashboardPage({
 }) {
   const { status, data: ideas, error } = useIdeas();
   const { setActiveIdeaId } = useActiveIdeaId();
+  const { user } = useAuth();
+  const displayName = user?.first_name?.trim() || user?.email || "";
   const completedCount = ideas.filter(
     (idea) => idea.analysis_status === "completed",
   ).length;
@@ -65,11 +68,11 @@ export function DashboardPage({
       <div className="mx-auto max-w-4xl px-4 py-7 sm:px-7 sm:py-10">
         <div className="mb-10">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Fikirlerini doğrulamaya hazır mısın? 👋
+            {displayName ? `Hoş geldin, ${displayName}! 👋` : "Hoş geldin! 👋"}
           </h1>
           <p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
-            AI destekli analizlerle iş fikirlerindeki riskleri keşfet, müşteri
-            görüşme sorularını oluştur ve MVP kapsamını daralt.
+            AI destekli mentörünle fikrini uçtan uca doğrula: riskleri keşfet,
+            rakiplerini analiz et, MVP&apos;ni netleştir ve yatırımcı sunumunu hazırla.
           </p>
           <button
             type="button"
