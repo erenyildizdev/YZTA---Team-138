@@ -1,4 +1,5 @@
 import logging
+import time
 
 from django.conf import settings
 from google import genai
@@ -58,57 +59,103 @@ def _embed_text(
         "gemini-embedding-001",
     )
 
-    try:
-        response = client.models.embed_content(
-            model=model_name,
-            contents=clean_text,
-            config=types.EmbedContentConfig(
-                task_type=task_type,
-                output_dimensionality=768,
-            ),
-        )
+    max_attempts = 6
+    base_wait_seconds = 12
+    request_interval_seconds = 1
 
-    except errors.ClientError as exc:
-        status_code = getattr(exc, "status_code", None)
+    response = None
 
-        if status_code in (401, 403):
-            raise EmbeddingConfigurationError(
-                "Gemini embedding authentication failed."
-            ) from exc
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = client.models.embed_content(
+                model=model_name,
+                contents=clean_text,
+                config=types.EmbedContentConfig(
+                    task_type=task_type,
+                    output_dimensionality=768,
+                ),
+            )
 
-        if status_code == 429:
+            # Dakikalık istek limitini aşmamak için
+            # her başarılı embedding çağrısından sonra bekle.
+            time.sleep(request_interval_seconds)
+
+            break
+
+        except errors.ClientError as exc:
+            status_code = getattr(exc, "status_code", None)
+
+            if status_code in (401, 403):
+                raise EmbeddingConfigurationError(
+                    "Gemini embedding authentication failed."
+                ) from exc
+
+            if status_code == 429:
+                if attempt == max_attempts:
+                    raise EmbeddingRequestError(
+                        "Gemini embedding usage limit was reached "
+                        "and all retry attempts failed."
+                    ) from exc
+
+                wait_seconds = base_wait_seconds * attempt
+
+                logger.warning(
+                    "Gemini embedding rate limit reached. "
+                    "Waiting %s seconds before retry %s/%s.",
+                    wait_seconds,
+                    attempt + 1,
+                    max_attempts,
+                )
+
+                time.sleep(wait_seconds)
+                continue
+
+            logger.exception(
+                "Gemini rejected the embedding request."
+            )
+
             raise EmbeddingRequestError(
-                "Gemini embedding usage limit has been reached."
+                "The embedding request was rejected."
             ) from exc
 
-        logger.exception(
-            "Gemini rejected the embedding request."
-        )
+        except errors.ServerError as exc:
+            if attempt == max_attempts:
+                logger.exception(
+                    "Gemini embedding server error."
+                )
 
+                raise EmbeddingRequestError(
+                    "The embedding service is temporarily unavailable."
+                ) from exc
+
+            wait_seconds = 5 * attempt
+
+            logger.warning(
+                "Gemini embedding server error. "
+                "Waiting %s seconds before retry %s/%s.",
+                wait_seconds,
+                attempt + 1,
+                max_attempts,
+            )
+
+            time.sleep(wait_seconds)
+
+        except EmbeddingServiceError:
+            raise
+
+        except Exception as exc:
+            logger.exception(
+                "Unexpected Gemini embedding error."
+            )
+
+            raise EmbeddingRequestError(
+                "An unexpected embedding service error occurred."
+            ) from exc
+
+    if response is None:
         raise EmbeddingRequestError(
-            "The embedding request was rejected."
-        ) from exc
-
-    except errors.ServerError as exc:
-        logger.exception(
-            "Gemini embedding server error."
+            "Gemini embedding request could not be completed."
         )
-
-        raise EmbeddingRequestError(
-            "The embedding service is temporarily unavailable."
-        ) from exc
-
-    except EmbeddingServiceError:
-        raise
-
-    except Exception as exc:
-        logger.exception(
-            "Unexpected Gemini embedding error."
-        )
-
-        raise EmbeddingRequestError(
-            "An unexpected embedding service error occurred."
-        ) from exc
 
     embeddings = getattr(response, "embeddings", None)
 

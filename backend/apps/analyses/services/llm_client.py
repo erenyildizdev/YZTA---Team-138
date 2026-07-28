@@ -609,3 +609,100 @@ def call_mom_test_llm(prompt: str) -> dict:
     raise LLMRequestError(
         "The AI Mom Test service could not complete the request."
     )
+
+def call_rag_llm(prompt: str) -> str:
+    clean_prompt = prompt.strip()
+
+    if not clean_prompt:
+        raise LLMConfigurationError(
+            "The RAG prompt cannot be empty."
+        )
+
+    client = _get_client()
+    max_attempts = 3
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = client.models.generate_content(
+                model=settings.GEMINI_MODEL_NAME,
+                contents=clean_prompt,
+                config=types.GenerateContentConfig(
+                    temperature=0.2,
+                    max_output_tokens=2048,
+                ),
+            )
+
+            response_text = getattr(response, "text", None)
+
+            if not response_text:
+                raise LLMResponseError(
+                    "Gemini returned an empty RAG response."
+                )
+
+            return response_text.strip()
+
+        except errors.ClientError as exc:
+            status_code = getattr(exc, "status_code", None)
+
+            if status_code in (401, 403):
+                logger.exception(
+                    "Gemini API authentication failed."
+                )
+                raise LLMConfigurationError(
+                    "Gemini API authentication failed."
+                ) from exc
+
+            if status_code == 429:
+                logger.exception(
+                    "Gemini API usage limit was reached."
+                )
+                raise LLMRequestError(
+                    "Gemini usage limit has been reached. "
+                    "Please try again later."
+                ) from exc
+
+            logger.exception(
+                "Gemini rejected the RAG request."
+            )
+            raise LLMRequestError(
+                "The Gemini RAG request was rejected."
+            ) from exc
+
+        except errors.ServerError as exc:
+            status_code = getattr(exc, "status_code", None)
+
+            if status_code == 504 and attempt < max_attempts:
+                wait_seconds = 2 ** attempt
+
+                logger.warning(
+                    "Gemini RAG request timed out. "
+                    "Retrying in %s seconds. Attempt %s/%s.",
+                    wait_seconds,
+                    attempt,
+                    max_attempts,
+                )
+
+                time.sleep(wait_seconds)
+                continue
+
+            logger.exception(
+                "Gemini API server error during RAG response generation."
+            )
+            raise LLMRequestError(
+                "The AI RAG service is temporarily unavailable."
+            ) from exc
+
+        except LLMClientError:
+            raise
+
+        except Exception as exc:
+            logger.exception(
+                "Unexpected Gemini RAG error."
+            )
+            raise LLMRequestError(
+                "An unexpected AI service error occurred."
+            ) from exc
+
+    raise LLMRequestError(
+        "The AI RAG service could not complete the request."
+    )
