@@ -432,9 +432,20 @@ export interface InterviewNotePayload {
   interviewed_at?: string | null;
 }
 
-export interface InterviewNoteResponse extends InterviewNotePayload {
+export interface InterviewNoteUpdatePayload {
+  interviewee_name?: string;
+  interviewee_profile?: string;
+  notes?: string;
+  interviewed_at?: string | null;
+}
+
+export interface InterviewNoteResponse {
   id: number;
   idea_id: number;
+  interviewee_name: string;
+  interviewee_profile: string;
+  notes: string;
+  interviewed_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -451,6 +462,20 @@ export function createInterviewNote(
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export function updateInterviewNote(
+  ideaId: number,
+  noteId: number,
+  payload: InterviewNoteUpdatePayload,
+): Promise<InterviewNoteResponse> {
+  return request<InterviewNoteResponse>(
+    `/analyses/ideas/${ideaId}/interview-notes/${noteId}/`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    },
+  );
 }
 
 export function deleteInterviewNote(ideaId: number, noteId: number): Promise<void> {
