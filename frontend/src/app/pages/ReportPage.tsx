@@ -13,40 +13,51 @@ import { ActiveIdeaPageState } from "../components/ideas/ActiveIdeaPageState";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 import { useIdea } from "../hooks/useIdea";
 
+interface RagSource {
+  title: string;
+  source_url?: string | null;
+}
+
 interface ReportPageProps {
   onBack: () => void;
 }
 
 export function ReportPage({ onBack }: ReportPageProps) {
   const { ideaId } = useActiveIdeaId();
+
   const {
     status: ideaStatus,
     data: idea,
     reload: reloadIdea,
   } = useIdea(ideaId);
+
   const reportRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const handleDownloadPdf = async () => {
     const element = reportRef.current;
-    if (!element || isDownloading) return;
+
+    if (!element || isDownloading) {
+      return;
+    }
 
     setIsDownloading(true);
     setDownloadError(null);
+
     const hiddenEls = Array.from(
       element.querySelectorAll<HTMLElement>(".no-print"),
     );
+
     hiddenEls.forEach((el) => {
       el.style.visibility = "hidden";
     });
 
-    // Radix's open/close CSS animations (e.g. accordion) can be captured
-    // mid-transition by html2canvas. Freeze all animations/transitions so
-    // every block is captured in its final, settled visual state.
     const styleTag = document.createElement("style");
+
     styleTag.textContent =
       "*, *::before, *::after { animation: none !important; transition: none !important; }";
+
     document.head.appendChild(styleTag);
 
     try {
@@ -61,7 +72,11 @@ export function ReportPage({ onBack }: ReportPageProps) {
       const usableHeight = pageHeight - margin * 2;
       const gap = 16;
 
-      const pdf = new jsPDF({ unit: "pt", format: "a4" });
+      const pdf = new jsPDF({
+        unit: "pt",
+        format: "a4",
+      });
+
       let cursorY = margin;
       let pageHasContent = false;
 
@@ -76,7 +91,6 @@ export function ReportPage({ onBack }: ReportPageProps) {
         const imgData = canvas.toDataURL("image/jpeg", 0.85);
 
         if (imgHeight > usableHeight) {
-          // Block taller than a full page: give it its own page(s), sliced.
           if (pageHasContent) {
             pdf.addPage();
           }
@@ -92,11 +106,14 @@ export function ReportPage({ onBack }: ReportPageProps) {
             contentWidth,
             imgHeight,
           );
+
           heightLeft -= usableHeight;
 
           while (heightLeft > 0) {
             sliceOffset += usableHeight;
+
             pdf.addPage();
+
             pdf.addImage(
               imgData,
               "JPEG",
@@ -105,11 +122,13 @@ export function ReportPage({ onBack }: ReportPageProps) {
               contentWidth,
               imgHeight,
             );
+
             heightLeft -= usableHeight;
           }
 
           cursorY = margin;
           pageHasContent = false;
+
           continue;
         }
 
@@ -118,12 +137,21 @@ export function ReportPage({ onBack }: ReportPageProps) {
           cursorY = margin;
         }
 
-        pdf.addImage(imgData, "JPEG", margin, cursorY, contentWidth, imgHeight);
+        pdf.addImage(
+          imgData,
+          "JPEG",
+          margin,
+          cursorY,
+          contentWidth,
+          imgHeight,
+        );
+
         cursorY += imgHeight + gap;
         pageHasContent = true;
       }
 
       const rawName = idea?.title?.trim() || "Fikir";
+
       const safeName = rawName
         .replace(/[\\/:*?"<>|]/g, "")
         .replace(/\s+/g, " ")
@@ -132,19 +160,26 @@ export function ReportPage({ onBack }: ReportPageProps) {
       const blob = pdf.output("blob");
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
+
       link.href = url;
       link.download = `${safeName} analiz raporu.pdf`;
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error(error);
-      setDownloadError("PDF oluşturulamadı. Lütfen tekrar dener misin?");
+
+      setDownloadError(
+        "PDF oluşturulamadı. Lütfen tekrar dener misin?",
+      );
     } finally {
       hiddenEls.forEach((el) => {
         el.style.visibility = "";
       });
+
       styleTag.remove();
       setIsDownloading(false);
     }
@@ -185,6 +220,17 @@ export function ReportPage({ onBack }: ReportPageProps) {
     return <ActiveIdeaPageState mode="loading" />;
   }
 
+  const sources: RagSource[] = idea.sources ?? [];
+
+  const uniqueSources = Array.from(
+    new Map(
+      sources.map((source) => [
+        source.source_url ?? source.title,
+        source,
+      ]),
+    ).values(),
+  );
+
   return (
     <div
       className="print-area hide-scroll flex-1 overflow-y-auto"
@@ -201,15 +247,13 @@ export function ReportPage({ onBack }: ReportPageProps) {
             </div>
 
             <h1 className="text-2xl font-bold text-foreground">
-              {idea?.title ?? "Yükleniyor..."}
+              {idea.title}
             </h1>
 
             <p className="mt-1 text-sm text-muted-foreground">
-              {idea
-                ? `${new Date(idea.created_at).toLocaleDateString(
-                    "tr-TR",
-                  )} tarihli analiz`
-                : ""}
+              {`${new Date(idea.created_at).toLocaleDateString(
+                "tr-TR",
+              )} tarihli analiz`}
             </p>
           </div>
 
@@ -221,11 +265,14 @@ export function ReportPage({ onBack }: ReportPageProps) {
               className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Download size={14} />
+
               {isDownloading ? "Hazırlanıyor..." : "PDF İndir"}
             </button>
 
             {downloadError && (
-              <p className="text-xs text-destructive">{downloadError}</p>
+              <p className="text-xs text-destructive">
+                {downloadError}
+              </p>
             )}
           </div>
         </div>
@@ -243,7 +290,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
             <Divider label="Fikir Özeti" />
 
             <p className="text-sm leading-relaxed text-muted-foreground">
-              {idea?.description}
+              {idea.description}
             </p>
           </section>
 
@@ -257,7 +304,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
                 </h3>
 
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  {idea?.problem}
+                  {idea.problem}
                 </p>
               </div>
 
@@ -267,7 +314,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
                 </h3>
 
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  {idea?.target_audience}
+                  {idea.target_audience}
                 </p>
               </div>
             </div>
@@ -275,37 +322,98 @@ export function ReportPage({ onBack }: ReportPageProps) {
 
           <section data-pdf-block>
             <Divider label="Riskli Varsayımlar" />
-            <RiskyAssumptionsBody ideaId={ideaId} readOnly />
+
+            <RiskyAssumptionsBody
+              ideaId={ideaId}
+              readOnly
+            />
           </section>
 
           <section data-pdf-block>
             <Divider label="Müşteri Görüşme Soruları" />
-            <MomTestQuestionsBody ideaId={ideaId} readOnly />
+
+            <MomTestQuestionsBody
+              ideaId={ideaId}
+              readOnly
+            />
           </section>
 
           <section data-pdf-block>
             <Divider label="MVP Kapsamı (MoSCoW)" />
-            <MoscowScopeBody ideaId={ideaId} readOnly />
+
+            <MoscowScopeBody
+              ideaId={ideaId}
+              readOnly
+            />
           </section>
 
           <section>
             <div data-pdf-block>
               <Divider label="Doğrulama Yol Haritası" />
             </div>
-            <ValidationRoadmapBody ideaId={ideaId} readOnly />
+
+            <ValidationRoadmapBody
+              ideaId={ideaId}
+              readOnly
+            />
           </section>
 
           <section data-pdf-block>
             <Divider label="Genel Değerlendirme" />
-            <GeneralEvaluationBody ideaId={ideaId} readOnly />
+
+            <GeneralEvaluationBody
+              ideaId={ideaId}
+              readOnly
+            />
           </section>
 
           <section>
             <div data-pdf-block>
               <Divider label="Rakip / Pazar Analizi" />
             </div>
-            <CompetitorAnalysisBody ideaId={ideaId} readOnly />
+
+            <CompetitorAnalysisBody
+              ideaId={ideaId}
+              readOnly
+            />
           </section>
+
+          {uniqueSources.length > 0 && (
+            <section data-pdf-block>
+              <Divider label="Kullanılan Kaynaklar" />
+
+              <div className="rounded-xl border border-border bg-card p-5">
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Bu analiz hazırlanırken aşağıdaki eğitim içerikleri
+                  referans alınmıştır.
+                </p>
+
+                <ul className="space-y-3">
+                  {uniqueSources.map((source, index) => (
+                    <li
+                      key={`${source.source_url ?? source.title}-${index}`}
+                      className="flex flex-col gap-1"
+                    >
+                      <span className="text-sm font-semibold text-foreground">
+                        {source.title}
+                      </span>
+
+                      {source.source_url && (
+                        <a
+                          href={source.source_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="no-print w-fit text-xs font-medium text-primary hover:underline"
+                        >
+                          Kaynağı görüntüle
+                        </a>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </div>

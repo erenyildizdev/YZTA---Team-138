@@ -18,8 +18,20 @@ def analyze_idea(idea_text: str) -> dict:
             query=idea_text,
             limit=4,
         )
-    except Exception:
+
+        print("RETRIEVED CHUNKS COUNT:", len(retrieved_chunks))
+
+        for chunk in retrieved_chunks:
+            print(
+                "SOURCE:",
+                chunk.source_title,
+                chunk.source_url,
+                chunk.distance,
+            )
+
+    except Exception as exc:
         logger.exception("RAG kaynakları getirilirken hata oluştu.")
+        print("RAG ERROR:", repr(exc))
         retrieved_chunks = []
 
     rag_context = format_rag_context(retrieved_chunks)
