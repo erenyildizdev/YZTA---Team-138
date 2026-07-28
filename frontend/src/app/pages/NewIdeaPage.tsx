@@ -141,7 +141,7 @@ const INITIAL_ANALYSIS_STEPS: AnalysisStep[] = [
 ];
 
 export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
-  const [, setIdeaId] = useActiveIdeaId();
+  const { setActiveIdeaId } = useActiveIdeaId();
 
   const [stepIndex, setStepIndex] = useState(0);
   const [values, setValues] = useState<Record<FieldKey, string>>(initialValues);
@@ -238,7 +238,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
     try {
       const idea = await createIdea(payload);
       setCreatedIdeaId(idea.id);
-      setIdeaId(idea.id);
+      setActiveIdeaId(idea.id);
       setAnalysisStepStatus(0, "completed");
       await runAnalysis(idea.id);
     } catch (error) {

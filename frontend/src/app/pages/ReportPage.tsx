@@ -9,6 +9,7 @@ import { MomTestQuestionsBody } from "../components/analysis/MomTestQuestionsBod
 import { MoscowScopeBody } from "../components/analysis/MoscowScopeBody";
 import { RiskyAssumptionsBody } from "../components/analysis/RiskyAssumptionsBody";
 import { ValidationRoadmapBody } from "../components/analysis/ValidationRoadmapBody";
+import { ActiveIdeaPageState } from "../components/ideas/ActiveIdeaPageState";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 import { useIdea } from "../hooks/useIdea";
 
@@ -17,8 +18,12 @@ interface ReportPageProps {
 }
 
 export function ReportPage({ onBack }: ReportPageProps) {
-  const [ideaId] = useActiveIdeaId();
-  const { data: idea } = useIdea(ideaId);
+  const { ideaId } = useActiveIdeaId();
+  const {
+    status: ideaStatus,
+    data: idea,
+    reload: reloadIdea,
+  } = useIdea(ideaId);
   const reportRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
@@ -154,6 +159,31 @@ export function ReportPage({ onBack }: ReportPageProps) {
       </h2>
     </div>
   );
+
+  if (ideaStatus === "loading") {
+    return <ActiveIdeaPageState mode="loading" />;
+  }
+
+  if (
+    ideaId === null ||
+    ideaStatus === "idle" ||
+    ideaStatus === "not_found"
+  ) {
+    return <ActiveIdeaPageState mode="empty" />;
+  }
+
+  if (ideaStatus === "error") {
+    return (
+      <ActiveIdeaPageState
+        mode="error"
+        onRetry={() => void reloadIdea()}
+      />
+    );
+  }
+
+  if (!idea || idea.id !== ideaId) {
+    return <ActiveIdeaPageState mode="loading" />;
+  }
 
   return (
     <div

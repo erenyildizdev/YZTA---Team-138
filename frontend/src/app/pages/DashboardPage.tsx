@@ -21,7 +21,7 @@ export function DashboardPage({
   onOpenDetail: () => void;
 }) {
   const { status, data: ideas, error } = useIdeas();
-  const [, setIdeaId] = useActiveIdeaId();
+  const { setActiveIdeaId } = useActiveIdeaId();
   const completedCount = ideas.filter(
     (idea) => idea.analysis_status === "completed",
   ).length;
@@ -53,7 +53,7 @@ export function DashboardPage({
   ];
 
   const openIdea = (ideaId: number) => {
-    setIdeaId(ideaId);
+    setActiveIdeaId(ideaId);
     onOpenDetail();
   };
 

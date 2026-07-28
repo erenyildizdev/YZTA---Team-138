@@ -1,7 +1,10 @@
 import { AlertCircle, History, LoaderCircle, RefreshCw } from "lucide-react";
 
 import { IdeaListCard } from "../components/ideas/IdeaListCard";
-import { clearActiveIdeaId, useActiveIdeaId } from "../hooks/useActiveIdeaId";
+import {
+  clearActiveIdeaIdIfMatches,
+  useActiveIdeaId,
+} from "../hooks/useActiveIdeaId";
 import { useIdeas } from "../hooks/useIdeas";
 
 export function HistoryPage({
@@ -12,16 +15,16 @@ export function HistoryPage({
   onNew: () => void;
 }) {
   const { status, data: ideas, error, reload, removeIdea } = useIdeas();
-  const [activeIdeaId, setIdeaId] = useActiveIdeaId();
+  const { setActiveIdeaId } = useActiveIdeaId();
 
   const openIdea = (ideaId: number) => {
-    setIdeaId(ideaId);
+    setActiveIdeaId(ideaId);
     onOpen();
   };
 
   const deleteIdea = async (ideaId: number) => {
     await removeIdea(ideaId);
-    if (ideaId === activeIdeaId) clearActiveIdeaId();
+    clearActiveIdeaIdIfMatches(ideaId);
   };
 
   return (
