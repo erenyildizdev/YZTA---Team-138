@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import {
   AlertTriangle,
   Bot,
@@ -8,6 +8,7 @@ import {
   Map,
   Megaphone,
   MessageSquare,
+  Pencil,
   RefreshCw,
   Send,
   Sparkles,
@@ -30,7 +31,7 @@ import { ValidationRoadmapBody } from "../components/analysis/ValidationRoadmapB
 import { ActiveIdeaPageState } from "../components/ideas/ActiveIdeaPageState";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 import { useIdea } from "../hooks/useIdea";
-import { ApiError, sendMentorMessage } from "../lib/api";
+import { ApiError, sendMentorMessage, updateIdea } from "../lib/api";
 import type { ChatMessage } from "../types";
 
 const ACTION_LABELS: Record<string, string> = {
@@ -95,6 +96,55 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
     data: idea,
     reload: reloadIdea,
   } = useIdea(ideaId);
+
+  const [isEditingIdea, setIsEditingIdea] = useState(false);
+  const [isSavingIdea, setIsSavingIdea] = useState(false);
+  const [editIdeaError, setEditIdeaError] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    target_audience: "",
+    problem: "",
+    solution: "",
+    sector: "",
+  });
+
+  const startEditingIdea = () => {
+    if (!idea) return;
+    setEditForm({
+      title: idea.title,
+      description: idea.description,
+      target_audience: idea.target_audience,
+      problem: idea.problem,
+      solution: idea.solution,
+      sector: idea.sector,
+    });
+    setEditIdeaError(null);
+    setIsEditingIdea(true);
+  };
+
+  const cancelEditingIdea = () => {
+    setIsEditingIdea(false);
+    setEditIdeaError(null);
+  };
+
+  const handleSaveIdea = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!idea || isSavingIdea) return;
+
+    setIsSavingIdea(true);
+    setEditIdeaError(null);
+
+    try {
+      await updateIdea(idea.id, editForm);
+      await reloadIdea();
+      setIsEditingIdea(false);
+    } catch (err) {
+      setEditIdeaError(err instanceof ApiError ? err.message : "Fikir güncellenemedi.");
+    } finally {
+      setIsSavingIdea(false);
+    }
+  };
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const shouldAutoScrollRef = useRef(true);
@@ -400,7 +450,7 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
 
           <div className="space-y-4">
             {/* Fikir özeti */}
-            <div className="rounded-xl border border-border bg-card p-5">
+            <div className="relative rounded-xl border border-border bg-card p-5">
               <CardHeader
                 bg="bg-accent"
                 Icon={Sparkles}
@@ -408,32 +458,133 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
                 title="Fikir Özeti"
               />
 
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {idea?.description}
-              </p>
-
-              {idea?.problem && (
-                <div className="mt-3 border-t border-border pt-3">
-                  <span className="text-xs font-bold text-foreground">
-                    Problem:{" "}
-                  </span>
-
-                  <span className="text-sm text-muted-foreground">
-                    {idea.problem}
-                  </span>
-                </div>
+              {!isEditingIdea && (
+                <button
+                  type="button"
+                  onClick={startEditingIdea}
+                  className="absolute right-5 top-5 inline-flex items-center gap-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <Pencil size={11} />
+                  Düzenle
+                </button>
               )}
 
-              {idea?.solution && (
-                <div className="mt-2">
-                  <span className="text-xs font-bold text-foreground">
-                    Çözüm Önerisi:{" "}
-                  </span>
+              {isEditingIdea ? (
+                <form onSubmit={handleSaveIdea} className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">Başlık</label>
+                    <input
+                      type="text"
+                      required
+                      value={editForm.title}
+                      onChange={(e) => setEditForm((f) => ({ ...f, title: e.target.value }))}
+                      className="w-full rounded-xl border border-border bg-muted px-3.5 py-2.5 text-sm text-foreground transition-all focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20"
+                    />
+                  </div>
 
-                  <span className="text-sm text-muted-foreground">
-                    {idea.solution}
-                  </span>
-                </div>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground">Sektör</label>
+                      <input
+                        type="text"
+                        value={editForm.sector}
+                        onChange={(e) => setEditForm((f) => ({ ...f, sector: e.target.value }))}
+                        className="w-full rounded-xl border border-border bg-muted px-3.5 py-2.5 text-sm text-foreground transition-all focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-muted-foreground">Hedef Kitle</label>
+                      <input
+                        type="text"
+                        value={editForm.target_audience}
+                        onChange={(e) => setEditForm((f) => ({ ...f, target_audience: e.target.value }))}
+                        className="w-full rounded-xl border border-border bg-muted px-3.5 py-2.5 text-sm text-foreground transition-all focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">Açıklama</label>
+                    <textarea
+                      required
+                      rows={3}
+                      value={editForm.description}
+                      onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                      className="w-full resize-none rounded-xl border border-border bg-muted px-3.5 py-2.5 text-sm text-foreground transition-all focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">Problem</label>
+                    <textarea
+                      rows={2}
+                      value={editForm.problem}
+                      onChange={(e) => setEditForm((f) => ({ ...f, problem: e.target.value }))}
+                      className="w-full resize-none rounded-xl border border-border bg-muted px-3.5 py-2.5 text-sm text-foreground transition-all focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-muted-foreground">Çözüm Önerisi</label>
+                    <textarea
+                      rows={2}
+                      value={editForm.solution}
+                      onChange={(e) => setEditForm((f) => ({ ...f, solution: e.target.value }))}
+                      className="w-full resize-none rounded-xl border border-border bg-muted px-3.5 py-2.5 text-sm text-foreground transition-all focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/20"
+                    />
+                  </div>
+
+                  {editIdeaError && (
+                    <p className="text-xs text-destructive">{editIdeaError}</p>
+                  )}
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="submit"
+                      disabled={isSavingIdea}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold text-primary-foreground transition-all hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isSavingIdea ? "Kaydediliyor..." : "Kaydet"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelEditingIdea}
+                      className="text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      Vazgeç
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {idea?.description}
+                  </p>
+
+                  {idea?.problem && (
+                    <div className="mt-3 border-t border-border pt-3">
+                      <span className="text-xs font-bold text-foreground">
+                        Problem:{" "}
+                      </span>
+
+                      <span className="text-sm text-muted-foreground">
+                        {idea.problem}
+                      </span>
+                    </div>
+                  )}
+
+                  {idea?.solution && (
+                    <div className="mt-2">
+                      <span className="text-xs font-bold text-foreground">
+                        Çözüm Önerisi:{" "}
+                      </span>
+
+                      <span className="text-sm text-muted-foreground">
+                        {idea.solution}
+                      </span>
+                    </div>
+                  )}
+                </>
               )}
             </div>
 

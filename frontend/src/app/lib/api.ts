@@ -225,6 +225,16 @@ export function createIdea(payload: IdeaPayload): Promise<IdeaResponse> {
   });
 }
 
+export function updateIdea(
+  ideaId: number,
+  payload: Partial<IdeaPayload>,
+): Promise<IdeaResponse> {
+  return request<IdeaResponse>(`/ideas/${ideaId}/`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
 export interface IdeaComparisonRiskyAssumptions {
   total: number;
   validated: number;
