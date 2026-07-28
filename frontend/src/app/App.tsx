@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from
 import { AppLayout } from "./components/layout/AppLayout";
 import { AccountSettingsPage } from "./pages/AccountSettingsPage";
 import { AnalysisPage } from "./pages/AnalysisPage";
+import { ComparePage } from "./pages/ComparePage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { LoginPage } from "./pages/LoginPage";
@@ -62,6 +63,7 @@ function AppRoutes() {
           }
         />
         <Route path="account" element={<AccountSettingsPage />} />
+        <Route path="compare" element={<ComparePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

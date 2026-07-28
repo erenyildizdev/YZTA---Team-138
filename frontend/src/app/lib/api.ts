@@ -225,6 +225,44 @@ export function createIdea(payload: IdeaPayload): Promise<IdeaResponse> {
   });
 }
 
+export interface IdeaComparisonRiskyAssumptions {
+  total: number;
+  validated: number;
+  refuted: number;
+  untested: number;
+  high_risk: number;
+}
+
+export interface IdeaComparisonMoscow {
+  must_have: number;
+  should_have: number;
+  could_have: number;
+  wont_have: number;
+}
+
+export interface IdeaComparisonResult {
+  id: number;
+  title: string;
+  sector: string;
+  target_audience: string;
+  analysis_status: "draft" | "in_progress" | "completed";
+  created_at: string;
+  risky_assumptions: IdeaComparisonRiskyAssumptions;
+  moscow: IdeaComparisonMoscow;
+  mom_test_question_count: number;
+  interview_note_count: number;
+  competitor_analysis_summary: string;
+  general_evaluation_summary: string;
+}
+
+export interface CompareIdeasResponse {
+  ideas: IdeaComparisonResult[];
+}
+
+export function compareIdeas(ideaIds: number[]): Promise<CompareIdeasResponse> {
+  return request<CompareIdeasResponse>(`/ideas/compare/?ids=${ideaIds.join(",")}`);
+}
+
 const VALIDATION_WORKFLOW_STEP_NAMES = [
   "risky_assumptions",
   "mom_test_questions",

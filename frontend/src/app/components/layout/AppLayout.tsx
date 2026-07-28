@@ -7,6 +7,7 @@ import {
 import {
   BarChart3,
   Bot,
+  Columns3,
   FileText,
   History,
   LayoutDashboard,
@@ -54,6 +55,11 @@ const navigation = [
     to: "/history",
     label: "Geçmiş Fikirler",
     Icon: History,
+  },
+  {
+    to: "/compare",
+    label: "Fikir Karşılaştır",
+    Icon: Columns3,
   },
   {
     to: "/ideas/new",

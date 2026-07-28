@@ -29,6 +29,26 @@ from .services import (
 )
 
 
+def _summarize_general_evaluation(idea) -> str:
+    if not hasattr(idea, "general_evaluation"):
+        return ""
+
+    evaluation_data = idea.general_evaluation.evaluation_data or {}
+    strengths = evaluation_data.get("strengths") or []
+    next_action = evaluation_data.get("next_action") or ""
+
+    sentences = []
+    if strengths:
+        sentences.append(strengths[0])
+    if next_action:
+        sentences.append(next_action)
+
+    return " ".join(
+        sentence if sentence.endswith((".", "!", "?")) else f"{sentence}."
+        for sentence in sentences
+    )
+
+
 class IdeaViewSet(viewsets.ModelViewSet):
     serializer_class = IdeaSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -50,7 +70,72 @@ class IdeaViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-    
+
+    @action(detail=False, methods=["get"], url_path="compare")
+    def compare(self, request):
+        ids_param = request.query_params.get("ids", "")
+        try:
+            ids = [int(value) for value in ids_param.split(",") if value.strip()]
+        except ValueError:
+            return Response(
+                {"detail": "ids parametresi geçersiz."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not ids:
+            return Response(
+                {"detail": "Karşılaştırmak için en az bir fikir id'si belirtmelisin."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        ideas_by_id = {idea.id: idea for idea in self.get_queryset().filter(id__in=ids)}
+        ordered_ideas = [ideas_by_id[idea_id] for idea_id in ids if idea_id in ideas_by_id]
+
+        results = []
+        for idea in ordered_ideas:
+            assumptions = []
+            if hasattr(idea, "risky_assumptions"):
+                assumptions = idea.risky_assumptions.assumptions_data.get("assumptions", [])
+
+            moscow_counts = {"must_have": 0, "should_have": 0, "could_have": 0, "wont_have": 0}
+            if hasattr(idea, "moscow_scope_analysis"):
+                moscow_result = idea.moscow_scope_analysis.result or {}
+                for key in moscow_counts:
+                    moscow_counts[key] = len(moscow_result.get(key, []) or [])
+
+            results.append(
+                {
+                    "id": idea.id,
+                    "title": idea.title,
+                    "sector": idea.sector,
+                    "target_audience": idea.target_audience,
+                    "analysis_status": IdeaSerializer(idea).data["analysis_status"],
+                    "created_at": idea.created_at,
+                    "risky_assumptions": {
+                        "total": len(assumptions),
+                        "validated": sum(1 for a in assumptions if a.get("status") == "validated"),
+                        "refuted": sum(1 for a in assumptions if a.get("status") == "refuted"),
+                        "untested": sum(1 for a in assumptions if a.get("status") == "untested"),
+                        "high_risk": sum(1 for a in assumptions if a.get("level") == "high"),
+                    },
+                    "moscow": moscow_counts,
+                    "mom_test_question_count": (
+                        len(idea.mom_test_questions_analysis.questions)
+                        if hasattr(idea, "mom_test_questions_analysis")
+                        else 0
+                    ),
+                    "interview_note_count": idea.interview_notes.count(),
+                    "competitor_analysis_summary": (
+                        idea.competitor_analysis.analysis_data.get("differentiation", "")
+                        if hasattr(idea, "competitor_analysis")
+                        else ""
+                    ),
+                    "general_evaluation_summary": _summarize_general_evaluation(idea),
+                }
+            )
+
+        return Response({"ideas": results}, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=["post"], url_path="analyze")
     def analyze(self, request, pk=None):
         idea = self.get_object()
