@@ -11,6 +11,8 @@ export function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const [authMessage, setAuthMessage] = useState<string | null>(null);
+
   const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? "/";
 
   useEffect(() => {
@@ -23,6 +25,15 @@ export function LoginPage() {
     const ok = await login(email, password);
     if (ok) navigate(from, { replace: true });
   };
+
+  useEffect(() => {
+    const message = sessionStorage.getItem("auth_message");
+
+    if (message) {
+      setAuthMessage(message);
+      sessionStorage.removeItem("auth_message");
+    }
+  }, []);
 
   return (
     <div className="relative flex min-h-dvh w-full items-center justify-center bg-background px-4" style={{ animation: "page-in 0.3s ease-out" }}>
@@ -40,6 +51,18 @@ export function LoginPage() {
           onSubmit={handleSubmit}
           className="bg-card border border-border rounded-2xl p-6 space-y-4"
         >
+          {authMessage && (
+            <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2.5">
+              <AlertTriangle
+                size={13}
+                className="mt-0.5 flex-shrink-0 text-destructive"
+              />
+
+              <p className="text-xs leading-relaxed text-destructive">
+                {authMessage}
+              </p>
+            </div>
+          )}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-muted-foreground">E-posta</label>
             <input

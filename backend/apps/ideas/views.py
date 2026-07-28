@@ -1,7 +1,9 @@
+import unicodedata
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from apps.analyses.services.analyzer import analyze_idea
+from apps.analyses.services.llm_client import LLMClientError
 
 from .mentor_agent import MentorAgentError, run_mentor_chat
 from .models import CompetitorAnalysis, GeneralEvaluation, Idea, RiskyAssumptions, ValidationRoadmap
@@ -61,6 +63,9 @@ class IdeaViewSet(viewsets.ModelViewSet):
         )
 
         result = analyze_idea(idea_text=idea_text)
+
+        idea.rag_sources = result.get("sources", [])
+        idea.save(update_fields=["rag_sources"])
 
         return Response(result, status=status.HTTP_200_OK)
 
@@ -208,11 +213,31 @@ class IdeaViewSet(viewsets.ModelViewSet):
             history = []
 
         try:
-            result = run_mentor_chat(idea, message, history)
-        except MentorAgentError as exc:
+            result = run_mentor_chat(
+                idea,
+                message,
+                history,
+            )
+        except (MentorAgentError, LLMClientError) as exc:
             return Response(
-                {"detail": str(exc)},
-                status=status.HTTP_502_BAD_GATEWAY,
+                {
+                    "detail": str(exc)
+                    or "AI servisine şu anda ulaşılamıyor."
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+        except Exception:
+            return Response(
+                {
+                    "detail": (
+                        "AI servisine şu anda ulaşılamıyor. "
+                        "Lütfen daha sonra tekrar deneyin."
+                    )
+                },
+                status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
 
-        return Response(result, status=status.HTTP_200_OK)
+        return Response(
+            result,
+            status=status.HTTP_200_OK,
+        )

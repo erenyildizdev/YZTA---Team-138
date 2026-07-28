@@ -43,6 +43,25 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     }
   }
 
+  if (response.status === 401) {
+    setAccessToken(null);
+
+    sessionStorage.setItem(
+      "auth_message",
+      "Oturumunuz geçersiz veya süresi dolmuş. Lütfen tekrar giriş yapın.",
+    );
+
+    if (window.location.pathname !== "/login") {
+      window.location.replace("/login");
+    }
+
+    throw new ApiError(
+      "Oturumunuz geçersiz veya süresi dolmuş.",
+      response.status,
+      body,
+    );
+  }
+
   if (!response.ok) {
     let message: string | null = null;
 
@@ -135,6 +154,15 @@ export function generateValidationRoadmap(ideaId: number): Promise<ValidationRoa
   });
 }
 
+export interface RagSource {
+  title: string;
+  source_type: string;
+  source_url?: string | null;
+  chunk_id: number;
+  chunk_index: number;
+  distance: number;
+}
+
 export interface IdeaPayload {
   title: string;
   description: string;
@@ -150,6 +178,8 @@ export interface IdeaResponse extends IdeaPayload {
   analysis_status: "draft" | "in_progress" | "completed";
   completed_analysis_count: number;
   total_analysis_count: number;
+
+  sources: RagSource[];
 }
 
 export function createIdea(payload: IdeaPayload): Promise<IdeaResponse> {

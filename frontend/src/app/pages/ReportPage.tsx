@@ -9,16 +9,27 @@ import { MomTestQuestionsBody } from "../components/analysis/MomTestQuestionsBod
 import { MoscowScopeBody } from "../components/analysis/MoscowScopeBody";
 import { RiskyAssumptionsBody } from "../components/analysis/RiskyAssumptionsBody";
 import { ValidationRoadmapBody } from "../components/analysis/ValidationRoadmapBody";
+import { ActiveIdeaPageState } from "../components/ideas/ActiveIdeaPageState";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 import { useIdea } from "../hooks/useIdea";
+
+interface RagSource {
+  title: string;
+  source_url?: string | null;
+}
 
 interface ReportPageProps {
   onBack: () => void;
 }
 
 export function ReportPage({ onBack }: ReportPageProps) {
-  const [ideaId] = useActiveIdeaId();
-  const { data: idea } = useIdea(ideaId);
+  const { ideaId } = useActiveIdeaId();
+  const {
+    status: ideaStatus,
+    data: idea,
+    reload: reloadIdea,
+  } = useIdea(ideaId);
+
   const reportRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
@@ -29,9 +40,11 @@ export function ReportPage({ onBack }: ReportPageProps) {
 
     setIsDownloading(true);
     setDownloadError(null);
+
     const hiddenEls = Array.from(
       element.querySelectorAll<HTMLElement>(".no-print"),
     );
+
     hiddenEls.forEach((el) => {
       el.style.visibility = "hidden";
     });
@@ -87,11 +100,13 @@ export function ReportPage({ onBack }: ReportPageProps) {
             contentWidth,
             imgHeight,
           );
+
           heightLeft -= usableHeight;
 
           while (heightLeft > 0) {
             sliceOffset += usableHeight;
             pdf.addPage();
+
             pdf.addImage(
               imgData,
               "JPEG",
@@ -100,6 +115,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
               contentWidth,
               imgHeight,
             );
+
             heightLeft -= usableHeight;
           }
 
@@ -113,12 +129,21 @@ export function ReportPage({ onBack }: ReportPageProps) {
           cursorY = margin;
         }
 
-        pdf.addImage(imgData, "JPEG", margin, cursorY, contentWidth, imgHeight);
+        pdf.addImage(
+          imgData,
+          "JPEG",
+          margin,
+          cursorY,
+          contentWidth,
+          imgHeight,
+        );
+
         cursorY += imgHeight + gap;
         pageHasContent = true;
       }
 
       const rawName = idea?.title?.trim() || "Fikir";
+
       const safeName = rawName
         .replace(/[\\/:*?"<>|]/g, "")
         .replace(/\s+/g, " ")
@@ -127,11 +152,14 @@ export function ReportPage({ onBack }: ReportPageProps) {
       const blob = pdf.output("blob");
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
+
       link.href = url;
       link.download = `${safeName} analiz raporu.pdf`;
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error(error);
@@ -140,6 +168,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
       hiddenEls.forEach((el) => {
         el.style.visibility = "";
       });
+
       styleTag.remove();
       setIsDownloading(false);
     }
@@ -153,6 +182,42 @@ export function ReportPage({ onBack }: ReportPageProps) {
         {label}
       </h2>
     </div>
+  );
+
+  if (ideaStatus === "loading") {
+    return <ActiveIdeaPageState mode="loading" />;
+  }
+
+  if (
+    ideaId === null ||
+    ideaStatus === "idle" ||
+    ideaStatus === "not_found"
+  ) {
+    return <ActiveIdeaPageState mode="empty" />;
+  }
+
+  if (ideaStatus === "error") {
+    return (
+      <ActiveIdeaPageState
+        mode="error"
+        onRetry={() => void reloadIdea()}
+      />
+    );
+  }
+
+  if (!idea || idea.id !== ideaId) {
+    return <ActiveIdeaPageState mode="loading" />;
+  }
+
+  const sources: RagSource[] = idea.sources ?? [];
+
+  const uniqueSources = Array.from(
+    new Map(
+      sources.map((source) => [
+        source.source_url ?? source.title,
+        source,
+      ]),
+    ).values(),
   );
 
   return (
@@ -171,15 +236,13 @@ export function ReportPage({ onBack }: ReportPageProps) {
             </div>
 
             <h1 className="text-2xl font-bold text-foreground">
-              {idea?.title ?? "Yükleniyor..."}
+              {idea.title}
             </h1>
 
             <p className="mt-1 text-sm text-muted-foreground">
-              {idea
-                ? `${new Date(idea.created_at).toLocaleDateString(
-                    "tr-TR",
-                  )} tarihli analiz`
-                : ""}
+              {`${new Date(idea.created_at).toLocaleDateString(
+                "tr-TR",
+              )} tarihli analiz`}
             </p>
           </div>
 
@@ -195,7 +258,9 @@ export function ReportPage({ onBack }: ReportPageProps) {
             </button>
 
             {downloadError && (
-              <p className="text-xs text-destructive">{downloadError}</p>
+              <p className="text-xs text-destructive">
+                {downloadError}
+              </p>
             )}
           </div>
         </div>
@@ -213,7 +278,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
             <Divider label="Fikir Özeti" />
 
             <p className="text-sm leading-relaxed text-muted-foreground">
-              {idea?.description}
+              {idea.description}
             </p>
           </section>
 
@@ -227,7 +292,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
                 </h3>
 
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  {idea?.problem}
+                  {idea.problem}
                 </p>
               </div>
 
@@ -237,7 +302,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
                 </h3>
 
                 <p className="text-sm leading-relaxed text-muted-foreground">
-                  {idea?.target_audience}
+                  {idea.target_audience}
                 </p>
               </div>
             </div>
@@ -262,6 +327,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
             <div data-pdf-block>
               <Divider label="Doğrulama Yol Haritası" />
             </div>
+
             <ValidationRoadmapBody ideaId={ideaId} readOnly />
           </section>
 
@@ -274,8 +340,46 @@ export function ReportPage({ onBack }: ReportPageProps) {
             <div data-pdf-block>
               <Divider label="Rakip / Pazar Analizi" />
             </div>
+
             <CompetitorAnalysisBody ideaId={ideaId} readOnly />
           </section>
+
+          {uniqueSources.length > 0 && (
+            <section data-pdf-block>
+              <Divider label="Kullanılan Kaynaklar" />
+
+              <div className="rounded-xl border border-border bg-card p-5">
+                <p className="mb-4 text-sm text-muted-foreground">
+                  Bu analiz hazırlanırken aşağıdaki eğitim içerikleri
+                  referans alınmıştır.
+                </p>
+
+                <ul className="space-y-3">
+                  {uniqueSources.map((source, index) => (
+                    <li
+                      key={`${source.source_url ?? source.title}-${index}`}
+                      className="flex flex-col gap-1"
+                    >
+                      <span className="text-sm font-semibold text-foreground">
+                        {source.title}
+                      </span>
+
+                      {source.source_url && (
+                        <a
+                          href={source.source_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="no-print w-fit text-xs font-medium text-primary hover:underline"
+                        >
+                          Kaynağı görüntüle
+                        </a>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </div>

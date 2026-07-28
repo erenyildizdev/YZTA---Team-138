@@ -12,6 +12,11 @@ class Idea(models.Model):
     sector = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    rag_sources = models.JSONField(
+    default=list,
+    blank=True,
+    )
+
     def __str__(self):
         return self.title
 
