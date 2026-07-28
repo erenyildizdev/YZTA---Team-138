@@ -29,3 +29,8 @@ staticfiles/
 **/node_modules/
 **/dist/
 **/panel.zip
+
+# YouTube RAG ingestion files
+backend/data/youtube/transcripts/
+backend/data/youtube/metadata/
+backend/data/youtube/failed/
