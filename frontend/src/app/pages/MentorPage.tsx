@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Bot, Send } from "lucide-react";
+import { ActiveIdeaPageState } from "../components/ideas/ActiveIdeaPageState";
 import { MentorCharacter } from "../components/mentor/MentorCharacter";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 import { useIdea } from "../hooks/useIdea";
@@ -7,13 +8,19 @@ import { useMentorChatHistory } from "../hooks/useMentorChatHistory";
 import { ApiError, sendMentorMessage } from "../lib/api";
 
 export function MentorPage() {
-  const [ideaId] = useActiveIdeaId();
-  const { data: idea } = useIdea(ideaId);
+  const { ideaId } = useActiveIdeaId();
+  const {
+    status: ideaStatus,
+    data: idea,
+    reload: reloadIdea,
+  } = useIdea(ideaId);
   const [msgs, setMsgs] = useMentorChatHistory(ideaId);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const shouldAutoScrollRef = useRef(true);
+  const currentIdeaIdRef = useRef(ideaId);
+  currentIdeaIdRef.current = ideaId;
 
   const suggestions = [
     "Bu fikrin en riskli varsayımı ne?",
@@ -24,7 +31,15 @@ export function MentorPage() {
 
   const send = async (text?: string) => {
     const msg = (text ?? input).trim();
-    if (!msg || isSending) return;
+    if (
+      !msg ||
+      isSending ||
+      ideaId === null ||
+      ideaStatus !== "ready" ||
+      idea?.id !== ideaId
+    ) {
+      return;
+    }
     setInput("");
     setIsSending(true);
     setMsgs((p) => [...p, { role: "user" as const, text: msg }]);
@@ -36,6 +51,11 @@ export function MentorPage() {
 
     try {
       const response = await sendMentorMessage(ideaId, msg, history);
+
+      if (currentIdeaIdRef.current !== ideaId) {
+        return;
+      }
+
       setMsgs((p) => [
         ...p,
         {
@@ -44,12 +64,20 @@ export function MentorPage() {
         },
       ]);
     } catch (error) {
+      if (currentIdeaIdRef.current !== ideaId) {
+        return;
+      }
+
+      if (error instanceof ApiError && error.status === 404) {
+        void reloadIdea();
+      }
+
       setMsgs((p) => [
         ...p,
         {
           role: "ai" as const,
           text:
-            error instanceof ApiError
+            error instanceof ApiError && error.status !== 404
               ? error.message
               : "Mesaj gönderilemedi. Lütfen tekrar dene.",
         },
@@ -68,6 +96,31 @@ export function MentorPage() {
       behavior: "auto",
     });
   }, [msgs, isSending]);
+
+  if (ideaStatus === "loading") {
+    return <ActiveIdeaPageState mode="loading" />;
+  }
+
+  if (
+    ideaId === null ||
+    ideaStatus === "idle" ||
+    ideaStatus === "not_found"
+  ) {
+    return <ActiveIdeaPageState mode="empty" />;
+  }
+
+  if (ideaStatus === "error") {
+    return (
+      <ActiveIdeaPageState
+        mode="error"
+        onRetry={() => void reloadIdea()}
+      />
+    );
+  }
+
+  if (!idea || idea.id !== ideaId) {
+    return <ActiveIdeaPageState mode="loading" />;
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-x-hidden md:flex-row md:overflow-hidden" style={{ animation: "page-in 0.3s ease-out" }}>

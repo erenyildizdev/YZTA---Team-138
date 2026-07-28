@@ -25,6 +25,7 @@ import { MomTestQuestionsBody } from "../components/analysis/MomTestQuestionsBod
 import { MoscowScopeBody } from "../components/analysis/MoscowScopeBody";
 import { RiskyAssumptionsBody } from "../components/analysis/RiskyAssumptionsBody";
 import { ValidationRoadmapBody } from "../components/analysis/ValidationRoadmapBody";
+import { ActiveIdeaPageState } from "../components/ideas/ActiveIdeaPageState";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 import { useIdea } from "../hooks/useIdea";
 import { ApiError, sendMentorMessage } from "../lib/api";
@@ -84,11 +85,17 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
   const [competitorRefreshKey, setCompetitorRefreshKey] = useState(0);
   const [notesRefreshKey, setNotesRefreshKey] = useState(0);
 
-  const [ideaId, setIdeaId] = useActiveIdeaId();
-  const { data: idea, reload: reloadIdea } = useIdea(ideaId);
+  const { ideaId, setActiveIdeaId } = useActiveIdeaId();
+  const {
+    status: ideaStatus,
+    data: idea,
+    reload: reloadIdea,
+  } = useIdea(ideaId);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const shouldAutoScrollRef = useRef(true);
+  const currentIdeaIdRef = useRef(ideaId);
+  currentIdeaIdRef.current = ideaId;
 
   const quickActions = [
     "Riskleri güncelle",
@@ -103,7 +110,13 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
   const sendMsg = async () => {
     const text = input.trim();
 
-    if (!text || isSending) {
+    if (
+      !text ||
+      isSending ||
+      ideaId === null ||
+      ideaStatus !== "ready" ||
+      idea?.id !== ideaId
+    ) {
       return;
     }
 
@@ -125,6 +138,10 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
 
     try {
       const response = await sendMentorMessage(ideaId, text, history);
+
+      if (currentIdeaIdRef.current !== ideaId) {
+        return;
+      }
 
       const assistantMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -229,13 +246,21 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
         setCompetitorRefreshKey((key) => key + 1);
       }
     } catch (error) {
+      if (currentIdeaIdRef.current !== ideaId) {
+        return;
+      }
+
+      if (error instanceof ApiError && error.status === 404) {
+        void reloadIdea();
+      }
+
       setMsgs((previous) => [
         ...previous,
         {
           id: (Date.now() + 2).toString(),
           role: "assistant",
           content:
-            error instanceof ApiError
+            error instanceof ApiError && error.status !== 404
               ? error.message
               : "Bir şeyler ters gitti, tekrar dener misin?",
           timestamp: nowLabel(),
@@ -275,6 +300,31 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
       <h3 className="text-sm font-semibold text-foreground">{title}</h3>
     </div>
   );
+
+  if (ideaStatus === "loading") {
+    return <ActiveIdeaPageState mode="loading" />;
+  }
+
+  if (
+    ideaId === null ||
+    ideaStatus === "idle" ||
+    ideaStatus === "not_found"
+  ) {
+    return <ActiveIdeaPageState mode="empty" />;
+  }
+
+  if (ideaStatus === "error") {
+    return (
+      <ActiveIdeaPageState
+        mode="error"
+        onRetry={() => void reloadIdea()}
+      />
+    );
+  }
+
+  if (!idea || idea.id !== ideaId) {
+    return <ActiveIdeaPageState mode="loading" />;
+  }
 
   return (
     <div
@@ -396,7 +446,10 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
                 title="Görüşme Notları"
               />
 
-              <InterviewNotesBody key={notesRefreshKey} ideaId={ideaId} />
+              <InterviewNotesBody
+                ideaId={ideaId}
+                refreshToken={notesRefreshKey}
+              />
             </div>
 
             {/* Mom Test soruları */}
@@ -441,7 +494,7 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
               <ValidationRoadmapBody
                 key={roadmapRefreshKey}
                 ideaId={ideaId}
-                onIdeaIdChange={setIdeaId}
+                onIdeaIdChange={setActiveIdeaId}
               />
             </div>
 

@@ -7,6 +7,7 @@ from .views import (
     InterviewNoteListCreateView,
     MomTestQuestionGenerateView,
     MoscowScopeAnalysisView,
+    ValidationWorkflowView,
 )
 
 app_name = "analyses"
@@ -26,6 +27,11 @@ urlpatterns = [
         "ideas/<int:idea_id>/moscow-scope/",
         MoscowScopeAnalysisView.as_view(),
         name="moscow-scope",
+    ),
+    path(
+        "ideas/<int:idea_id>/workflow/",
+        ValidationWorkflowView.as_view(),
+        name="validation-workflow",
     ),
     path(
         "ideas/<int:idea_id>/interview-notes/",

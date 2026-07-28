@@ -24,6 +24,7 @@ interface ReportPageProps {
 
 export function ReportPage({ onBack }: ReportPageProps) {
   const { ideaId } = useActiveIdeaId();
+
   const {
     status: ideaStatus,
     data: idea,
@@ -36,7 +37,10 @@ export function ReportPage({ onBack }: ReportPageProps) {
 
   const handleDownloadPdf = async () => {
     const element = reportRef.current;
-    if (!element || isDownloading) return;
+
+    if (!element || isDownloading) {
+      return;
+    }
 
     setIsDownloading(true);
     setDownloadError(null);
@@ -49,12 +53,11 @@ export function ReportPage({ onBack }: ReportPageProps) {
       el.style.visibility = "hidden";
     });
 
-    // Radix's open/close CSS animations (e.g. accordion) can be captured
-    // mid-transition by html2canvas. Freeze all animations/transitions so
-    // every block is captured in its final, settled visual state.
     const styleTag = document.createElement("style");
+
     styleTag.textContent =
       "*, *::before, *::after { animation: none !important; transition: none !important; }";
+
     document.head.appendChild(styleTag);
 
     try {
@@ -69,7 +72,11 @@ export function ReportPage({ onBack }: ReportPageProps) {
       const usableHeight = pageHeight - margin * 2;
       const gap = 16;
 
-      const pdf = new jsPDF({ unit: "pt", format: "a4" });
+      const pdf = new jsPDF({
+        unit: "pt",
+        format: "a4",
+      });
+
       let cursorY = margin;
       let pageHasContent = false;
 
@@ -84,7 +91,6 @@ export function ReportPage({ onBack }: ReportPageProps) {
         const imgData = canvas.toDataURL("image/jpeg", 0.85);
 
         if (imgHeight > usableHeight) {
-          // Block taller than a full page: give it its own page(s), sliced.
           if (pageHasContent) {
             pdf.addPage();
           }
@@ -105,6 +111,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
 
           while (heightLeft > 0) {
             sliceOffset += usableHeight;
+
             pdf.addPage();
 
             pdf.addImage(
@@ -121,6 +128,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
 
           cursorY = margin;
           pageHasContent = false;
+
           continue;
         }
 
@@ -163,7 +171,10 @@ export function ReportPage({ onBack }: ReportPageProps) {
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error(error);
-      setDownloadError("PDF oluşturulamadı. Lütfen tekrar dener misin?");
+
+      setDownloadError(
+        "PDF oluşturulamadı. Lütfen tekrar dener misin?",
+      );
     } finally {
       hiddenEls.forEach((el) => {
         el.style.visibility = "";
@@ -254,6 +265,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
               className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Download size={14} />
+
               {isDownloading ? "Hazırlanıyor..." : "PDF İndir"}
             </button>
 
@@ -310,17 +322,29 @@ export function ReportPage({ onBack }: ReportPageProps) {
 
           <section data-pdf-block>
             <Divider label="Riskli Varsayımlar" />
-            <RiskyAssumptionsBody ideaId={ideaId} readOnly />
+
+            <RiskyAssumptionsBody
+              ideaId={ideaId}
+              readOnly
+            />
           </section>
 
           <section data-pdf-block>
             <Divider label="Müşteri Görüşme Soruları" />
-            <MomTestQuestionsBody ideaId={ideaId} readOnly />
+
+            <MomTestQuestionsBody
+              ideaId={ideaId}
+              readOnly
+            />
           </section>
 
           <section data-pdf-block>
             <Divider label="MVP Kapsamı (MoSCoW)" />
-            <MoscowScopeBody ideaId={ideaId} readOnly />
+
+            <MoscowScopeBody
+              ideaId={ideaId}
+              readOnly
+            />
           </section>
 
           <section>
@@ -328,12 +352,19 @@ export function ReportPage({ onBack }: ReportPageProps) {
               <Divider label="Doğrulama Yol Haritası" />
             </div>
 
-            <ValidationRoadmapBody ideaId={ideaId} readOnly />
+            <ValidationRoadmapBody
+              ideaId={ideaId}
+              readOnly
+            />
           </section>
 
           <section data-pdf-block>
             <Divider label="Genel Değerlendirme" />
-            <GeneralEvaluationBody ideaId={ideaId} readOnly />
+
+            <GeneralEvaluationBody
+              ideaId={ideaId}
+              readOnly
+            />
           </section>
 
           <section>
@@ -341,7 +372,10 @@ export function ReportPage({ onBack }: ReportPageProps) {
               <Divider label="Rakip / Pazar Analizi" />
             </div>
 
-            <CompetitorAnalysisBody ideaId={ideaId} readOnly />
+            <CompetitorAnalysisBody
+              ideaId={ideaId}
+              readOnly
+            />
           </section>
 
           {uniqueSources.length > 0 && (

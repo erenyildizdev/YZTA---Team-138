@@ -8,6 +8,10 @@ from .models import (
     InterviewNote,
     MoscowScopeAnalysis,
 )
+from .services.validation_workflow_contract import (
+    WORKFLOW_ERROR_CODES,
+    WORKFLOW_STEP_ORDER,
+)
 
 
 class IdeaAnalysisRequestSerializer(serializers.Serializer):
@@ -29,6 +33,93 @@ class StrictFieldsSerializer(serializers.Serializer):
             )
 
         return super().to_internal_value(data)
+
+
+class ValidationWorkflowStepResultSerializer(StrictFieldsSerializer):
+    name = serializers.CharField()
+    status = serializers.ChoiceField(choices=("completed",))
+    result = serializers.JSONField()
+
+    def validate_name(self, value):
+        if value not in WORKFLOW_STEP_ORDER:
+            raise serializers.ValidationError("Unknown workflow step.")
+        return value
+
+
+class ValidationWorkflowSuccessResponseSerializer(StrictFieldsSerializer):
+    idea_id = serializers.IntegerField(min_value=1)
+    status = serializers.ChoiceField(choices=("completed",))
+    completed_steps = serializers.ListField(
+        child=serializers.CharField(),
+        allow_empty=False,
+    )
+    steps = ValidationWorkflowStepResultSerializer(
+        many=True,
+        allow_empty=False,
+    )
+
+    def validate(self, attrs):
+        expected_steps = list(WORKFLOW_STEP_ORDER)
+        completed_steps = attrs["completed_steps"]
+        response_steps = [
+            step["name"]
+            for step in attrs["steps"]
+        ]
+
+        if completed_steps != expected_steps:
+            raise serializers.ValidationError(
+                {"completed_steps": "All workflow steps must be completed in order."}
+            )
+        if response_steps != completed_steps:
+            raise serializers.ValidationError(
+                {"steps": "Step results must match completed_steps in order."}
+            )
+        return attrs
+
+
+class ValidationWorkflowFailureResponseSerializer(StrictFieldsSerializer):
+    idea_id = serializers.IntegerField(min_value=1)
+    status = serializers.ChoiceField(choices=("failed",))
+    completed_steps = serializers.ListField(
+        child=serializers.CharField(),
+        allow_empty=True,
+    )
+    failed_step = serializers.CharField()
+    error_code = serializers.ChoiceField(
+        choices=WORKFLOW_ERROR_CODES
+    )
+    detail = serializers.CharField()
+    steps = ValidationWorkflowStepResultSerializer(
+        many=True,
+        allow_empty=True,
+    )
+
+    def validate(self, attrs):
+        workflow_steps = list(WORKFLOW_STEP_ORDER)
+        completed_steps = attrs["completed_steps"]
+        expected_completed_steps = workflow_steps[:len(completed_steps)]
+        response_steps = [
+            step["name"]
+            for step in attrs["steps"]
+        ]
+
+        if completed_steps != expected_completed_steps:
+            raise serializers.ValidationError(
+                {"completed_steps": "Completed steps must follow workflow order."}
+            )
+        if len(completed_steps) >= len(workflow_steps):
+            raise serializers.ValidationError(
+                {"failed_step": "A completed workflow cannot have a failed step."}
+            )
+        if attrs["failed_step"] != workflow_steps[len(completed_steps)]:
+            raise serializers.ValidationError(
+                {"failed_step": "failed_step must be the next workflow step."}
+            )
+        if response_steps != completed_steps:
+            raise serializers.ValidationError(
+                {"steps": "Step results must match completed_steps in order."}
+            )
+        return attrs
 
 
 class InterviewNoteSerializer(serializers.ModelSerializer):

@@ -6,11 +6,13 @@ const ACCESS_TOKEN_KEY = "fikirlab_access_token";
 
 export class ApiError extends Error {
   status: number;
+  data?: unknown;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, data?: unknown) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.data = data;
   }
 }
 
@@ -79,7 +81,11 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       message = body;
     }
 
-    throw new ApiError(message ?? `İstek başarısız oldu (${response.status}).`, response.status);
+    throw new ApiError(
+      message ?? `İstek başarısız oldu (${response.status}).`,
+      response.status,
+      body,
+    );
   }
 
   return body as T;
@@ -187,6 +193,107 @@ export function createIdea(payload: IdeaPayload): Promise<IdeaResponse> {
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+const VALIDATION_WORKFLOW_STEP_NAMES = [
+  "risky_assumptions",
+  "mom_test_questions",
+  "moscow_scope",
+  "validation_roadmap",
+  "general_evaluation",
+] as const;
+
+export type ValidationWorkflowStepName =
+  (typeof VALIDATION_WORKFLOW_STEP_NAMES)[number];
+
+export interface ValidationWorkflowStepResult {
+  name: ValidationWorkflowStepName;
+  status: "completed";
+  result: unknown;
+}
+
+export interface ValidationWorkflowSuccessResponse {
+  idea_id: number;
+  status: "completed";
+  completed_steps: ValidationWorkflowStepName[];
+  steps: ValidationWorkflowStepResult[];
+}
+
+export interface ValidationWorkflowFailureResponse {
+  idea_id: number;
+  status: "failed";
+  completed_steps: ValidationWorkflowStepName[];
+  failed_step: ValidationWorkflowStepName;
+  error_code: string;
+  detail: string;
+  steps: ValidationWorkflowStepResult[];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isValidationWorkflowStepName(
+  value: unknown,
+): value is ValidationWorkflowStepName {
+  return (
+    typeof value === "string" &&
+    VALIDATION_WORKFLOW_STEP_NAMES.some((stepName) => stepName === value)
+  );
+}
+
+function isValidationWorkflowStepResult(
+  value: unknown,
+): value is ValidationWorkflowStepResult {
+  return (
+    isRecord(value) &&
+    isValidationWorkflowStepName(value.name) &&
+    value.status === "completed" &&
+    "result" in value
+  );
+}
+
+export function isValidationWorkflowFailureResponse(
+  value: unknown,
+): value is ValidationWorkflowFailureResponse {
+  if (
+    !isRecord(value) ||
+    typeof value.idea_id !== "number" ||
+    !Number.isInteger(value.idea_id) ||
+    value.idea_id <= 0 ||
+    value.status !== "failed" ||
+    !Array.isArray(value.completed_steps) ||
+    !value.completed_steps.every(isValidationWorkflowStepName) ||
+    !isValidationWorkflowStepName(value.failed_step) ||
+    typeof value.error_code !== "string" ||
+    typeof value.detail !== "string" ||
+    !Array.isArray(value.steps) ||
+    !value.steps.every(isValidationWorkflowStepResult)
+  ) {
+    return false;
+  }
+
+  const completedSteps = value.completed_steps as ValidationWorkflowStepName[];
+  const steps = value.steps as ValidationWorkflowStepResult[];
+
+  return (
+    completedSteps.length < VALIDATION_WORKFLOW_STEP_NAMES.length &&
+    completedSteps.every(
+      (stepName, index) => VALIDATION_WORKFLOW_STEP_NAMES[index] === stepName,
+    ) &&
+    value.failed_step === VALIDATION_WORKFLOW_STEP_NAMES[completedSteps.length] &&
+    steps.length === completedSteps.length &&
+    steps.every((stepResult, index) => stepResult.name === completedSteps[index])
+  );
+}
+
+export function runValidationWorkflow(
+  ideaId: number,
+): Promise<ValidationWorkflowSuccessResponse> {
+  return request<ValidationWorkflowSuccessResponse>(
+    `/analyses/ideas/${ideaId}/workflow/`,
+    { method: "POST" },
+  );
 }
 
 export function getIdea(ideaId: number): Promise<IdeaResponse> {
@@ -355,9 +462,20 @@ export interface InterviewNotePayload {
   interviewed_at?: string | null;
 }
 
-export interface InterviewNoteResponse extends InterviewNotePayload {
+export interface InterviewNoteUpdatePayload {
+  interviewee_name?: string;
+  interviewee_profile?: string;
+  notes?: string;
+  interviewed_at?: string | null;
+}
+
+export interface InterviewNoteResponse {
   id: number;
   idea_id: number;
+  interviewee_name: string;
+  interviewee_profile: string;
+  notes: string;
+  interviewed_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -374,6 +492,20 @@ export function createInterviewNote(
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export function updateInterviewNote(
+  ideaId: number,
+  noteId: number,
+  payload: InterviewNoteUpdatePayload,
+): Promise<InterviewNoteResponse> {
+  return request<InterviewNoteResponse>(
+    `/analyses/ideas/${ideaId}/interview-notes/${noteId}/`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    },
+  );
 }
 
 export function deleteInterviewNote(ideaId: number, noteId: number): Promise<void> {
