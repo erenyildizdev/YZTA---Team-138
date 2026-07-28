@@ -1,4 +1,10 @@
-import { type FormEvent, type KeyboardEvent, useState } from "react";
+import {
+  type FormEvent,
+  type KeyboardEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -12,12 +18,11 @@ import {
 import {
   ApiError,
   createIdea,
-  generateGeneralEvaluation,
-  generateMomTestQuestions,
-  generateMoscowScope,
-  generateRiskyAssumptions,
-  generateValidationRoadmap,
+  isValidationWorkflowFailureResponse,
+  runValidationWorkflow,
   type IdeaPayload,
+  type ValidationWorkflowStepName,
+  type ValidationWorkflowSuccessResponse,
 } from "../lib/api";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 import {
@@ -131,14 +136,70 @@ const initialValues: Record<FieldKey, string> = {
   solution: "",
 };
 
-const INITIAL_ANALYSIS_STEPS: AnalysisStep[] = [
-  { id: "idea", label: "Fikir özeti çıkarılıyor", status: "pending" },
-  { id: "risks", label: "Riskli varsayımlar belirleniyor", status: "pending" },
-  { id: "questions", label: "Müşteri soruları hazırlanıyor", status: "pending" },
-  { id: "scope", label: "MVP kapsamı oluşturuluyor", status: "pending" },
-  { id: "roadmap", label: "Yol haritası hazırlanıyor", status: "pending" },
-  { id: "evaluation", label: "Genel değerlendirme hazırlanıyor", status: "pending" },
+const WORKFLOW_ANALYSIS_STEPS: ReadonlyArray<{
+  id: ValidationWorkflowStepName;
+  label: string;
+}> = [
+  { id: "risky_assumptions", label: "Riskli varsayımlar" },
+  { id: "mom_test_questions", label: "Müşteri soruları" },
+  { id: "moscow_scope", label: "MVP kapsamı" },
+  { id: "validation_roadmap", label: "Doğrulama yol haritası" },
+  { id: "general_evaluation", label: "Genel değerlendirme" },
 ];
+
+type FlowPhase =
+  | "editing"
+  | "creating"
+  | "workflow-running"
+  | "workflow-failed"
+  | "workflow-retrying";
+
+function createAnalysisSteps(
+  completedSteps: readonly ValidationWorkflowStepName[] = [],
+  failedStep: ValidationWorkflowStepName | null = null,
+): AnalysisStep[] {
+  const completedStepNames = new Set(completedSteps);
+
+  return [
+    { id: "idea", label: "Fikir kaydı", status: "completed" },
+    ...WORKFLOW_ANALYSIS_STEPS.map(({ id, label }) => ({
+      id,
+      label,
+      status: completedStepNames.has(id)
+        ? "completed"
+        : failedStep === id
+          ? "error"
+          : "pending",
+    })),
+  ];
+}
+
+function isCompletedWorkflowResponse(
+  response: ValidationWorkflowSuccessResponse,
+  ideaId: number,
+): boolean {
+  return (
+    response &&
+    typeof response === "object" &&
+    response.idea_id === ideaId &&
+    response.status === "completed" &&
+    Array.isArray(response.completed_steps) &&
+    response.completed_steps.length === WORKFLOW_ANALYSIS_STEPS.length &&
+    response.completed_steps.every(
+      (stepName, index) => stepName === WORKFLOW_ANALYSIS_STEPS[index].id,
+    ) &&
+    Array.isArray(response.steps) &&
+    response.steps.length === WORKFLOW_ANALYSIS_STEPS.length &&
+    response.steps.every(
+      (stepResult, index) =>
+        stepResult !== null &&
+        typeof stepResult === "object" &&
+        stepResult.name === WORKFLOW_ANALYSIS_STEPS[index].id &&
+        stepResult.status === "completed" &&
+        "result" in stepResult,
+    )
+  );
+}
 
 export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
   const { setActiveIdeaId } = useActiveIdeaId();
@@ -148,15 +209,27 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
   const [otherMode, setOtherMode] = useState<Partial<Record<FieldKey, boolean>>>({});
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<FieldKey, string>>>({});
   const [formError, setFormError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisSteps, setAnalysisSteps] = useState(INITIAL_ANALYSIS_STEPS);
+  const [flowPhase, setFlowPhase] = useState<FlowPhase>("editing");
+  const [analysisSteps, setAnalysisSteps] = useState(() => createAnalysisSteps());
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [createdIdeaId, setCreatedIdeaId] = useState<number | null>(null);
-  const [failedStepIndex, setFailedStepIndex] = useState<number | null>(null);
+  const inFlightRef = useRef(false);
+  const mountedRef = useRef(true);
 
   const step = STEPS[stepIndex];
   const isLastStep = stepIndex === STEPS.length - 1;
+  const isSubmitting = flowPhase === "creating";
+  const isWorkflowRunning =
+    flowPhase === "workflow-running" || flowPhase === "workflow-retrying";
+  const isAnalyzing = isWorkflowRunning || flowPhase === "workflow-failed";
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const setValue = (key: FieldKey, value: string) => {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -179,100 +252,116 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
   };
 
   const handleBack = () => {
-    if (stepIndex === 0) return;
+    if (stepIndex === 0 || inFlightRef.current) return;
     setFormError(null);
     setStepIndex((i) => i - 1);
   };
 
-  const setAnalysisStepStatus = (index: number, status: AnalysisStep["status"]) => {
-    setAnalysisSteps((current) =>
-      current.map((item, itemIndex) =>
-        itemIndex === index ? { ...item, status } : item,
-      ),
-    );
-  };
+  const executeWorkflow = async (ideaId: number, isRetry: boolean) => {
+    if (!mountedRef.current) return;
 
-  const runAnalysis = async (ideaId: number, startIndex = 1) => {
-    const operations = [
-      () => Promise.resolve(),
-      () => generateRiskyAssumptions(ideaId),
-      () => generateMomTestQuestions(ideaId),
-      () => generateMoscowScope(ideaId),
-      () => generateValidationRoadmap(ideaId),
-      () => generateGeneralEvaluation(ideaId),
-    ];
+    setAnalysisSteps(createAnalysisSteps());
+    if (!isRetry) setAnalysisError(null);
+    setFlowPhase(isRetry ? "workflow-retrying" : "workflow-running");
 
-    setAnalysisError(null);
-    setFailedStepIndex(null);
+    try {
+      const response = await runValidationWorkflow(ideaId);
+      if (!mountedRef.current) return;
 
-    for (let index = startIndex; index < operations.length; index += 1) {
-      setAnalysisStepStatus(index, "active");
-      try {
-        await operations[index]();
-        setAnalysisStepStatus(index, "completed");
-      } catch (error) {
-        setAnalysisStepStatus(index, "error");
-        setFailedStepIndex(index);
-        setAnalysisError(
-          error instanceof ApiError
-            ? error.message
-            : "Analiz tamamlanamadı. Lütfen tekrar dene.",
-        );
-        return;
+      if (!isCompletedWorkflowResponse(response, ideaId)) {
+        throw new Error("Unexpected validation workflow response.");
       }
-    }
 
-    onCreated();
+      setAnalysisSteps(createAnalysisSteps(response.completed_steps));
+      onCreated();
+    } catch (error) {
+      if (!mountedRef.current) return;
+
+      if (
+        error instanceof ApiError &&
+        isValidationWorkflowFailureResponse(error.data) &&
+        error.data.idea_id === ideaId
+      ) {
+        setAnalysisSteps(
+          createAnalysisSteps(error.data.completed_steps, error.data.failed_step),
+        );
+        setAnalysisError(
+          `Fikrin kaydedildi ancak analiz tamamlanamadı. ${error.data.detail}`,
+        );
+      } else {
+        setAnalysisSteps(createAnalysisSteps());
+        setAnalysisError(
+          "Fikrin kaydedildi ancak analiz tamamlanamadı. Lütfen tekrar dene.",
+        );
+      }
+
+      setFlowPhase("workflow-failed");
+    }
   };
 
   const createAndAnalyze = async (payload: IdeaPayload) => {
-    setIsAnalyzing(true);
-    setAnalysisError(null);
-    setAnalysisSteps(
-      INITIAL_ANALYSIS_STEPS.map((item, index) => ({
-        ...item,
-        status: index === 0 ? "active" : "pending",
-      })),
-    );
+    if (inFlightRef.current) return;
+
+    inFlightRef.current = true;
+    setFormError(null);
+    setFlowPhase("creating");
 
     try {
-      const idea = await createIdea(payload);
-      setCreatedIdeaId(idea.id);
-      setActiveIdeaId(idea.id);
-      setAnalysisStepStatus(0, "completed");
-      await runAnalysis(idea.id);
-    } catch (error) {
-      setAnalysisStepStatus(0, "error");
-      setFailedStepIndex(0);
-      setAnalysisError(
-        error instanceof ApiError
-          ? error.message
-          : "Fikir kaydedilemedi. Lütfen tekrar dene.",
-      );
+      let ideaId: number;
+
+      try {
+        const idea = await createIdea(payload);
+        if (!Number.isInteger(idea.id) || idea.id <= 0) {
+          throw new Error("Unexpected idea response.");
+        }
+        ideaId = idea.id;
+      } catch (error) {
+        if (!mountedRef.current) return;
+
+        setFlowPhase("editing");
+        setFormError(
+          error instanceof ApiError
+            ? error.message
+            : "Fikir kaydedilemedi. Lütfen tekrar dene.",
+        );
+        return;
+      }
+
+      if (!mountedRef.current) return;
+
+      setCreatedIdeaId(ideaId);
+      setActiveIdeaId(ideaId);
+      setAnalysisSteps(createAnalysisSteps());
+      setAnalysisError(null);
+      await executeWorkflow(ideaId, false);
     } finally {
-      setIsSubmitting(false);
+      inFlightRef.current = false;
+    }
+  };
+
+  const retryWorkflow = async (ideaId: number) => {
+    try {
+      await executeWorkflow(ideaId, true);
+    } finally {
+      inFlightRef.current = false;
     }
   };
 
   const handleRetry = () => {
-    if (failedStepIndex === null) return;
-    if (failedStepIndex === 0 || createdIdeaId === null) {
-      void createAndAnalyze({
-        title: values.title.trim(),
-        description: values.description.trim(),
-        target_audience: values.target_audience.trim(),
-        problem: values.problem.trim(),
-        solution: values.solution.trim(),
-        sector: values.sector.trim(),
-      });
+    if (
+      createdIdeaId === null ||
+      flowPhase !== "workflow-failed" ||
+      inFlightRef.current
+    ) {
       return;
     }
 
-    void runAnalysis(createdIdeaId, failedStepIndex);
+    inFlightRef.current = true;
+    void retryWorkflow(createdIdeaId);
   };
 
   const handleNext = async () => {
-    if (isSubmitting) return;
+    if (inFlightRef.current || flowPhase !== "editing") return;
     if (!validateStep(step.key)) return;
 
     if (!isLastStep) {
@@ -281,7 +370,6 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
     }
 
     setFormError(null);
-    setIsSubmitting(true);
     void createAndAnalyze({
       title: values.title.trim(),
       description: values.description.trim(),
@@ -321,7 +409,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
   };
 
   const error = fieldErrors[step.key];
-  const inputClass = `w-full bg-muted border rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 transition-all ${
+  const inputClass = `w-full bg-muted border rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
     error
       ? "border-destructive/50 focus:border-destructive focus:ring-destructive/30"
       : "border-border focus:border-primary/50 focus:ring-primary/20"
@@ -333,6 +421,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
         steps={analysisSteps}
         error={analysisError}
         onRetry={analysisError ? handleRetry : undefined}
+        isRunning={isWorkflowRunning}
       />
     );
   }
@@ -382,6 +471,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
               <input
                 autoFocus
                 type="text"
+                disabled={isSubmitting}
                 value={values[step.key]}
                 onChange={(e) => setValue(step.key, e.target.value)}
                 onKeyDown={handleTextKeyDown}
@@ -394,6 +484,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
               <>
                 <select
                   autoFocus={!otherMode[step.key]}
+                  disabled={isSubmitting}
                   value={otherMode[step.key] ? OTHER_OPTION : values[step.key]}
                   onChange={(e) => {
                     const selected = e.target.value;
@@ -421,6 +512,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
                   <input
                     autoFocus
                     type="text"
+                    disabled={isSubmitting}
                     value={values[step.key]}
                     onChange={(e) => setValue(step.key, e.target.value)}
                     onKeyDown={handleTextKeyDown}
@@ -434,6 +526,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
             {step.type === "textarea" && (
               <textarea
                 autoFocus
+                disabled={isSubmitting}
                 value={values[step.key]}
                 onChange={(e) => setValue(step.key, e.target.value)}
                 onKeyDown={handleTextareaKeyDown}
@@ -446,7 +539,11 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
             {error && <p className="text-xs text-destructive mt-1.5">{error}</p>}
 
             {isLastStep && formError && (
-              <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2.5 mt-4">
+              <div
+                className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2.5 mt-4"
+                role="alert"
+                aria-live="assertive"
+              >
                 <AlertTriangle size={13} className="text-destructive mt-0.5 flex-shrink-0" />
                 <p className="text-xs text-destructive leading-relaxed">{formError}</p>
               </div>
@@ -457,7 +554,7 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
             <button
               type="button"
               onClick={handleBack}
-              disabled={stepIndex === 0}
+              disabled={stepIndex === 0 || isSubmitting}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-hover transition-all disabled:opacity-0 disabled:pointer-events-none"
             >
               <ArrowLeft size={13} />Geri
