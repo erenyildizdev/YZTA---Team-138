@@ -17,6 +17,10 @@ class CompetitorAnalysisGenerationError(Exception):
     """Raised when the competitor analysis cannot be generated from the AI response."""
 
 
+class InvestorPitchGenerationError(Exception):
+    """Raised when the investor pitch cannot be generated from the AI response."""
+
+
 GENERAL_EVALUATION_SCHEMA = {
     "type": "object",
     "properties": {
@@ -168,6 +172,118 @@ def generate_competitor_analysis_payload(idea) -> dict:
         key in result for key in ("competitors", "market_gap", "differentiation")
     ):
         raise CompetitorAnalysisGenerationError("AI response was incomplete.")
+
+    return result
+
+
+INVESTOR_PITCH_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "elevator_pitch": {"type": "string"},
+        "slides": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "bullets": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                    },
+                },
+                "required": ["title", "bullets"],
+            },
+        },
+        "closing_ask": {"type": "string"},
+    },
+    "required": ["elevator_pitch", "slides", "closing_ask"],
+}
+
+
+def build_investor_pitch_prompt(idea) -> str:
+    sections = [
+        "Sen deneyimli bir girişim yatırım danışmanısın. SADECE geçerli JSON döndür, "
+        "markdown veya ek açıklama ekleme. Aşağıdaki iş fikri ve varsa ona ait mevcut analiz "
+        "verilerini oku, bunları kendi kararınla sentezleyerek kısa ve ikna edici bir yatırımcı "
+        "sunumu hazırla: tek cümlelik çarpıcı bir 'elevator_pitch'; tam olarak 6 slaytlık, sırasıyla "
+        "Problem, Çözüm, Pazar Fırsatı, Doğrulama Kanıtları, Ürün/MVP, Kapanış-Talep başlıklarını "
+        "taşıyan bir sunum akışı (her slaytta 2-4 madde, madde başlıkla aynı bilgiyi tekrar etmesin); "
+        "ve net bir 'closing_ask' (yatırım, pilot müşteri veya mentorluk gibi ne istediğinizi tek "
+        "cümlede belirt). Sağlanan doğrulama kanıtları (doğrulanmış varsayımlar, farklılaşma noktası, "
+        "güçlü yönler) varsa 'Doğrulama Kanıtları' slaydında bunları somut olarak kullan; yoksa "
+        "fikrin kendisinden çıkarım yap. Genel geçer laf kalabalığından kaçın, fikre özgü ve spesifik "
+        "ol.\n\n"
+        f"Fikir başlığı: {idea.title}\n"
+        f"Açıklama: {idea.description}\n"
+        f"Hedef kitle: {idea.target_audience}\n"
+        f"Problem: {idea.problem}\n"
+        f"Çözüm önerisi: {idea.solution}\n"
+        f"Sektör: {idea.sector}\n"
+    ]
+
+    if hasattr(idea, "risky_assumptions"):
+        assumptions = idea.risky_assumptions.assumptions_data.get("assumptions", [])
+        validated = [a for a in assumptions if a.get("status") == "validated"]
+        if validated:
+            sections.append(
+                "Kanıta dayalı doğrulanmış varsayımlar:\n"
+                + "\n".join(f"- {a['text']}" for a in validated[:5])
+            )
+
+    if hasattr(idea, "moscow_scope_analysis"):
+        must_haves = idea.moscow_scope_analysis.result.get("must_have", [])
+        if must_haves:
+            sections.append(
+                "MVP'nin olmazsa olmaz özellikleri:\n"
+                + "\n".join(f"- {m.get('title', '')}" for m in must_haves[:5] if m.get("title"))
+            )
+
+    if hasattr(idea, "competitor_analysis"):
+        differentiation = idea.competitor_analysis.analysis_data.get("differentiation", "")
+        if differentiation:
+            sections.append(f"Rakiplerden farklılaşma noktası: {differentiation}")
+
+    if hasattr(idea, "general_evaluation"):
+        strengths = idea.general_evaluation.evaluation_data.get("strengths", [])
+        if strengths:
+            sections.append("Güçlü yönler:\n" + "\n".join(f"- {s}" for s in strengths[:5]))
+
+    return "\n\n".join(sections)
+
+
+def generate_investor_pitch_payload(idea) -> dict:
+    api_key = getattr(settings, "GEMINI_API_KEY", "")
+    if not api_key:
+        raise InvestorPitchGenerationError("GEMINI_API_KEY is not configured.")
+
+    client = genai.Client(
+        api_key=api_key,
+        http_options=types.HttpOptions(timeout=60_000),
+    )
+
+    try:
+        response = client.models.generate_content(
+            model=settings.GEMINI_MODEL_NAME,
+            contents=build_investor_pitch_prompt(idea),
+            config=types.GenerateContentConfig(
+                temperature=0.4,
+                response_mime_type="application/json",
+                response_schema=INVESTOR_PITCH_SCHEMA,
+                max_output_tokens=2048,
+            ),
+        )
+    except Exception as exc:
+        raise InvestorPitchGenerationError("AI provider request failed.") from exc
+
+    try:
+        result = json.loads(response.text)
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise InvestorPitchGenerationError("AI response was not valid JSON.") from exc
+
+    if not isinstance(result, dict) or not all(
+        key in result for key in ("elevator_pitch", "slides", "closing_ask")
+    ):
+        raise InvestorPitchGenerationError("AI response was incomplete.")
 
     return result
 

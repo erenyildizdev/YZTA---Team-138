@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import CompetitorAnalysis, GeneralEvaluation, Idea, RiskyAssumptions, ValidationRoadmap
+from .models import CompetitorAnalysis, GeneralEvaluation, Idea, InvestorPitch, RiskyAssumptions, ValidationRoadmap
 
 
 class IdeaSerializer(serializers.ModelSerializer):
@@ -81,4 +81,11 @@ class CompetitorAnalysisSerializer(serializers.ModelSerializer):
     class Meta:
         model = CompetitorAnalysis
         fields = ["id", "idea", "analysis_data", "created_at"]
+        read_only_fields = fields
+
+
+class InvestorPitchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InvestorPitch
+        fields = ["id", "idea", "pitch_data", "created_at"]
         read_only_fields = fields

@@ -6,6 +6,7 @@ import {
   ClipboardList,
   FileText,
   Map,
+  Megaphone,
   MessageSquare,
   RefreshCw,
   Send,
@@ -21,6 +22,7 @@ import {
 import { CompetitorAnalysisBody } from "../components/analysis/CompetitorAnalysisBody";
 import { GeneralEvaluationBody } from "../components/analysis/GeneralEvaluationBody";
 import { InterviewNotesBody } from "../components/analysis/InterviewNotesBody";
+import { InvestorPitchBody } from "../components/analysis/InvestorPitchBody";
 import { MomTestQuestionsBody } from "../components/analysis/MomTestQuestionsBody";
 import { MoscowScopeBody } from "../components/analysis/MoscowScopeBody";
 import { RiskyAssumptionsBody } from "../components/analysis/RiskyAssumptionsBody";
@@ -39,6 +41,7 @@ const ACTION_LABELS: Record<string, string> = {
   regenerate_risky_assumptions: "Riskli varsayımlar güncellendi",
   regenerate_general_evaluation: "Genel değerlendirme güncellendi",
   regenerate_competitor_analysis: "Rakip analizi güncellendi",
+  generate_investor_pitch: "Yatırımcı sunumu hazırlandı",
   save_interview_note: "Görüşme notu kaydedildi",
   analyze_interview_evidence: "Görüşme kanıtları analiz edildi",
 };
@@ -83,6 +86,7 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
   const [questionsRefreshKey, setQuestionsRefreshKey] = useState(0);
   const [evaluationRefreshKey, setEvaluationRefreshKey] = useState(0);
   const [competitorRefreshKey, setCompetitorRefreshKey] = useState(0);
+  const [pitchRefreshKey, setPitchRefreshKey] = useState(0);
   const [notesRefreshKey, setNotesRefreshKey] = useState(0);
 
   const { ideaId, setActiveIdeaId } = useActiveIdeaId();
@@ -105,6 +109,7 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
     "Yol haritasını yenile",
     "Görüşme notlarını analiz et",
     "Rakip analizini oluştur",
+    "Sunumumu hazırla",
   ];
 
   const sendMsg = async () => {
@@ -244,6 +249,16 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
         )
       ) {
         setCompetitorRefreshKey((key) => key + 1);
+      }
+
+      if (
+        response.actions.some(
+          (action) =>
+            action.tool === "generate_investor_pitch" &&
+            action.status === "success",
+        )
+      ) {
+        setPitchRefreshKey((key) => key + 1);
       }
     } catch (error) {
       if (currentIdeaIdRef.current !== ideaId) {
@@ -524,6 +539,21 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
 
               <CompetitorAnalysisBody
                 key={competitorRefreshKey}
+                ideaId={ideaId}
+              />
+            </div>
+
+            {/* Yatırımcı Sunumu */}
+            <div className="rounded-xl border border-border bg-card p-5">
+              <CardHeader
+                bg="bg-muted"
+                Icon={Megaphone}
+                iconColor="text-foreground"
+                title="Yatırımcı Sunumu"
+              />
+
+              <InvestorPitchBody
+                key={pitchRefreshKey}
                 ideaId={ideaId}
               />
             </div>

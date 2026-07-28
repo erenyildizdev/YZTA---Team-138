@@ -6,21 +6,24 @@ from apps.analyses.services.analyzer import analyze_idea
 from apps.analyses.services.llm_client import LLMClientError
 
 from .mentor_agent import MentorAgentError, run_mentor_chat
-from .models import CompetitorAnalysis, GeneralEvaluation, Idea, RiskyAssumptions, ValidationRoadmap
+from .models import CompetitorAnalysis, GeneralEvaluation, Idea, InvestorPitch, RiskyAssumptions, ValidationRoadmap
 from .serializers import (
     CompetitorAnalysisSerializer,
     GeneralEvaluationSerializer,
     IdeaSerializer,
+    InvestorPitchSerializer,
     RiskyAssumptionsSerializer,
     ValidationRoadmapSerializer,
 )
 from .services import (
     CompetitorAnalysisGenerationError,
     GeneralEvaluationGenerationError,
+    InvestorPitchGenerationError,
     RiskyAssumptionsGenerationError,
     RoadmapGenerationError,
     generate_competitor_analysis_payload,
     generate_general_evaluation_payload,
+    generate_investor_pitch_payload,
     generate_risky_assumptions_payload,
     generate_validation_roadmap_payload,
 )
@@ -40,6 +43,7 @@ class IdeaViewSet(viewsets.ModelViewSet):
                 "validation_roadmap",
                 "general_evaluation",
                 "competitor_analysis",
+                "investor_pitch",
             )
             .order_by("-created_at", "-id")
         )
@@ -195,6 +199,38 @@ class IdeaViewSet(viewsets.ModelViewSet):
             return Response({"detail": "Competitor analysis not found."}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = CompetitorAnalysisSerializer(analysis)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["post"], url_path="generate-pitch")
+    def generate_pitch(self, request, pk=None):
+        idea = self.get_object()
+
+        try:
+            pitch_data = generate_investor_pitch_payload(idea)
+        except InvestorPitchGenerationError as exc:
+            return Response(
+                {"detail": str(exc)},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        pitch, _ = InvestorPitch.objects.update_or_create(
+            idea=idea,
+            defaults={"pitch_data": pitch_data},
+        )
+
+        serializer = InvestorPitchSerializer(pitch)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["get"], url_path="pitch")
+    def pitch(self, request, pk=None):
+        idea = self.get_object()
+
+        try:
+            pitch = idea.investor_pitch
+        except InvestorPitch.DoesNotExist:
+            return Response({"detail": "Investor pitch not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = InvestorPitchSerializer(pitch)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["post"], url_path="mentor-chat")

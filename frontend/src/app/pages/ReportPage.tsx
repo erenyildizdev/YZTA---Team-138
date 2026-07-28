@@ -5,6 +5,7 @@ import jsPDF from "jspdf";
 
 import { CompetitorAnalysisBody } from "../components/analysis/CompetitorAnalysisBody";
 import { GeneralEvaluationBody } from "../components/analysis/GeneralEvaluationBody";
+import { InvestorPitchBody } from "../components/analysis/InvestorPitchBody";
 import { MomTestQuestionsBody } from "../components/analysis/MomTestQuestionsBody";
 import { MoscowScopeBody } from "../components/analysis/MoscowScopeBody";
 import { RiskyAssumptionsBody } from "../components/analysis/RiskyAssumptionsBody";
@@ -373,6 +374,17 @@ export function ReportPage({ onBack }: ReportPageProps) {
             </div>
 
             <CompetitorAnalysisBody
+              ideaId={ideaId}
+              readOnly
+            />
+          </section>
+
+          <section>
+            <div data-pdf-block>
+              <Divider label="Yatırımcı Sunumu" />
+            </div>
+
+            <InvestorPitchBody
               ideaId={ideaId}
               readOnly
             />

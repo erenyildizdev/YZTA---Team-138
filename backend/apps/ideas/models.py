@@ -51,3 +51,11 @@ class CompetitorAnalysis(models.Model):
 
     def __str__(self):
         return f"Competitor analysis for {self.idea.title}"
+
+class InvestorPitch(models.Model):
+    idea = models.OneToOneField(Idea, on_delete=models.CASCADE, related_name="investor_pitch")
+    pitch_data = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Investor pitch for {self.idea.title}"

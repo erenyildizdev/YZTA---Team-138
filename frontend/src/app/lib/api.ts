@@ -455,6 +455,34 @@ export function generateCompetitorAnalysis(ideaId: number): Promise<CompetitorAn
   });
 }
 
+export interface PitchSlide {
+  title: string;
+  bullets: string[];
+}
+
+export interface InvestorPitchData {
+  elevator_pitch: string;
+  slides: PitchSlide[];
+  closing_ask: string;
+}
+
+export interface InvestorPitchResponse {
+  id: number;
+  idea: number;
+  pitch_data: InvestorPitchData;
+  created_at: string;
+}
+
+export function getInvestorPitch(ideaId: number): Promise<InvestorPitchResponse> {
+  return request<InvestorPitchResponse>(`/ideas/${ideaId}/pitch/`);
+}
+
+export function generateInvestorPitch(ideaId: number): Promise<InvestorPitchResponse> {
+  return request<InvestorPitchResponse>(`/ideas/${ideaId}/generate-pitch/`, {
+    method: "POST",
+  });
+}
+
 export interface InterviewNotePayload {
   interviewee_name?: string;
   interviewee_profile?: string;
