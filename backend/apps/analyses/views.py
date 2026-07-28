@@ -20,6 +20,8 @@ from .serializers import (
     MomTestQuestionRequestSerializer,
     MomTestQuestionResponseSerializer,
     MoscowScopeAnalysisSerializer,
+    ValidationWorkflowFailureResponseSerializer,
+    ValidationWorkflowSuccessResponseSerializer,
 )
 
 from .services import (
@@ -29,6 +31,11 @@ from .services import (
 )
 from .services.analyzer import analyze_idea
 from .services.llm_client import LLMClientError
+from .services.validation_workflow import (
+    INTERNAL_ERROR,
+    ValidationWorkflowError,
+    run_validation_workflow,
+)
 
 from .services.interview_evidence import (
     InterviewNotesNotFoundError,
@@ -49,6 +56,39 @@ def _get_owned_note(request, idea_id, note_id):
         InterviewNote.objects.filter(idea=idea),
         pk=note_id,
     )
+
+
+class ValidationWorkflowView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, idea_id, *args, **kwargs):
+        idea = _get_owned_idea(request, idea_id)
+
+        try:
+            workflow_result = run_validation_workflow(idea)
+        except ValidationWorkflowError as exc:
+            response_serializer = ValidationWorkflowFailureResponseSerializer(
+                data=exc.as_response()
+            )
+            response_serializer.is_valid(raise_exception=True)
+            response_status = (
+                status.HTTP_500_INTERNAL_SERVER_ERROR
+                if exc.error_code == INTERNAL_ERROR
+                else status.HTTP_502_BAD_GATEWAY
+            )
+            return Response(
+                response_serializer.data,
+                status=response_status,
+            )
+
+        response_serializer = ValidationWorkflowSuccessResponseSerializer(
+            data=workflow_result.as_response()
+        )
+        response_serializer.is_valid(raise_exception=True)
+        return Response(
+            response_serializer.data,
+            status=status.HTTP_200_OK,
+        )
 
 
 class IdeaAnalysisView(APIView):
