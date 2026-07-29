@@ -1,0 +1,9 @@
+Merhaba,
+
+FikirLab hesabınızın e-posta adresini doğrulamak için kodunuz:
+
+{{ code }}
+
+Bu kod {{ ttl_minutes }} dakika boyunca geçerlidir.
+
+Bu doğrulama işlemini siz başlatmadıysanız bu e-postayı dikkate almayın.

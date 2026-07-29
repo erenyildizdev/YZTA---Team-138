@@ -12,10 +12,65 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from datetime import timedelta
 from pathlib import Path
-from decouple import config, Csv
+
+from decouple import Csv, config
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _positive_int_config(name, default, *, maximum=None):
+    try:
+        value = config(name, default=default, cast=int)
+    except (TypeError, ValueError):
+        raise ImproperlyConfigured(
+            f"{name} must be configured as a positive integer."
+        ) from None
+
+    if value <= 0:
+        raise ImproperlyConfigured(
+            f"{name} must be configured as a positive integer."
+        )
+    if maximum is not None and value > maximum:
+        raise ImproperlyConfigured(
+            f"{name} must not be greater than {maximum}."
+        )
+    return value
+
+
+def _nonnegative_int_config(name, default, *, maximum=None):
+    try:
+        value = config(name, default=default, cast=int)
+    except (TypeError, ValueError):
+        raise ImproperlyConfigured(
+            f"{name} must be configured as a non-negative integer."
+        ) from None
+
+    if value < 0:
+        raise ImproperlyConfigured(
+            f"{name} must be configured as a non-negative integer."
+        )
+    if maximum is not None and value > maximum:
+        raise ImproperlyConfigured(
+            f"{name} must not be greater than {maximum}."
+        )
+    return value
+
+
+def _boolean_config(name, default):
+    raw_value = config(name, default=None)
+    if raw_value is None:
+        return default
+
+    normalized_value = str(raw_value).strip().lower()
+    if normalized_value in {"true", "t", "yes", "y", "1", "on"}:
+        return True
+    if normalized_value in {"false", "f", "no", "n", "0", "off"}:
+        return False
+    raise ImproperlyConfigured(
+        f"{name} must be configured as a non-empty boolean."
+    )
 
 
 # Quick-start development settings - unsuitable for production
@@ -145,6 +200,46 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = "users.User"
 
+# Email and one-time authentication code settings.
+EMAIL_BACKEND = config(
+    "EMAIL_BACKEND",
+    default="django.core.mail.backends.console.EmailBackend",
+)
+EMAIL_HOST = config("EMAIL_HOST", default="")
+EMAIL_PORT = _positive_int_config("EMAIL_PORT", 587, maximum=65535)
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
+EMAIL_USE_TLS = _boolean_config("EMAIL_USE_TLS", True)
+EMAIL_USE_SSL = _boolean_config("EMAIL_USE_SSL", False)
+EMAIL_TIMEOUT = _positive_int_config("EMAIL_TIMEOUT", 10, maximum=300)
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="no-reply@example.com")
+
+if EMAIL_USE_TLS and EMAIL_USE_SSL:
+    raise ImproperlyConfigured(
+        "EMAIL_USE_TLS and EMAIL_USE_SSL cannot both be enabled."
+    )
+
+AUTH_CODE_TTL_MINUTES = _positive_int_config(
+    "AUTH_CODE_TTL_MINUTES",
+    10,
+    maximum=1440,
+)
+AUTH_CODE_RESEND_COOLDOWN_SECONDS = _positive_int_config(
+    "AUTH_CODE_RESEND_COOLDOWN_SECONDS",
+    60,
+    maximum=86400,
+)
+AUTH_CODE_MAX_ATTEMPTS = _positive_int_config(
+    "AUTH_CODE_MAX_ATTEMPTS",
+    5,
+    maximum=100,
+)
+DRF_NUM_PROXIES = _nonnegative_int_config(
+    "DRF_NUM_PROXIES",
+    0,
+    maximum=10,
+)
+
 CORS_ALLOWED_ORIGINS = config(
     "CORS_ALLOWED_ORIGINS",
     default="http://localhost:3000,http://localhost:5173",
@@ -158,6 +253,11 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],
+    "DEFAULT_THROTTLE_RATES": {
+        "auth_code_send": "5/hour",
+        "auth_code_verify": "20/hour",
+    },
+    "NUM_PROXIES": DRF_NUM_PROXIES,
 }
 
 SIMPLE_JWT = {
