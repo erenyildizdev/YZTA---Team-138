@@ -1,5 +1,7 @@
 # Environment
 .env
+.run/
+.make/
 venv/
 .venv/
 
