@@ -1,11 +1,22 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   ApiError,
   getAccessToken,
+  isEmailNotVerifiedErrorPayload,
   login as loginRequest,
   register as registerRequest,
   setAccessToken,
   type AuthUser,
+  type EmailNotVerifiedErrorPayload,
+  type RegisterVerificationResponse,
 } from "../lib/api";
 import { clearActiveIdeaId } from "../hooks/useActiveIdeaId";
 
@@ -28,13 +39,23 @@ export interface RegisterInput {
   lastName: string;
 }
 
+export type LoginResult =
+  | { ok: true }
+  | {
+      ok: false;
+      reason: "email_not_verified";
+      payload: EmailNotVerifiedErrorPayload;
+    }
+  | { ok: false; reason: "error" | "cancelled" };
+
 interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  register: (input: RegisterInput) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<LoginResult>;
+  cancelLogin: () => void;
+  register: (input: RegisterInput) => Promise<RegisterVerificationResponse>;
   logout: () => void;
   clearError: () => void;
   updateUser: (user: AuthUser) => void;
@@ -47,6 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => getAccessToken());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const loginGenerationRef = useRef(0);
 
   const persistSession = (accessToken: string, authUser: AuthUser) => {
     const previousUser = readStoredUser();
@@ -58,42 +80,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
+    const generation = loginGenerationRef.current + 1;
+    loginGenerationRef.current = generation;
     setIsLoading(true);
     setError(null);
     try {
       const res = await loginRequest(email, password);
+      if (generation !== loginGenerationRef.current) {
+        return { ok: false, reason: "cancelled" } as const;
+      }
       persistSession(res.access_token, res.user);
-      return true;
+      return { ok: true } as const;
     } catch (err) {
+      if (generation !== loginGenerationRef.current) {
+        return { ok: false, reason: "cancelled" } as const;
+      }
+
+      if (
+        err instanceof ApiError &&
+        err.status === 403 &&
+        isEmailNotVerifiedErrorPayload(err.data)
+      ) {
+        return {
+          ok: false,
+          reason: "email_not_verified",
+          payload: err.data,
+        } as const;
+      }
+
       setError(err instanceof ApiError ? err.message : "Giriş yapılamadı.");
-      return false;
+      return { ok: false, reason: "error" } as const;
     } finally {
-      setIsLoading(false);
+      if (generation === loginGenerationRef.current) {
+        setIsLoading(false);
+      }
     }
   };
 
-  const register = async (input: RegisterInput) => {
-    setIsLoading(true);
+  const cancelLogin = useCallback(() => {
+    loginGenerationRef.current += 1;
+    setIsLoading(false);
     setError(null);
-    try {
-      await registerRequest({
-        email: input.email,
-        password: input.password,
-        first_name: input.firstName,
-        last_name: input.lastName,
-      });
-      const res = await loginRequest(input.email, input.password);
-      persistSession(res.access_token, res.user);
-      return true;
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Kayıt oluşturulamadı.");
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
+  }, []);
+
+  const register = (input: RegisterInput) => {
+    setError(null);
+    return registerRequest({
+      email: input.email,
+      password: input.password,
+      first_name: input.firstName,
+      last_name: input.lastName,
+    });
   };
 
   const logout = () => {
+    loginGenerationRef.current += 1;
     clearActiveIdeaId();
     setAccessToken(null);
     localStorage.removeItem(USER_STORAGE_KEY);
@@ -109,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, isAuthenticated: !!token, isLoading, error, login, register, logout, clearError, updateUser }),
+    () => ({ user, isAuthenticated: !!token, isLoading, error, login, cancelLogin, register, logout, clearError, updateUser }),
     [user, token, isLoading, error],
   );
 

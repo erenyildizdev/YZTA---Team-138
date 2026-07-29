@@ -10,29 +10,54 @@ const PASSWORD_CHANGE_MESSAGE_KEY = "password_change_message";
 interface LoginLocationState {
   from?: { pathname: string };
   passwordChangeMessage?: string;
+  successMessage?: string;
 }
 
 export function LoginPage() {
-  const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
+  const {
+    login,
+    cancelLogin,
+    isAuthenticated,
+    isLoading,
+    error,
+    clearError,
+  } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const submitInFlightRef = useRef(false);
+  const mountedRef = useRef(false);
 
   const [authMessage, setAuthMessage] = useState<string | null>(null);
   const locationState = location.state as LoginLocationState | null;
-  const [passwordChangeMessage, setPasswordChangeMessage] =
-    useState<string | null>(
-      locationState?.passwordChangeMessage ?? null,
-    );
+  const incomingSuccessMessage =
+    typeof locationState?.successMessage === "string"
+      ? locationState.successMessage
+      : typeof locationState?.passwordChangeMessage === "string"
+        ? locationState.passwordChangeMessage
+        : null;
+  const [successMessage, setSuccessMessage] = useState<string | null>(
+    incomingSuccessMessage,
+  );
 
-  const from = passwordChangeMessage
+  const from = successMessage
     ? "/"
     : locationState?.from?.pathname ?? "/";
 
   useEffect(() => {
-    if (!locationState?.passwordChangeMessage) {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      cancelLogin();
+    };
+  }, [cancelLogin]);
+
+  useEffect(() => {
+    if (
+      !locationState?.passwordChangeMessage &&
+      !locationState?.successMessage
+    ) {
       return;
     }
 
@@ -51,7 +76,9 @@ export function LoginPage() {
     location.hash,
     location.pathname,
     location.search,
-    locationState,
+    locationState?.from,
+    locationState?.passwordChangeMessage,
+    locationState?.successMessage,
     navigate,
   ]);
 
@@ -66,7 +93,20 @@ export function LoginPage() {
     submitInFlightRef.current = true;
 
     try {
-      await login(email, password);
+      const result = await login(email, password);
+      if (
+        mountedRef.current &&
+        !result.ok &&
+        result.reason === "email_not_verified"
+      ) {
+        navigate("/verify-email", {
+          replace: true,
+          state: {
+            email: result.payload.email,
+            notice: result.payload.detail,
+          },
+        });
+      }
     } finally {
       submitInFlightRef.current = false;
     }
@@ -88,12 +128,12 @@ export function LoginPage() {
       // Storage notices are best-effort; login itself remains available.
     }
 
-    if (!passwordChangeMessage && reauthenticationMessage) {
-      setPasswordChangeMessage(reauthenticationMessage);
+    if (!successMessage && reauthenticationMessage) {
+      setSuccessMessage(reauthenticationMessage);
       return;
     }
 
-    if (!passwordChangeMessage && authenticationMessage) {
+    if (!successMessage && authenticationMessage) {
       setAuthMessage(authenticationMessage);
     }
   }, []);
@@ -115,7 +155,7 @@ export function LoginPage() {
           aria-busy={isLoading}
           className="bg-card border border-border rounded-2xl p-6 space-y-4"
         >
-          {passwordChangeMessage && (
+          {successMessage && (
             <div
               role="status"
               aria-live="polite"
@@ -128,7 +168,7 @@ export function LoginPage() {
               />
 
               <p className="text-xs leading-relaxed text-success">
-                {passwordChangeMessage}
+                {successMessage}
               </p>
             </div>
           )}
@@ -163,6 +203,7 @@ export function LoginPage() {
               autoComplete="email"
               required
               autoFocus
+              disabled={isLoading}
               value={email}
               onChange={(e) => { setEmail(e.target.value); clearError(); }}
               placeholder="ornek@eposta.com"
@@ -182,10 +223,19 @@ export function LoginPage() {
               name="password"
               autoComplete="current-password"
               required
+              disabled={isLoading}
               value={password}
               onChange={(e) => { setPassword(e.target.value); clearError(); }}
               placeholder="••••••••"
             />
+            <div className="pt-1 text-right">
+              <Link
+                to="/forgot-password"
+                className="text-xs font-semibold text-primary hover:text-primary-hover"
+              >
+                Şifremi unuttum?
+              </Link>
+            </div>
           </div>
 
           {error && (
