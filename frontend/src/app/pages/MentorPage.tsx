@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Bot, Send } from "lucide-react";
 import { ActiveIdeaPageState } from "../components/ideas/ActiveIdeaPageState";
 import { MentorCharacter } from "../components/mentor/MentorCharacter";
+import { MentorMarkdown } from "../components/mentor/MentorMarkdown";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 import { useIdea } from "../hooks/useIdea";
 import { useMentorChatHistory } from "../hooks/useMentorChatHistory";
@@ -214,13 +215,17 @@ export function MentorPage() {
                   </div>
                 )}
                 <div
-                  className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                  className={`min-w-0 max-w-[80%] break-words px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                     m.role === "user"
                       ? "bg-primary text-primary-foreground rounded-tr-sm"
                       : "bg-secondary border border-border text-foreground rounded-tl-sm"
                   }`}
                 >
-                  {m.text}
+                  {m.role === "ai" ? (
+                    <MentorMarkdown content={m.text} />
+                  ) : (
+                    m.text
+                  )}
                 </div>
               </div>
             ))}
