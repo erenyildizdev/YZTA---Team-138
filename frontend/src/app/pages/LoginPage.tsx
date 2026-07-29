@@ -1,8 +1,16 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-import { AlertTriangle, Sparkles } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { ThemeToggle } from "../components/common/ThemeToggle";
+import { PasswordInput } from "../components/auth/PasswordInput";
+
+const PASSWORD_CHANGE_MESSAGE_KEY = "password_change_message";
+
+interface LoginLocationState {
+  from?: { pathname: string };
+  passwordChangeMessage?: string;
+}
 
 export function LoginPage() {
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
@@ -13,8 +21,39 @@ export function LoginPage() {
   const submitInFlightRef = useRef(false);
 
   const [authMessage, setAuthMessage] = useState<string | null>(null);
+  const locationState = location.state as LoginLocationState | null;
+  const [passwordChangeMessage, setPasswordChangeMessage] =
+    useState<string | null>(
+      locationState?.passwordChangeMessage ?? null,
+    );
 
-  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? "/";
+  const from = passwordChangeMessage
+    ? "/"
+    : locationState?.from?.pathname ?? "/";
+
+  useEffect(() => {
+    if (!locationState?.passwordChangeMessage) {
+      return;
+    }
+
+    const preservedState = locationState.from
+      ? { from: locationState.from }
+      : null;
+
+    navigate(
+      `${location.pathname}${location.search}${location.hash}`,
+      {
+        replace: true,
+        state: preservedState,
+      },
+    );
+  }, [
+    location.hash,
+    location.pathname,
+    location.search,
+    locationState,
+    navigate,
+  ]);
 
   useEffect(() => {
     if (isAuthenticated) navigate(from, { replace: true });
@@ -34,16 +73,33 @@ export function LoginPage() {
   };
 
   useEffect(() => {
-    const message = sessionStorage.getItem("auth_message");
+    let reauthenticationMessage: string | null = null;
+    let authenticationMessage: string | null = null;
 
-    if (message) {
-      setAuthMessage(message);
+    try {
+      reauthenticationMessage = sessionStorage.getItem(
+        PASSWORD_CHANGE_MESSAGE_KEY,
+      );
+      authenticationMessage =
+        sessionStorage.getItem("auth_message");
+      sessionStorage.removeItem(PASSWORD_CHANGE_MESSAGE_KEY);
       sessionStorage.removeItem("auth_message");
+    } catch {
+      // Storage notices are best-effort; login itself remains available.
+    }
+
+    if (!passwordChangeMessage && reauthenticationMessage) {
+      setPasswordChangeMessage(reauthenticationMessage);
+      return;
+    }
+
+    if (!passwordChangeMessage && authenticationMessage) {
+      setAuthMessage(authenticationMessage);
     }
   }, []);
 
   return (
-    <div className="relative flex min-h-dvh w-full items-center justify-center bg-background px-4" style={{ animation: "page-in 0.3s ease-out" }}>
+    <div className="relative flex min-h-dvh w-full animate-[page-in_0.3s_ease-out] items-center justify-center bg-background px-4">
       <ThemeToggle className="absolute top-4 right-4" />
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-7">
@@ -59,6 +115,24 @@ export function LoginPage() {
           aria-busy={isLoading}
           className="bg-card border border-border rounded-2xl p-6 space-y-4"
         >
+          {passwordChangeMessage && (
+            <div
+              role="status"
+              aria-live="polite"
+              className="flex items-start gap-2 rounded-xl border border-success/30 bg-success/10 px-3 py-2.5"
+            >
+              <CheckCircle2
+                aria-hidden="true"
+                size={13}
+                className="mt-0.5 flex-shrink-0 text-success"
+              />
+
+              <p className="text-xs leading-relaxed text-success">
+                {passwordChangeMessage}
+              </p>
+            </div>
+          )}
+
           {authMessage && (
             <div
               role="alert"
@@ -103,16 +177,14 @@ export function LoginPage() {
             >
               Parola
             </label>
-            <input
+            <PasswordInput
               id="login-password"
               name="password"
-              type="password"
               autoComplete="current-password"
               required
               value={password}
               onChange={(e) => { setPassword(e.target.value); clearError(); }}
               placeholder="••••••••"
-              className="w-full bg-muted border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
             />
           </div>
 

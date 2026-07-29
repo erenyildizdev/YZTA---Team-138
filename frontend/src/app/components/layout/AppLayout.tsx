@@ -203,7 +203,7 @@ function Sidebar({ onClose }: SidebarProps) {
         </button>
 
         <div className="mt-2 rounded-xl bg-sidebar-surface px-3 py-2.5 text-xs">
-          <strong className="block text-sidebar-foreground">
+          <strong className="block min-w-0 break-words text-sidebar-foreground">
             {displayName}
           </strong>
 
