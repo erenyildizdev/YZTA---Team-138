@@ -360,6 +360,35 @@ AI_MODEL_NAME=
 
 Gizli anahtarlar ve gerçek erişim bilgileri GitHub reposuna gönderilmemelidir.
 
+#### E-posta ve doğrulama kodu ayarları
+
+Geliştirme ortamında varsayılan `django.core.mail.backends.console.EmailBackend`
+kullanılır ve e-postalar gerçek bir SMTP sunucusuna gönderilmeden terminalde
+görüntülenir. Production ortamında sağlayıcıdan bağımsız olarak
+`EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend` seçilmeli ve
+`EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` ile
+`DEFAULT_FROM_EMAIL` değerleri `.env` üzerinden yapılandırılmalıdır.
+
+`EMAIL_USE_TLS` ve `EMAIL_USE_SSL` aynı anda `True` olamaz. Genellikle STARTTLS
+için TLS, implicit TLS bağlantısı için SSL seçilir; kullanılan port SMTP
+sağlayıcısının dokümantasyonuyla eşleşmelidir. SMTP parolası ve diğer gerçek
+erişim bilgileri yalnız `.env` veya production secret yönetim sistemi içinde
+tutulmalı, repository'ye gönderilmemelidir. Bağlantı zaman aşımı
+`EMAIL_TIMEOUT` ile saniye cinsinden belirlenir.
+
+Doğrulama ve parola sıfırlama kodlarının varsayılan politikası 10 dakika
+geçerlilik, yeniden gönderimler arasında 60 saniye bekleme ve en fazla 5 yanlış
+denemedir. Bu değerler sırasıyla `AUTH_CODE_TTL_MINUTES`,
+`AUTH_CODE_RESEND_COOLDOWN_SECONDS` ve `AUTH_CODE_MAX_ATTEMPTS` ile
+değiştirilebilir; tamamı pozitif tam sayı olmalıdır. Güvenli yapılandırma
+sınırları sırasıyla 1440 dakika, 86400 saniye ve 100 denemedir; SMTP timeout
+değeri en fazla 300 saniye olabilir. Geçersiz veya açıkça boş boolean
+değerleri uygulama başlangıcında reddedilir.
+
+IP tabanlı throttle'ın güvenilir istemci adresini kullanabilmesi için
+`DRF_NUM_PROXIES` doğrudan bağlantıda `0` bırakılmalı; production ortamında
+yalnız uygulamanın önündeki güvenilir reverse proxy sayısına ayarlanmalıdır.
+
 ### 3. Backend ve veritabanını çalıştırma
 
 Proje kök dizininde aşağıdaki komut çalıştırılmalıdır:
@@ -383,6 +412,9 @@ Container'lar çalışmaya başladıktan sonra migration işlemleri ayrı bir te
 ```bash
 docker compose exec web python manage.py migrate
 ```
+
+Bu komut e-posta doğrulama alanını ve tek kullanımlık doğrulama kodu tablosunu
+da mevcut verileri koruyarak uygular.
 
 ### 5. Admin kullanıcısı oluşturma
 
@@ -461,8 +493,22 @@ Authorization: Bearer <access_token>
 
 | Metot | Endpoint | Açıklama | Kimlik Doğrulama |
 | --- | --- | --- | --- |
-| `POST` | `/api/auth/register/` | Yeni kullanıcı kaydı oluşturur. | Gerekli değil |
-| `POST` | `/api/auth/login/` | Kullanıcı girişi gerçekleştirir ve JWT bilgilerini döndürür. | Gerekli değil |
+| `POST` | `/api/auth/register/` | Doğrulanmamış kullanıcı kaydı oluşturur ve e-posta doğrulama kodu gönderir. | Gerekli değil |
+| `POST` | `/api/auth/verify-email/` | E-posta adresini altı haneli kodla doğrular. | Gerekli değil |
+| `POST` | `/api/auth/resend-verification/` | Uygun hesaba yeni doğrulama kodu gönderir. | Gerekli değil |
+| `POST` | `/api/auth/login/` | Doğrulanmış kullanıcı için JWT bilgilerini döndürür. | Gerekli değil |
+| `POST` | `/api/auth/password-reset/request/` | Uygun hesaba parola sıfırlama kodu gönderir. | Gerekli değil |
+| `POST` | `/api/auth/password-reset/confirm/` | Kod ve yeni parola ile parola sıfırlamayı tamamlar. | Gerekli değil |
+| `GET` | `/api/auth/me/` | Giriş yapan kullanıcının profilini döndürür. | Gerekli |
+| `PATCH` | `/api/auth/me/` | Giriş yapan kullanıcının ad ve soyadını günceller. | Gerekli |
+| `POST` | `/api/auth/change-password/` | Mevcut parola ile giriş yapan kullanıcının parolasını değiştirir. | Gerekli |
+
+Kayıt ve kod gönderme endpointleri IP başına saatte 5, kod doğrulama
+endpointleri ise IP başına saatte 20 istekle sınırlandırılır. Yeniden gönderme
+bekleme süresi hesap bazında ayrıca uygulanır. Birden fazla worker kullanılan
+production ortamında IP throttle sayaçlarının tüm worker'larca paylaşılması
+için ortak bir Django cache backend'i yapılandırılmalıdır; varsayılan local
+memory cache yalnız süreç bazında koruma sağlar.
 
 ### İş Fikri Endpointleri
 

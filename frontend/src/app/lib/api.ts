@@ -118,13 +118,95 @@ export interface RegisterPayload {
   last_name: string;
 }
 
-export interface RegisterResponse {
-  message: string;
-  user: AuthUser;
+export interface GenericDetailResponse {
+  detail: string;
 }
 
-export function register(payload: RegisterPayload): Promise<RegisterResponse> {
-  return request<RegisterResponse>("/auth/register/", {
+export interface RegisterVerificationResponse extends GenericDetailResponse {
+  email: string;
+  requires_email_verification: true;
+}
+
+export interface VerifyEmailPayload {
+  email: string;
+  code: string;
+}
+
+export type VerifyEmailResponse = GenericDetailResponse;
+
+export interface ResendVerificationPayload {
+  email: string;
+}
+
+export interface PasswordResetRequestPayload {
+  email: string;
+}
+
+export interface PasswordResetConfirmPayload {
+  email: string;
+  code: string;
+  new_password: string;
+  new_password_confirm: string;
+}
+
+export interface EmailNotVerifiedErrorPayload extends GenericDetailResponse {
+  code: "email_not_verified";
+  email: string;
+}
+
+export function isEmailNotVerifiedErrorPayload(
+  value: unknown,
+): value is EmailNotVerifiedErrorPayload {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    (value as Record<string, unknown>).code === "email_not_verified" &&
+    typeof (value as Record<string, unknown>).email === "string" &&
+    typeof (value as Record<string, unknown>).detail === "string"
+  );
+}
+
+export function register(
+  payload: RegisterPayload,
+): Promise<RegisterVerificationResponse> {
+  return request<RegisterVerificationResponse>("/auth/register/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function verifyEmail(
+  payload: VerifyEmailPayload,
+): Promise<VerifyEmailResponse> {
+  return request<VerifyEmailResponse>("/auth/verify-email/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function resendEmailVerification(
+  payload: ResendVerificationPayload,
+): Promise<GenericDetailResponse> {
+  return request<GenericDetailResponse>("/auth/resend-verification/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function requestPasswordReset(
+  payload: PasswordResetRequestPayload,
+): Promise<GenericDetailResponse> {
+  return request<GenericDetailResponse>("/auth/password-reset/request/", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function confirmPasswordReset(
+  payload: PasswordResetConfirmPayload,
+): Promise<GenericDetailResponse> {
+  return request<GenericDetailResponse>("/auth/password-reset/confirm/", {
     method: "POST",
     body: JSON.stringify(payload),
   });

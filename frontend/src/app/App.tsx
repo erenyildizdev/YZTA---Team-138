@@ -5,12 +5,15 @@ import { AccountSettingsPage } from "./pages/AccountSettingsPage";
 import { AnalysisPage } from "./pages/AnalysisPage";
 import { ComparePage } from "./pages/ComparePage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { HistoryPage } from "./pages/HistoryPage";
 import { LoginPage } from "./pages/LoginPage";
 import { MentorPage } from "./pages/MentorPage";
 import { NewIdeaPage } from "./pages/NewIdeaPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { ReportPage } from "./pages/ReportPage";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage";
+import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 
@@ -32,6 +35,9 @@ function AppRoutes() {
     <Routes>
       <Route path="login" element={<LoginPage />} />
       <Route path="register" element={<RegisterPage />} />
+      <Route path="verify-email" element={<VerifyEmailPage />} />
+      <Route path="forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="reset-password" element={<ResetPasswordPage />} />
       <Route
         element={
           <RequireAuth>
