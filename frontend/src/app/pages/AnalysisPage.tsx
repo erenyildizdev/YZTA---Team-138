@@ -436,16 +436,6 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
                 <FileText size={12} />
                 Doğrulama Raporu
               </button>
-
-              <button
-                type="button"
-                disabled
-                title="Backend entegrasyonu sonrasında kullanılabilir"
-                className="inline-flex cursor-not-allowed items-center gap-1.5 rounded-xl bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground opacity-45"
-              >
-                <RefreshCw size={12} />
-                Raporu Yenile
-              </button>
             </div>
           </div>
 
