@@ -2,8 +2,12 @@ venv
 .venv
 .git
 .gitignore
+.make
+.run
 __pycache__
 *.pyc
 .env
 README.md
 docs
+frontend/node_modules
+frontend/dist
