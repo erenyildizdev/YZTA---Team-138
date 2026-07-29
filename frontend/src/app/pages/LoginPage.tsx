@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { AlertTriangle, Sparkles } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
@@ -10,6 +10,7 @@ export function LoginPage() {
   const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const submitInFlightRef = useRef(false);
 
   const [authMessage, setAuthMessage] = useState<string | null>(null);
 
@@ -19,11 +20,17 @@ export function LoginPage() {
     if (isAuthenticated) navigate(from, { replace: true });
   }, [isAuthenticated, navigate, from]);
 
-  const handleSubmit = async (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isLoading) return;
-    const ok = await login(email, password);
-    if (ok) navigate(from, { replace: true });
+
+    if (submitInFlightRef.current || isLoading) return;
+    submitInFlightRef.current = true;
+
+    try {
+      await login(email, password);
+    } finally {
+      submitInFlightRef.current = false;
+    }
   };
 
   useEffect(() => {
@@ -49,10 +56,15 @@ export function LoginPage() {
 
         <form
           onSubmit={handleSubmit}
+          aria-busy={isLoading}
           className="bg-card border border-border rounded-2xl p-6 space-y-4"
         >
           {authMessage && (
-            <div className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2.5">
+            <div
+              role="alert"
+              aria-live="assertive"
+              className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-3 py-2.5"
+            >
               <AlertTriangle
                 size={13}
                 className="mt-0.5 flex-shrink-0 text-destructive"
@@ -64,9 +76,17 @@ export function LoginPage() {
             </div>
           )}
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">E-posta</label>
+            <label
+              htmlFor="login-email"
+              className="text-xs font-semibold text-muted-foreground"
+            >
+              E-posta
+            </label>
             <input
+              id="login-email"
+              name="email"
               type="email"
+              autoComplete="email"
               required
               autoFocus
               value={email}
@@ -77,9 +97,17 @@ export function LoginPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">Parola</label>
+            <label
+              htmlFor="login-password"
+              className="text-xs font-semibold text-muted-foreground"
+            >
+              Parola
+            </label>
             <input
+              id="login-password"
+              name="password"
               type="password"
+              autoComplete="current-password"
               required
               value={password}
               onChange={(e) => { setPassword(e.target.value); clearError(); }}
@@ -89,7 +117,11 @@ export function LoginPage() {
           </div>
 
           {error && (
-            <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2.5">
+            <div
+              role="alert"
+              aria-live="assertive"
+              className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2.5"
+            >
               <AlertTriangle size={13} className="text-destructive mt-0.5 flex-shrink-0" />
               <p className="text-xs text-destructive leading-relaxed">{error}</p>
             </div>

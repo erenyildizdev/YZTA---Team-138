@@ -29,6 +29,7 @@ import { MoscowScopeBody } from "../components/analysis/MoscowScopeBody";
 import { RiskyAssumptionsBody } from "../components/analysis/RiskyAssumptionsBody";
 import { ValidationRoadmapBody } from "../components/analysis/ValidationRoadmapBody";
 import { ActiveIdeaPageState } from "../components/ideas/ActiveIdeaPageState";
+import { MentorMarkdown } from "../components/mentor/MentorMarkdown";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 import { useIdea } from "../hooks/useIdea";
 import { ApiError, sendMentorMessage, updateIdea } from "../lib/api";
@@ -774,15 +775,19 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
                 </div>
               )}
 
-              <div className="max-w-[220px]">
+              <div className="min-w-0 max-w-[220px]">
                 <div
-                  className={`whitespace-pre-line px-3.5 py-2.5 text-sm leading-relaxed ${
+                  className={`min-w-0 break-words px-3.5 py-2.5 text-sm leading-relaxed ${
                     message.role === "user"
-                      ? "rounded-2xl rounded-tr-sm bg-primary text-primary-foreground"
+                      ? "whitespace-pre-line rounded-2xl rounded-tr-sm bg-primary text-primary-foreground"
                       : "rounded-2xl rounded-tl-sm border border-border bg-secondary text-secondary-foreground"
                   }`}
                 >
-                  {message.content}
+                  {message.role === "assistant" ? (
+                    <MentorMarkdown content={message.content} />
+                  ) : (
+                    message.content
+                  )}
                 </div>
 
                 {message.actions && message.actions.length > 0 && (
