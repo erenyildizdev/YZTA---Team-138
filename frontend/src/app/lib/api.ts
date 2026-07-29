@@ -130,35 +130,53 @@ export function register(payload: RegisterPayload): Promise<RegisterResponse> {
   });
 }
 
-export function getProfile(): Promise<AuthUser> {
-  return request<AuthUser>("/auth/me/");
-}
+export type AccountProfile = AuthUser;
 
-export interface UpdateProfilePayload {
+export interface UpdateAccountProfilePayload {
   first_name?: string;
   last_name?: string;
 }
 
-export function updateProfile(payload: UpdateProfilePayload): Promise<AuthUser> {
-  return request<AuthUser>("/auth/me/", {
+export function getCurrentUserProfile(
+  signal?: AbortSignal,
+): Promise<AccountProfile> {
+  return request<AccountProfile>("/auth/me/", { signal });
+}
+
+export function updateCurrentUserProfile(
+  payload: UpdateAccountProfilePayload,
+): Promise<AccountProfile> {
+  return request<AccountProfile>("/auth/me/", {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
 }
 
+export const getProfile = getCurrentUserProfile;
+export type UpdateProfilePayload = UpdateAccountProfilePayload;
+export const updateProfile = updateCurrentUserProfile;
+
 export interface ChangePasswordPayload {
   current_password: string;
   new_password: string;
+  new_password_confirm: string;
 }
 
-export function changePassword(
+export interface ChangePasswordResponse {
+  detail: string;
+  requires_reauthentication: boolean;
+}
+
+export function changeCurrentUserPassword(
   payload: ChangePasswordPayload,
-): Promise<{ message: string }> {
-  return request<{ message: string }>("/auth/change-password/", {
+): Promise<ChangePasswordResponse> {
+  return request<ChangePasswordResponse>("/auth/change-password/", {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
+
+export const changePassword = changeCurrentUserPassword;
 
 export interface ValidationRoadmapPhase {
   week?: number;

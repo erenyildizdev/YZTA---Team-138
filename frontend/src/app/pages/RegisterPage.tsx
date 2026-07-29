@@ -3,6 +3,10 @@ import { Link, useNavigate } from "react-router";
 import { AlertTriangle, Sparkles } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { ThemeToggle } from "../components/common/ThemeToggle";
+import { PasswordInput } from "../components/auth/PasswordInput";
+
+const PASSWORD_LENGTH_ERROR = "Parola en az 8 karakter olmalı.";
+const PASSWORD_MISMATCH_ERROR = "Parolalar eşleşmiyor.";
 
 export function RegisterPage() {
   const { register, isAuthenticated, isLoading, error, clearError } = useAuth();
@@ -24,11 +28,11 @@ export function RegisterPage() {
     setFormError(null);
 
     if (password.length < 8) {
-      setFormError("Parola en az 8 karakter olmalı.");
+      setFormError(PASSWORD_LENGTH_ERROR);
       return;
     }
     if (password !== passwordConfirm) {
-      setFormError("Parolalar eşleşmiyor.");
+      setFormError(PASSWORD_MISMATCH_ERROR);
       return;
     }
 
@@ -37,9 +41,15 @@ export function RegisterPage() {
   };
 
   const displayError = formError ?? error;
+  const formErrorField =
+    formError === PASSWORD_LENGTH_ERROR
+      ? "password"
+      : formError === PASSWORD_MISMATCH_ERROR
+        ? "password_confirm"
+        : null;
 
   return (
-    <div className="relative flex min-h-dvh w-full items-center justify-center bg-background px-4 py-10" style={{ animation: "page-in 0.3s ease-out" }}>
+    <div className="relative flex min-h-dvh w-full animate-[page-in_0.3s_ease-out] items-center justify-center bg-background px-4 py-10">
       <ThemeToggle className="absolute top-4 right-4" />
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-7">
@@ -52,13 +62,22 @@ export function RegisterPage() {
 
         <form
           onSubmit={handleSubmit}
+          aria-busy={isLoading}
           className="bg-card border border-border rounded-2xl p-6 space-y-4"
         >
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">Ad</label>
+              <label
+                htmlFor="register-first-name"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Ad
+              </label>
               <input
+                id="register-first-name"
+                name="first_name"
                 type="text"
+                autoComplete="given-name"
                 required
                 autoFocus
                 value={firstName}
@@ -68,9 +87,17 @@ export function RegisterPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">Soyad</label>
+              <label
+                htmlFor="register-last-name"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Soyad
+              </label>
               <input
+                id="register-last-name"
+                name="last_name"
                 type="text"
+                autoComplete="family-name"
                 required
                 value={lastName}
                 onChange={(e) => { setLastName(e.target.value); clearError(); setFormError(null); }}
@@ -81,9 +108,17 @@ export function RegisterPage() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground">E-posta</label>
+            <label
+              htmlFor="register-email"
+              className="text-xs font-semibold text-muted-foreground"
+            >
+              E-posta
+            </label>
             <input
+              id="register-email"
+              name="email"
               type="email"
+              autoComplete="email"
               required
               value={email}
               onChange={(e) => { setEmail(e.target.value); clearError(); setFormError(null); }}
@@ -92,33 +127,62 @@ export function RegisterPage() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">Parola</label>
-              <input
-                type="password"
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="min-w-0 space-y-1.5">
+              <label
+                htmlFor="register-password"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Parola
+              </label>
+              <PasswordInput
+                id="register-password"
+                name="password"
+                autoComplete="new-password"
                 required
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); clearError(); setFormError(null); }}
                 placeholder="••••••••"
-                className="w-full bg-muted border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                aria-invalid={formErrorField === "password"}
+                aria-describedby={
+                  formErrorField === "password"
+                    ? "register-form-error"
+                    : undefined
+                }
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-muted-foreground">Parola (Tekrar)</label>
-              <input
-                type="password"
+            <div className="min-w-0 space-y-1.5">
+              <label
+                htmlFor="register-password-confirm"
+                className="text-xs font-semibold text-muted-foreground"
+              >
+                Parola (Tekrar)
+              </label>
+              <PasswordInput
+                id="register-password-confirm"
+                name="password_confirm"
+                autoComplete="new-password"
                 required
                 value={passwordConfirm}
                 onChange={(e) => { setPasswordConfirm(e.target.value); clearError(); setFormError(null); }}
                 placeholder="••••••••"
-                className="w-full bg-muted border border-border rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all"
+                aria-invalid={formErrorField === "password_confirm"}
+                aria-describedby={
+                  formErrorField === "password_confirm"
+                    ? "register-form-error"
+                    : undefined
+                }
               />
             </div>
           </div>
 
           {displayError && (
-            <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2.5">
+            <div
+              id="register-form-error"
+              role="alert"
+              aria-live="assertive"
+              className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 rounded-xl px-3 py-2.5"
+            >
               <AlertTriangle size={13} className="text-destructive mt-0.5 flex-shrink-0" />
               <p className="text-xs text-destructive leading-relaxed">{displayError}</p>
             </div>
