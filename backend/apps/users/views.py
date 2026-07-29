@@ -1,3 +1,4 @@
+from django.views.decorators.debug import sensitive_variables
 from rest_framework import permissions, status
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
@@ -82,6 +83,7 @@ class ChangePasswordView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     parser_classes = [JSONParser]
 
+    @sensitive_variables()
     def post(self, request, *args, **kwargs):
         serializer = ChangePasswordSerializer(
             data=request.data,
@@ -91,6 +93,9 @@ class ChangePasswordView(APIView):
         request.user.set_password(serializer.validated_data["new_password"])
         request.user.save(update_fields=["password"])
         return Response(
-            {"message": "Şifre güncellendi."},
+            {
+                "detail": "Parolanız başarıyla güncellendi.",
+                "requires_reauthentication": True,
+            },
             status=status.HTTP_200_OK,
         )
