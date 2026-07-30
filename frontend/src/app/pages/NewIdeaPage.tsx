@@ -18,11 +18,17 @@ import {
 import {
   ApiError,
   createIdea,
+  getWorkflowRun,
   isValidationWorkflowFailureResponse,
+  isWorkflowAlreadyRunningErrorPayload,
   runValidationWorkflow,
   type IdeaPayload,
+  type ValidationWorkflowFailureResponse,
   type ValidationWorkflowStepName,
   type ValidationWorkflowSuccessResponse,
+  type WorkflowRunResponse,
+  type WorkflowRunStages,
+  type WorkflowStageStatus,
 } from "../lib/api";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 import {
@@ -58,6 +64,9 @@ const TARGET_AUDIENCES = [
 
 const OTHER_OPTION = "Diğer";
 const MIN_LENGTH = 10;
+const WORKFLOW_POLL_INTERVAL_MS = 1000;
+const INITIAL_RUN_NOT_FOUND_RETRIES = 5;
+const MAX_CONSECUTIVE_POLL_FAILURES = 3;
 
 type FieldKey = "title" | "sector" | "target_audience" | "description" | "problem" | "solution";
 
@@ -152,24 +161,83 @@ type FlowPhase =
   | "creating"
   | "workflow-running"
   | "workflow-failed"
-  | "workflow-retrying";
+  | "workflow-retrying"
+  | "workflow-tracking-failed"
+  | "workflow-start-failed";
 
-function createAnalysisSteps(
+interface WorkflowExecution {
+  generation: number;
+  ideaId: number;
+  runId: string;
+  postController: AbortController;
+  pollController: AbortController;
+}
+
+interface WorkflowIdentity {
+  ideaId: number;
+  runId: string;
+}
+
+function mapWorkflowStageStatus(
+  status: WorkflowStageStatus,
+): AnalysisStep["status"] {
+  switch (status) {
+    case "running":
+      return "active";
+    case "completed":
+      return "completed";
+    case "failed":
+      return "error";
+    case "skipped":
+      return "skipped";
+    default:
+      return "pending";
+  }
+}
+
+function createAnalysisSteps(stages?: WorkflowRunStages): AnalysisStep[] {
+  return [
+    { id: "idea", label: "Fikir kaydı", status: "completed" },
+    ...WORKFLOW_ANALYSIS_STEPS.map(({ id, label }) => ({
+      id,
+      label,
+      status: stages ? mapWorkflowStageStatus(stages[id]) : "pending",
+    })),
+  ];
+}
+
+function createCompletedAnalysisSteps(): AnalysisStep[] {
+  return [
+    { id: "idea", label: "Fikir kaydı", status: "completed" },
+    ...WORKFLOW_ANALYSIS_STEPS.map(({ id, label }) => ({
+      id,
+      label,
+      status: "completed" as const,
+    })),
+  ];
+}
+
+function createFailedAnalysisSteps(
   completedSteps: readonly ValidationWorkflowStepName[] = [],
   failedStep: ValidationWorkflowStepName | null = null,
 ): AnalysisStep[] {
   const completedStepNames = new Set(completedSteps);
+  const failedStepIndex = failedStep
+    ? WORKFLOW_ANALYSIS_STEPS.findIndex(({ id }) => id === failedStep)
+    : -1;
 
   return [
     { id: "idea", label: "Fikir kaydı", status: "completed" },
-    ...WORKFLOW_ANALYSIS_STEPS.map(({ id, label }) => ({
+    ...WORKFLOW_ANALYSIS_STEPS.map(({ id, label }, index) => ({
       id,
       label,
       status: completedStepNames.has(id)
         ? "completed"
         : failedStep === id
           ? "error"
-          : "pending",
+          : failedStepIndex >= 0 && index > failedStepIndex
+            ? "skipped"
+            : "pending",
     })),
   ];
 }
@@ -177,11 +245,13 @@ function createAnalysisSteps(
 function isCompletedWorkflowResponse(
   response: ValidationWorkflowSuccessResponse,
   ideaId: number,
+  runId: string,
 ): boolean {
   return (
     response &&
     typeof response === "object" &&
     response.idea_id === ideaId &&
+    response.run_id === runId &&
     response.status === "completed" &&
     Array.isArray(response.completed_steps) &&
     response.completed_steps.length === WORKFLOW_ANALYSIS_STEPS.length &&
@@ -201,8 +271,27 @@ function isCompletedWorkflowResponse(
   );
 }
 
+function waitForPollingDelay(signal: AbortSignal): Promise<boolean> {
+  if (signal.aborted) return Promise.resolve(false);
+
+  return new Promise((resolve) => {
+    const timeoutId = window.setTimeout(() => {
+      signal.removeEventListener("abort", handleAbort);
+      resolve(true);
+    }, WORKFLOW_POLL_INTERVAL_MS);
+
+    const handleAbort = () => {
+      window.clearTimeout(timeoutId);
+      signal.removeEventListener("abort", handleAbort);
+      resolve(false);
+    };
+
+    signal.addEventListener("abort", handleAbort, { once: true });
+  });
+}
+
 export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
-  const { setActiveIdeaId } = useActiveIdeaId();
+  const { ideaId: activeIdeaId, setActiveIdeaId } = useActiveIdeaId();
 
   const [stepIndex, setStepIndex] = useState(0);
   const [values, setValues] = useState<Record<FieldKey, string>>(initialValues);
@@ -215,21 +304,253 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
   const [createdIdeaId, setCreatedIdeaId] = useState<number | null>(null);
   const inFlightRef = useRef(false);
   const mountedRef = useRef(true);
+  const activeIdeaIdRef = useRef(activeIdeaId);
+  const workflowGenerationRef = useRef(0);
+  const workflowExecutionRef = useRef<WorkflowExecution | null>(null);
+  const unresolvedWorkflowRef = useRef<WorkflowIdentity | null>(null);
+  activeIdeaIdRef.current = activeIdeaId;
 
   const step = STEPS[stepIndex];
   const isLastStep = stepIndex === STEPS.length - 1;
   const isSubmitting = flowPhase === "creating";
   const isWorkflowRunning =
     flowPhase === "workflow-running" || flowPhase === "workflow-retrying";
-  const isAnalyzing = isWorkflowRunning || flowPhase === "workflow-failed";
+  const isAnalyzing =
+    isWorkflowRunning ||
+    flowPhase === "workflow-failed" ||
+    flowPhase === "workflow-tracking-failed" ||
+    flowPhase === "workflow-start-failed";
 
   useEffect(() => {
     mountedRef.current = true;
 
     return () => {
       mountedRef.current = false;
+      workflowGenerationRef.current += 1;
+      workflowExecutionRef.current?.postController.abort();
+      workflowExecutionRef.current?.pollController.abort();
+      workflowExecutionRef.current = null;
+      unresolvedWorkflowRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    activeIdeaIdRef.current = activeIdeaId;
+    const execution = workflowExecutionRef.current;
+
+    if (execution && activeIdeaId !== execution.ideaId) {
+      workflowGenerationRef.current += 1;
+      execution.postController.abort();
+      execution.pollController.abort();
+      workflowExecutionRef.current = null;
+      unresolvedWorkflowRef.current = {
+        ideaId: execution.ideaId,
+        runId: execution.runId,
+      };
+      inFlightRef.current = false;
+      setAnalysisSteps((currentSteps) =>
+        currentSteps.map((analysisStep) =>
+          analysisStep.status === "active"
+            ? { ...analysisStep, status: "pending" }
+            : analysisStep,
+        ),
+      );
+      setAnalysisError(
+        "Etkin fikir değiştiği için bu sayfadaki analiz takibi durduruldu.",
+      );
+      setFlowPhase("workflow-tracking-failed");
+    }
+  }, [activeIdeaId]);
+
+  const isCurrentWorkflow = (execution: WorkflowExecution): boolean =>
+    mountedRef.current &&
+    workflowExecutionRef.current === execution &&
+    workflowGenerationRef.current === execution.generation &&
+    activeIdeaIdRef.current === execution.ideaId &&
+    !execution.postController.signal.aborted;
+
+  const applyWorkflowRun = (
+    execution: WorkflowExecution,
+    run: WorkflowRunResponse,
+  ): boolean => {
+    if (
+      !isCurrentWorkflow(execution) ||
+      execution.runId !== run.runId ||
+      execution.ideaId !== run.ideaId
+    ) {
+      return false;
+    }
+
+    setAnalysisSteps(createAnalysisSteps(run.stages));
+    return true;
+  };
+
+  const pollWorkflowRun = async (
+    execution: WorkflowExecution,
+  ): Promise<WorkflowRunResponse | null> => {
+    let trackedRunId = execution.runId;
+    let hasSeenRun = false;
+    let notFoundRetries = 0;
+    let consecutiveFailures = 0;
+
+    while (
+      isCurrentWorkflow(execution) &&
+      !execution.pollController.signal.aborted
+    ) {
+      const requestedRunId = execution.runId;
+
+      if (requestedRunId !== trackedRunId) {
+        trackedRunId = requestedRunId;
+        hasSeenRun = false;
+        notFoundRetries = 0;
+        consecutiveFailures = 0;
+      }
+
+      try {
+        const run = await getWorkflowRun(
+          requestedRunId,
+          execution.pollController.signal,
+        );
+
+        if (
+          !isCurrentWorkflow(execution) ||
+          execution.pollController.signal.aborted
+        ) {
+          return null;
+        }
+        if (execution.runId !== requestedRunId) continue;
+        if (!applyWorkflowRun(execution, run)) return null;
+
+        hasSeenRun = true;
+        notFoundRetries = 0;
+        consecutiveFailures = 0;
+
+        if (run.status === "completed" || run.status === "failed") {
+          return run;
+        }
+      } catch (error) {
+        if (
+          execution.pollController.signal.aborted ||
+          !isCurrentWorkflow(execution)
+        ) {
+          return null;
+        }
+        if (execution.runId !== requestedRunId) continue;
+
+        if (
+          error instanceof ApiError &&
+          error.status === 404 &&
+          !hasSeenRun
+        ) {
+          if (notFoundRetries >= INITIAL_RUN_NOT_FOUND_RETRIES) return null;
+          notFoundRetries += 1;
+        } else {
+          consecutiveFailures += 1;
+          if (consecutiveFailures >= MAX_CONSECUTIVE_POLL_FAILURES) {
+            return null;
+          }
+        }
+      }
+
+      const shouldContinue = await waitForPollingDelay(
+        execution.pollController.signal,
+      );
+      if (!shouldContinue) return null;
+    }
+
+    return null;
+  };
+
+  const getControlledWorkflowFailure = (
+    error: unknown,
+    execution: WorkflowExecution,
+  ): ValidationWorkflowFailureResponse | null => {
+    if (
+      error instanceof ApiError &&
+      isValidationWorkflowFailureResponse(error.data) &&
+      error.data.idea_id === execution.ideaId &&
+      error.data.run_id === execution.runId
+    ) {
+      return error.data;
+    }
+
+    return null;
+  };
+
+  const completeWorkflow = (execution: WorkflowExecution) => {
+    if (!isCurrentWorkflow(execution)) return;
+
+    setAnalysisSteps(createCompletedAnalysisSteps());
+    execution.postController.abort();
+    execution.pollController.abort();
+    workflowExecutionRef.current = null;
+    unresolvedWorkflowRef.current = null;
+    onCreated();
+  };
+
+  const finishWorkflowTrackingWithError = (
+    execution: WorkflowExecution,
+  ) => {
+    if (!isCurrentWorkflow(execution)) return;
+
+    setAnalysisSteps((currentSteps) =>
+      currentSteps.map((analysisStep) =>
+        analysisStep.status === "active"
+          ? { ...analysisStep, status: "pending" }
+          : analysisStep,
+      ),
+    );
+    setAnalysisError(
+      "Analiz akışının son durumu doğrulanamadı. Yeni bir analiz başlatmadan mevcut akışı tekrar kontrol edebilirsin.",
+    );
+    setFlowPhase("workflow-tracking-failed");
+    execution.postController.abort();
+    execution.pollController.abort();
+    workflowExecutionRef.current = null;
+    unresolvedWorkflowRef.current = {
+      ideaId: execution.ideaId,
+      runId: execution.runId,
+    };
+  };
+
+  const finishWorkflowWithError = (
+    execution: WorkflowExecution,
+    workflowError: unknown,
+  ) => {
+    if (!isCurrentWorkflow(execution)) return;
+
+    const controlledFailure = getControlledWorkflowFailure(
+      workflowError,
+      execution,
+    );
+    if (controlledFailure) {
+      setAnalysisSteps(
+        createFailedAnalysisSteps(
+          controlledFailure.completed_steps,
+          controlledFailure.failed_step,
+        ),
+      );
+    } else {
+      setAnalysisSteps((currentSteps) =>
+        currentSteps.map((analysisStep) =>
+          analysisStep.status === "active"
+            ? { ...analysisStep, status: "pending" }
+            : analysisStep,
+        ),
+      );
+    }
+
+    setAnalysisError(
+      controlledFailure
+        ? `Fikrin kaydedildi ancak analiz tamamlanamadı. ${controlledFailure.detail}`
+        : "Fikrin kaydedildi ancak analiz tamamlanamadı. Lütfen tekrar dene.",
+    );
+    setFlowPhase("workflow-failed");
+    execution.postController.abort();
+    execution.pollController.abort();
+    workflowExecutionRef.current = null;
+    unresolvedWorkflowRef.current = null;
+  };
 
   const setValue = (key: FieldKey, value: string) => {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -257,45 +578,164 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
     setStepIndex((i) => i - 1);
   };
 
-  const executeWorkflow = async (ideaId: number, isRetry: boolean) => {
-    if (!mountedRef.current) return;
+  const executeWorkflow = async (
+    ideaId: number,
+    isRetry: boolean,
+    existingRunId?: string,
+  ) => {
+    if (!mountedRef.current || activeIdeaIdRef.current !== ideaId) {
+      inFlightRef.current = false;
+      return;
+    }
 
-    setAnalysisSteps(createAnalysisSteps());
-    if (!isRetry) setAnalysisError(null);
+    const previousExecution = workflowExecutionRef.current;
+    previousExecution?.postController.abort();
+    previousExecution?.pollController.abort();
+    workflowExecutionRef.current = null;
+    unresolvedWorkflowRef.current = null;
+
+    const generation = workflowGenerationRef.current + 1;
+    workflowGenerationRef.current = generation;
+
+    let runId = existingRunId;
+    if (!runId) {
+      try {
+        runId = crypto.randomUUID();
+      } catch {
+        setAnalysisError(
+          "Analiz akışı bu tarayıcıda güvenli biçimde başlatılamadı.",
+        );
+        setFlowPhase("workflow-start-failed");
+        inFlightRef.current = false;
+        return;
+      }
+    }
+
+    const execution: WorkflowExecution = {
+      generation,
+      ideaId,
+      runId,
+      postController: new AbortController(),
+      pollController: new AbortController(),
+    };
+    workflowExecutionRef.current = execution;
+
+    if (!existingRunId) {
+      setAnalysisSteps(createAnalysisSteps());
+    }
+    setAnalysisError(null);
     setFlowPhase(isRetry ? "workflow-retrying" : "workflow-running");
 
-    try {
-      const response = await runValidationWorkflow(ideaId);
-      if (!mountedRef.current) return;
+    const workflowPromise = runValidationWorkflow(ideaId, {
+      runId,
+      signal: execution.postController.signal,
+    });
+    let pollingPromise = pollWorkflowRun(execution).catch(() => null);
+    let workflowResponse: ValidationWorkflowSuccessResponse | null = null;
+    let workflowError: unknown = null;
+    let observedRun: WorkflowRunResponse | null = null;
 
-      if (!isCompletedWorkflowResponse(response, ideaId)) {
-        throw new Error("Unexpected validation workflow response.");
+    try {
+      try {
+        workflowResponse = await workflowPromise;
+      } catch (error) {
+        workflowError = error;
       }
 
-      setAnalysisSteps(createAnalysisSteps(response.completed_steps));
-      onCreated();
-    } catch (error) {
-      if (!mountedRef.current) return;
+      if (!isCurrentWorkflow(execution)) return;
 
       if (
-        error instanceof ApiError &&
-        isValidationWorkflowFailureResponse(error.data) &&
-        error.data.idea_id === ideaId
+        workflowError instanceof ApiError &&
+        workflowError.status === 409 &&
+        isWorkflowAlreadyRunningErrorPayload(workflowError.data)
       ) {
-        setAnalysisSteps(
-          createAnalysisSteps(error.data.completed_steps, error.data.failed_step),
-        );
-        setAnalysisError(
-          `Fikrin kaydedildi ancak analiz tamamlanamadı. ${error.data.detail}`,
-        );
+        const activeRunId = workflowError.data.run_id;
+
+        if (activeRunId !== execution.runId) {
+          setAnalysisSteps(createAnalysisSteps());
+          execution.runId = activeRunId;
+          execution.pollController.abort();
+          await pollingPromise;
+          if (!isCurrentWorkflow(execution)) return;
+
+          execution.pollController = new AbortController();
+          pollingPromise = pollWorkflowRun(execution).catch(() => null);
+        }
+
+        observedRun = await pollingPromise;
+      } else if (
+        workflowError === null ||
+        getControlledWorkflowFailure(workflowError, execution) !== null
+      ) {
+        execution.pollController.abort();
+        observedRun = await pollingPromise;
       } else {
-        setAnalysisSteps(createAnalysisSteps());
-        setAnalysisError(
-          "Fikrin kaydedildi ancak analiz tamamlanamadı. Lütfen tekrar dene.",
-        );
+        observedRun = await pollingPromise;
       }
 
-      setFlowPhase("workflow-failed");
+      if (!isCurrentWorkflow(execution)) return;
+
+      const hasCompletedWorkflowResponse =
+        workflowResponse !== null &&
+        isCompletedWorkflowResponse(
+          workflowResponse,
+          execution.ideaId,
+          execution.runId,
+        );
+      const controlledFailure = getControlledWorkflowFailure(
+        workflowError,
+        execution,
+      );
+
+      let canonicalRun: WorkflowRunResponse;
+      try {
+        canonicalRun = await getWorkflowRun(
+          execution.runId,
+          execution.postController.signal,
+        );
+      } catch {
+        if (
+          observedRun !== null &&
+          applyWorkflowRun(execution, observedRun)
+        ) {
+          if (observedRun.status === "completed") {
+            completeWorkflow(execution);
+            return;
+          }
+          if (observedRun.status === "failed") {
+            finishWorkflowWithError(execution, workflowError);
+            return;
+          }
+        }
+        if (hasCompletedWorkflowResponse) {
+          completeWorkflow(execution);
+          return;
+        }
+        if (controlledFailure) {
+          finishWorkflowWithError(execution, workflowError);
+          return;
+        }
+        finishWorkflowTrackingWithError(execution);
+        return;
+      }
+
+      if (!applyWorkflowRun(execution, canonicalRun)) return;
+
+      if (canonicalRun.status === "completed") {
+        completeWorkflow(execution);
+        return;
+      }
+
+      if (canonicalRun.status === "failed") {
+        finishWorkflowWithError(execution, workflowError);
+        return;
+      }
+
+      finishWorkflowTrackingWithError(execution);
+    } finally {
+      if (workflowGenerationRef.current === generation) {
+        inFlightRef.current = false;
+      }
     }
   };
 
@@ -303,61 +743,76 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
     if (inFlightRef.current) return;
 
     inFlightRef.current = true;
+    const activeIdeaIdAtSubmit = activeIdeaIdRef.current;
     setFormError(null);
     setFlowPhase("creating");
 
+    let ideaId: number;
+
     try {
-      let ideaId: number;
-
-      try {
-        const idea = await createIdea(payload);
-        if (!Number.isInteger(idea.id) || idea.id <= 0) {
-          throw new Error("Unexpected idea response.");
-        }
-        ideaId = idea.id;
-      } catch (error) {
-        if (!mountedRef.current) return;
-
+      const idea = await createIdea(payload);
+      if (!Number.isInteger(idea.id) || idea.id <= 0) {
+        throw new Error("Unexpected idea response.");
+      }
+      ideaId = idea.id;
+    } catch (error) {
+      if (mountedRef.current) {
         setFlowPhase("editing");
         setFormError(
           error instanceof ApiError
             ? error.message
             : "Fikir kaydedilemedi. Lütfen tekrar dene.",
         );
-        return;
       }
+      inFlightRef.current = false;
+      return;
+    }
 
-      if (!mountedRef.current) return;
+    if (!mountedRef.current) {
+      inFlightRef.current = false;
+      return;
+    }
 
-      setCreatedIdeaId(ideaId);
-      setActiveIdeaId(ideaId);
+    setCreatedIdeaId(ideaId);
+    if (activeIdeaIdRef.current !== activeIdeaIdAtSubmit) {
       setAnalysisSteps(createAnalysisSteps());
-      setAnalysisError(null);
-      await executeWorkflow(ideaId, false);
-    } finally {
+      setAnalysisError(
+        "Fikir kaydedildi ancak etkin fikir değiştiği için analiz başlatılmadı.",
+      );
+      setFlowPhase("workflow-failed");
       inFlightRef.current = false;
+      return;
     }
-  };
 
-  const retryWorkflow = async (ideaId: number) => {
-    try {
-      await executeWorkflow(ideaId, true);
-    } finally {
-      inFlightRef.current = false;
-    }
+    activeIdeaIdRef.current = ideaId;
+    setActiveIdeaId(ideaId);
+    setAnalysisSteps(createAnalysisSteps());
+    setAnalysisError(null);
+    await executeWorkflow(ideaId, false);
   };
 
   const handleRetry = () => {
+    const unresolvedWorkflow = unresolvedWorkflowRef.current;
+    const isTrackingRetry =
+      flowPhase === "workflow-tracking-failed" &&
+      unresolvedWorkflow !== null &&
+      unresolvedWorkflow.ideaId === createdIdeaId;
+
     if (
       createdIdeaId === null ||
-      flowPhase !== "workflow-failed" ||
+      activeIdeaId !== createdIdeaId ||
+      (flowPhase !== "workflow-failed" && !isTrackingRetry) ||
       inFlightRef.current
     ) {
       return;
     }
 
     inFlightRef.current = true;
-    void retryWorkflow(createdIdeaId);
+    void executeWorkflow(
+      createdIdeaId,
+      true,
+      isTrackingRetry ? unresolvedWorkflow.runId : undefined,
+    );
   };
 
   const handleNext = async () => {
@@ -409,6 +864,14 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
   };
 
   const error = fieldErrors[step.key];
+  const unresolvedWorkflow = unresolvedWorkflowRef.current;
+  const canRetryAnalysis =
+    analysisError !== null &&
+    createdIdeaId !== null &&
+    activeIdeaId === createdIdeaId &&
+    (flowPhase === "workflow-failed" ||
+      (flowPhase === "workflow-tracking-failed" &&
+        unresolvedWorkflow?.ideaId === createdIdeaId));
   const inputClass = `w-full bg-muted border rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
     error
       ? "border-destructive/50 focus:border-destructive focus:ring-destructive/30"
@@ -420,8 +883,9 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
       <IdeaAnalysisProgress
         steps={analysisSteps}
         error={analysisError}
-        onRetry={analysisError ? handleRetry : undefined}
+        onRetry={canRetryAnalysis ? handleRetry : undefined}
         isRunning={isWorkflowRunning}
+        isTrackingInterrupted={flowPhase === "workflow-tracking-failed"}
       />
     );
   }

@@ -1,7 +1,7 @@
 import json
 import logging
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Callable
 
 from rest_framework import serializers as drf_serializers
 
@@ -32,7 +32,7 @@ from apps.ideas.services import (
 from .llm_client import LLMClientError
 from .mom_test_questions import generate_mom_test_questions
 from .moscow_scope import MoscowGenerationError, generate_moscow_scope
-from .validation_workflow_contract import (
+from ..workflow_contract import (
     GENERATION_ERROR,
     INTERNAL_ERROR,
     VALIDATION_ERROR,
@@ -40,6 +40,11 @@ from .validation_workflow_contract import (
 )
 
 logger = logging.getLogger(__name__)
+
+WorkflowProgressCallback = Callable[
+    [str, str, str | None],
+    None,
+]
 
 _GENERATION_ERRORS = (
     GeneralEvaluationGenerationError,
@@ -215,39 +220,73 @@ def _has_validation_cause(exc: BaseException) -> bool:
     return False
 
 
-def run_validation_workflow(idea) -> ValidationWorkflowResult:
+def _report_failed_progress(
+    progress_callback,
+    step_name,
+    error_code,
+):
+    if progress_callback is None:
+        return
+    try:
+        progress_callback(step_name, "failed", error_code)
+    except Exception:
+        logger.exception(
+            "Validation workflow progress failure could not be persisted."
+        )
+
+
+def run_validation_workflow(
+    idea,
+    progress_callback: WorkflowProgressCallback | None = None,
+) -> ValidationWorkflowResult:
     completed_steps: list[WorkflowStepResult] = []
 
     for step_name in WORKFLOW_STEP_ORDER:
         try:
+            if progress_callback is not None:
+                progress_callback(step_name, "running", None)
             result = _run_step(step_name, idea)
+            if progress_callback is not None:
+                progress_callback(step_name, "completed", None)
         except _GENERATION_ERRORS as exc:
             error_code = (
                 VALIDATION_ERROR
                 if _has_validation_cause(exc)
                 else GENERATION_ERROR
             )
-            raise ValidationWorkflowError(
+            workflow_error = ValidationWorkflowError(
                 idea_id=idea.id,
                 failed_step=step_name,
                 completed_steps=completed_steps,
                 error_code=error_code,
                 detail=_STEP_FAILURE_DETAILS[step_name],
-            ) from exc
+            )
+            _report_failed_progress(
+                progress_callback,
+                step_name,
+                workflow_error.error_code,
+            )
+            raise workflow_error from exc
         except (drf_serializers.ValidationError, ValueError) as exc:
-            raise ValidationWorkflowError(
+            workflow_error = ValidationWorkflowError(
                 idea_id=idea.id,
                 failed_step=step_name,
                 completed_steps=completed_steps,
                 error_code=VALIDATION_ERROR,
                 detail=_STEP_FAILURE_DETAILS[step_name],
-            ) from exc
+            )
+            _report_failed_progress(
+                progress_callback,
+                step_name,
+                workflow_error.error_code,
+            )
+            raise workflow_error from exc
         except Exception as exc:
             logger.exception(
                 "Validation workflow step '%s' failed unexpectedly.",
                 step_name,
             )
-            raise ValidationWorkflowError(
+            workflow_error = ValidationWorkflowError(
                 idea_id=idea.id,
                 failed_step=step_name,
                 completed_steps=completed_steps,
@@ -256,7 +295,13 @@ def run_validation_workflow(idea) -> ValidationWorkflowResult:
                     "Doğrulama akışı tamamlanamadı. "
                     "Lütfen daha sonra tekrar deneyin."
                 ),
-            ) from exc
+            )
+            _report_failed_progress(
+                progress_callback,
+                step_name,
+                workflow_error.error_code,
+            )
+            raise workflow_error from exc
 
         completed_steps.append(
             WorkflowStepResult(

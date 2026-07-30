@@ -1,17 +1,17 @@
-WORKFLOW_STEP_ORDER = (
-    "risky_assumptions",
-    "mom_test_questions",
-    "moscow_scope",
-    "validation_roadmap",
-    "general_evaluation",
-)
-
-GENERATION_ERROR = "generation_error"
-VALIDATION_ERROR = "validation_error"
-INTERNAL_ERROR = "internal_error"
-
-WORKFLOW_ERROR_CODES = (
+from ..workflow_contract import (
     GENERATION_ERROR,
-    VALIDATION_ERROR,
     INTERNAL_ERROR,
+    VALIDATION_ERROR,
+    WORKFLOW_ERROR_CODES,
+    WORKFLOW_STAGE_STATUSES,
+    WORKFLOW_STEP_ORDER,
 )
+
+__all__ = [
+    "GENERATION_ERROR",
+    "INTERNAL_ERROR",
+    "VALIDATION_ERROR",
+    "WORKFLOW_ERROR_CODES",
+    "WORKFLOW_STAGE_STATUSES",
+    "WORKFLOW_STEP_ORDER",
+]

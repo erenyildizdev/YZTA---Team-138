@@ -7,9 +7,11 @@ from .models import (
     InterviewEvidenceAnalysis,
     InterviewNote,
     MoscowScopeAnalysis,
+    ValidationWorkflowRun,
 )
-from .services.validation_workflow_contract import (
+from .workflow_contract import (
     WORKFLOW_ERROR_CODES,
+    WORKFLOW_STAGE_STATUSES,
     WORKFLOW_STEP_ORDER,
 )
 
@@ -31,6 +33,59 @@ class StrictFieldsSerializer(serializers.Serializer):
         return super().to_internal_value(data)
 
 
+class ValidationWorkflowRequestSerializer(StrictFieldsSerializer):
+    run_id = serializers.UUIDField(required=False)
+
+
+class ValidationWorkflowStagesSerializer(StrictFieldsSerializer):
+    risky_assumptions = serializers.ChoiceField(
+        choices=WORKFLOW_STAGE_STATUSES
+    )
+    mom_test_questions = serializers.ChoiceField(
+        choices=WORKFLOW_STAGE_STATUSES
+    )
+    moscow_scope = serializers.ChoiceField(
+        choices=WORKFLOW_STAGE_STATUSES
+    )
+    validation_roadmap = serializers.ChoiceField(
+        choices=WORKFLOW_STAGE_STATUSES
+    )
+    general_evaluation = serializers.ChoiceField(
+        choices=WORKFLOW_STAGE_STATUSES
+    )
+
+
+class ValidationWorkflowRunSerializer(serializers.Serializer):
+    run_id = serializers.UUIDField(source="id", read_only=True)
+    idea_id = serializers.IntegerField(read_only=True)
+    status = serializers.ChoiceField(
+        choices=ValidationWorkflowRun.Status.choices,
+        read_only=True,
+    )
+    current_stage = serializers.ChoiceField(
+        choices=WORKFLOW_STEP_ORDER,
+        allow_null=True,
+        read_only=True,
+    )
+    failed_stage = serializers.ChoiceField(
+        choices=WORKFLOW_STEP_ORDER,
+        allow_null=True,
+        read_only=True,
+    )
+    stages = ValidationWorkflowStagesSerializer(read_only=True)
+    error_code = serializers.ChoiceField(
+        choices=WORKFLOW_ERROR_CODES,
+        allow_null=True,
+        read_only=True,
+    )
+    created_at = serializers.DateTimeField(read_only=True)
+    updated_at = serializers.DateTimeField(read_only=True)
+    finished_at = serializers.DateTimeField(
+        allow_null=True,
+        read_only=True,
+    )
+
+
 class ValidationWorkflowStepResultSerializer(StrictFieldsSerializer):
     name = serializers.CharField()
     status = serializers.ChoiceField(choices=("completed",))
@@ -43,6 +98,7 @@ class ValidationWorkflowStepResultSerializer(StrictFieldsSerializer):
 
 
 class ValidationWorkflowSuccessResponseSerializer(StrictFieldsSerializer):
+    run_id = serializers.UUIDField()
     idea_id = serializers.IntegerField(min_value=1)
     status = serializers.ChoiceField(choices=("completed",))
     completed_steps = serializers.ListField(
@@ -74,6 +130,7 @@ class ValidationWorkflowSuccessResponseSerializer(StrictFieldsSerializer):
 
 
 class ValidationWorkflowFailureResponseSerializer(StrictFieldsSerializer):
+    run_id = serializers.UUIDField()
     idea_id = serializers.IntegerField(min_value=1)
     status = serializers.ChoiceField(choices=("failed",))
     completed_steps = serializers.ListField(
@@ -392,4 +449,3 @@ class MomTestQuestionResponseSerializer(serializers.Serializer):
     framework = serializers.CharField()
     question_count = serializers.IntegerField()
     questions = MomTestQuestionSerializer(many=True)
-
