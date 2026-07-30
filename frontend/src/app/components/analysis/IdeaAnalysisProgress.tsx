@@ -1,6 +1,17 @@
-import { AlertCircle, CheckCircle, RefreshCw, Sparkles } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle,
+  MinusCircle,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
 
-export type AnalysisStepStatus = "pending" | "active" | "completed" | "error";
+export type AnalysisStepStatus =
+  | "pending"
+  | "active"
+  | "completed"
+  | "error"
+  | "skipped";
 
 export interface AnalysisStep {
   id: string;
@@ -13,6 +24,7 @@ interface IdeaAnalysisProgressProps {
   error?: string | null;
   onRetry?: () => void;
   isRunning: boolean;
+  isTrackingInterrupted?: boolean;
 }
 
 export function IdeaAnalysisProgress({
@@ -20,6 +32,7 @@ export function IdeaAnalysisProgress({
   error,
   onRetry,
   isRunning,
+  isTrackingInterrupted = false,
 }: IdeaAnalysisProgressProps) {
   return (
     <div
@@ -31,27 +44,44 @@ export function IdeaAnalysisProgress({
         <div className="mx-auto mb-7 flex h-16 w-16 items-center justify-center rounded-2xl border border-primary/20 bg-primary/15">
           <Sparkles
             size={26}
-            className={isRunning ? "animate-pulse text-primary" : "text-primary"}
+            className={
+              isRunning
+                ? "animate-pulse text-primary motion-reduce:animate-none"
+                : "text-primary"
+            }
             aria-hidden="true"
           />
         </div>
 
         <div role="status" aria-live="polite" aria-atomic="true">
           <h1 className="text-xl font-bold text-foreground">
-            {isRunning ? "Doğrulama akışı çalışıyor" : "Analiz tamamlanamadı"}
+            {isRunning
+              ? "Doğrulama akışı çalışıyor"
+              : isTrackingInterrupted
+                ? "Analiz durumu doğrulanamadı"
+                : "Analiz tamamlanamadı"}
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {isRunning
               ? "Analiz adımları sunucuda sırasıyla çalıştırılıyor. Sonuçlar hazır olduğunda analiz ekranına yönlendirileceksin."
-              : "Fikir kaydın korunuyor. Akışı aynı fikir için yeniden deneyebilirsin."}
+              : isTrackingInterrupted
+                ? "Fikir ve mevcut analiz akışı korunuyor. Yeni bir akış başlatmadan durumunu tekrar kontrol edebilirsin."
+                : onRetry
+                  ? "Fikir kaydın korunuyor. Akışı aynı fikir için yeniden deneyebilirsin."
+                  : "Fikir kaydın korunuyor."}
           </p>
         </div>
 
-        <div className="mt-8 space-y-3 text-left">
+        <ol
+          className="mt-8 space-y-3 text-left"
+          aria-label="Analiz ilerlemesi"
+          aria-live="polite"
+        >
           {steps.map((step) => (
-            <div
+            <li
               key={step.id}
               className="flex min-w-0 items-start gap-3 transition-opacity"
+              aria-current={step.status === "active" ? "step" : undefined}
             >
               <div
                 className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full ${
@@ -61,7 +91,9 @@ export function IdeaAnalysisProgress({
                       ? "bg-primary"
                       : step.status === "error"
                         ? "bg-destructive"
-                        : "bg-border"
+                        : step.status === "skipped"
+                          ? "border border-border bg-muted"
+                          : "bg-border"
                 }`}
                 aria-hidden="true"
               >
@@ -69,16 +101,19 @@ export function IdeaAnalysisProgress({
                   <CheckCircle size={11} className="text-primary-foreground" />
                 )}
                 {step.status === "active" && (
-                  <span className="h-2 w-2 animate-pulse rounded-full bg-primary-foreground" />
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-primary-foreground motion-reduce:animate-none" />
                 )}
                 {step.status === "error" && (
                   <AlertCircle size={11} className="text-destructive-foreground" />
+                )}
+                {step.status === "skipped" && (
+                  <MinusCircle size={11} className="text-muted-foreground" />
                 )}
               </div>
               <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <span
                   className={`min-w-0 break-words text-sm ${
-                    step.status === "pending"
+                    step.status === "pending" || step.status === "skipped"
                       ? "text-muted-foreground"
                       : "font-medium text-foreground"
                   }`}
@@ -100,12 +135,14 @@ export function IdeaAnalysisProgress({
                       ? "Çalışıyor"
                       : step.status === "error"
                         ? "Başarısız"
-                        : "Bekliyor"}
+                        : step.status === "skipped"
+                          ? "Atlandı"
+                          : "Bekliyor"}
                 </span>
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
 
         {error && (
           <div
@@ -126,7 +163,11 @@ export function IdeaAnalysisProgress({
                 className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-3.5 py-2 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-primary sm:w-auto"
               >
                 <RefreshCw size={12} aria-hidden="true" />
-                {isRunning ? "Yeniden deneniyor..." : "Yeniden dene"}
+                {isRunning
+                  ? "Yeniden deneniyor..."
+                  : isTrackingInterrupted
+                    ? "Durumu kontrol et"
+                    : "Yeniden dene"}
               </button>
             )}
           </div>

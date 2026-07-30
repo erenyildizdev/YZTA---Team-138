@@ -6,6 +6,7 @@ from .views import (
     InterviewNoteListCreateView,
     MomTestQuestionGenerateView,
     MoscowScopeAnalysisView,
+    ValidationWorkflowRunView,
     ValidationWorkflowView,
 )
 
@@ -26,6 +27,11 @@ urlpatterns = [
         "ideas/<int:idea_id>/workflow/",
         ValidationWorkflowView.as_view(),
         name="validation-workflow",
+    ),
+    path(
+        "workflow-runs/<uuid:run_id>/",
+        ValidationWorkflowRunView.as_view(),
+        name="validation-workflow-run",
     ),
     path(
         "ideas/<int:idea_id>/interview-notes/",

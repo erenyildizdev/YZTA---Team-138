@@ -1,3 +1,4 @@
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.response import Response
@@ -10,6 +11,7 @@ from .models import (
     InterviewNote,
     MomTestQuestionsAnalysis,
     MoscowScopeAnalysis,
+    ValidationWorkflowRun,
 )
 
 from .serializers import (
@@ -19,6 +21,8 @@ from .serializers import (
     MomTestQuestionResponseSerializer,
     MoscowScopeAnalysisSerializer,
     ValidationWorkflowFailureResponseSerializer,
+    ValidationWorkflowRequestSerializer,
+    ValidationWorkflowRunSerializer,
     ValidationWorkflowSuccessResponseSerializer,
 )
 
@@ -32,6 +36,12 @@ from .services.validation_workflow import (
     INTERNAL_ERROR,
     ValidationWorkflowError,
     run_validation_workflow,
+)
+from .services.workflow_runs import (
+    WorkflowRunAlreadyRunning,
+    WorkflowRunIdentityMismatch,
+    WorkflowRunProgressRecorder,
+    acquire_workflow_run,
 )
 
 from .services.interview_evidence import (
@@ -60,12 +70,61 @@ class ValidationWorkflowView(APIView):
 
     def post(self, request, idea_id, *args, **kwargs):
         idea = _get_owned_idea(request, idea_id)
+        request_serializer = ValidationWorkflowRequestSerializer(
+            data=request.data
+        )
+        request_serializer.is_valid(raise_exception=True)
 
         try:
-            workflow_result = run_validation_workflow(idea)
+            acquisition = acquire_workflow_run(
+                idea,
+                request_serializer.validated_data.get("run_id"),
+            )
+        except WorkflowRunAlreadyRunning as exc:
+            return Response(
+                {
+                    "detail": (
+                        "Bu fikir için bir analiz akışı zaten devam ediyor."
+                    ),
+                    "code": "workflow_already_running",
+                    "run_id": str(exc.run_id),
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+        except WorkflowRunIdentityMismatch:
+            raise Http404 from None
+
+        workflow_run = acquisition.run
+        if not acquisition.should_execute:
+            if (
+                isinstance(workflow_run.terminal_response, dict)
+                and workflow_run.terminal_status_code is not None
+            ):
+                return Response(
+                    workflow_run.terminal_response,
+                    status=workflow_run.terminal_status_code,
+                )
+            return Response(
+                {
+                    "detail": "Bu analiz akışı daha önce tamamlandı.",
+                    "code": "workflow_run_finished",
+                    "run_id": str(workflow_run.pk),
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        progress_recorder = WorkflowRunProgressRecorder(workflow_run.pk)
+
+        try:
+            workflow_result = run_validation_workflow(
+                idea,
+                progress_callback=progress_recorder,
+            )
         except ValidationWorkflowError as exc:
+            response_data = exc.as_response()
+            response_data["run_id"] = workflow_run.pk
             response_serializer = ValidationWorkflowFailureResponseSerializer(
-                data=exc.as_response()
+                data=response_data
             )
             response_serializer.is_valid(raise_exception=True)
             response_status = (
@@ -73,17 +132,45 @@ class ValidationWorkflowView(APIView):
                 if exc.error_code == INTERNAL_ERROR
                 else status.HTTP_502_BAD_GATEWAY
             )
+            progress_recorder.finalize_failure(
+                failed_stage=exc.failed_step,
+                error_code=exc.error_code,
+                response_data=dict(response_serializer.data),
+                response_status_code=response_status,
+            )
             return Response(
                 response_serializer.data,
                 status=response_status,
             )
 
+        response_data = workflow_result.as_response()
+        response_data["run_id"] = workflow_run.pk
         response_serializer = ValidationWorkflowSuccessResponseSerializer(
-            data=workflow_result.as_response()
+            data=response_data
         )
         response_serializer.is_valid(raise_exception=True)
+        progress_recorder.finalize_success(
+            dict(response_serializer.data),
+            status.HTTP_200_OK,
+        )
         return Response(
             response_serializer.data,
+            status=status.HTTP_200_OK,
+        )
+
+
+class ValidationWorkflowRunView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, run_id, *args, **kwargs):
+        workflow_run = get_object_or_404(
+            ValidationWorkflowRun.objects.filter(
+                idea__user=request.user,
+            ),
+            pk=run_id,
+        )
+        return Response(
+            ValidationWorkflowRunSerializer(workflow_run).data,
             status=status.HTTP_200_OK,
         )
 

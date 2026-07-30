@@ -392,6 +392,7 @@ export interface ValidationWorkflowStepResult {
 
 export interface ValidationWorkflowSuccessResponse {
   idea_id: number;
+  run_id: string;
   status: "completed";
   completed_steps: ValidationWorkflowStepName[];
   steps: ValidationWorkflowStepResult[];
@@ -399,6 +400,7 @@ export interface ValidationWorkflowSuccessResponse {
 
 export interface ValidationWorkflowFailureResponse {
   idea_id: number;
+  run_id: string;
   status: "failed";
   completed_steps: ValidationWorkflowStepName[];
   failed_step: ValidationWorkflowStepName;
@@ -409,6 +411,13 @@ export interface ValidationWorkflowFailureResponse {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+const UUID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUuid(value: unknown): value is string {
+  return typeof value === "string" && UUID_PATTERN.test(value);
 }
 
 function isValidationWorkflowStepName(
@@ -439,6 +448,7 @@ export function isValidationWorkflowFailureResponse(
     typeof value.idea_id !== "number" ||
     !Number.isInteger(value.idea_id) ||
     value.idea_id <= 0 ||
+    !isUuid(value.run_id) ||
     value.status !== "failed" ||
     !Array.isArray(value.completed_steps) ||
     !value.completed_steps.every(isValidationWorkflowStepName) ||
@@ -465,13 +475,169 @@ export function isValidationWorkflowFailureResponse(
   );
 }
 
+export type WorkflowStageStatus =
+  | "pending"
+  | "running"
+  | "completed"
+  | "failed"
+  | "skipped";
+
+export type WorkflowRunStatus = "pending" | "running" | "completed" | "failed";
+
+export type WorkflowRunStages = Record<
+  ValidationWorkflowStepName,
+  WorkflowStageStatus
+>;
+
+export interface WorkflowRunResponse {
+  runId: string;
+  ideaId: number;
+  status: WorkflowRunStatus;
+  currentStage: ValidationWorkflowStepName | null;
+  failedStage: ValidationWorkflowStepName | null;
+  stages: WorkflowRunStages;
+  errorCode: string | null;
+  createdAt: string;
+  updatedAt: string;
+  finishedAt: string | null;
+}
+
+interface WorkflowRunApiResponse {
+  run_id: string;
+  idea_id: number;
+  status: WorkflowRunStatus;
+  current_stage: ValidationWorkflowStepName | null;
+  failed_stage: ValidationWorkflowStepName | null;
+  stages: WorkflowRunStages;
+  error_code: string | null;
+  created_at: string;
+  updated_at: string;
+  finished_at: string | null;
+}
+
+export interface WorkflowAlreadyRunningErrorPayload {
+  detail: string;
+  code: "workflow_already_running";
+  run_id: string;
+}
+
+export function isWorkflowAlreadyRunningErrorPayload(
+  value: unknown,
+): value is WorkflowAlreadyRunningErrorPayload {
+  return (
+    isRecord(value) &&
+    value.code === "workflow_already_running" &&
+    typeof value.detail === "string" &&
+    isUuid(value.run_id)
+  );
+}
+
+function isWorkflowStageStatus(value: unknown): value is WorkflowStageStatus {
+  return (
+    value === "pending" ||
+    value === "running" ||
+    value === "completed" ||
+    value === "failed" ||
+    value === "skipped"
+  );
+}
+
+function isWorkflowRunStatus(value: unknown): value is WorkflowRunStatus {
+  return (
+    value === "pending" ||
+    value === "running" ||
+    value === "completed" ||
+    value === "failed"
+  );
+}
+
+function parseWorkflowRunResponse(value: unknown): WorkflowRunApiResponse {
+  if (
+    !isRecord(value) ||
+    !isUuid(value.run_id) ||
+    typeof value.idea_id !== "number" ||
+    !Number.isInteger(value.idea_id) ||
+    value.idea_id <= 0 ||
+    !isWorkflowRunStatus(value.status) ||
+    (value.current_stage !== null &&
+      !isValidationWorkflowStepName(value.current_stage)) ||
+    (value.failed_stage !== null &&
+      !isValidationWorkflowStepName(value.failed_stage)) ||
+    !isRecord(value.stages) ||
+    typeof value.created_at !== "string" ||
+    typeof value.updated_at !== "string" ||
+    (value.finished_at !== null && typeof value.finished_at !== "string") ||
+    (value.error_code !== null && typeof value.error_code !== "string")
+  ) {
+    throw new Error("Unexpected workflow run response.");
+  }
+
+  const stages = {} as WorkflowRunStages;
+  for (const stageName of VALIDATION_WORKFLOW_STEP_NAMES) {
+    const stageStatus = value.stages[stageName];
+    if (!isWorkflowStageStatus(stageStatus)) {
+      throw new Error("Unexpected workflow stage response.");
+    }
+    stages[stageName] = stageStatus;
+  }
+
+  return {
+    run_id: value.run_id,
+    idea_id: value.idea_id,
+    status: value.status,
+    current_stage: value.current_stage,
+    failed_stage: value.failed_stage,
+    stages,
+    error_code: value.error_code,
+    created_at: value.created_at,
+    updated_at: value.updated_at,
+    finished_at: value.finished_at,
+  };
+}
+
+export interface RunValidationWorkflowOptions {
+  runId?: string;
+  signal?: AbortSignal;
+}
+
 export function runValidationWorkflow(
   ideaId: number,
+  options: RunValidationWorkflowOptions = {},
 ): Promise<ValidationWorkflowSuccessResponse> {
   return request<ValidationWorkflowSuccessResponse>(
     `/analyses/ideas/${ideaId}/workflow/`,
-    { method: "POST" },
+    {
+      method: "POST",
+      body: options.runId
+        ? JSON.stringify({ run_id: options.runId })
+        : undefined,
+      signal: options.signal,
+    },
   );
+}
+
+export async function getWorkflowRun(
+  runId: string,
+  signal?: AbortSignal,
+): Promise<WorkflowRunResponse> {
+  const rawResponse = await request<unknown>(
+    `/analyses/workflow-runs/${runId}/`,
+    { signal },
+  );
+  const response = parseWorkflowRunResponse(rawResponse);
+
+  return {
+    runId: response.run_id,
+    ideaId: response.idea_id,
+    status: response.status,
+    currentStage: response.current_stage,
+    failedStage: response.failed_stage,
+    stages: response.stages,
+    errorCode: response.error_code,
+    createdAt: response.created_at,
+    updatedAt: response.updated_at,
+    finishedAt: response.finished_at,
+  };
 }
 
 export function getIdea(ideaId: number): Promise<IdeaResponse> {
