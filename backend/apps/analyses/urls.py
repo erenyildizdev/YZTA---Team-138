@@ -6,6 +6,7 @@ from .views import (
     InterviewNoteListCreateView,
     MomTestQuestionGenerateView,
     MoscowScopeAnalysisView,
+    ValidationReportPDFView,
     ValidationWorkflowRunView,
     ValidationWorkflowView,
 )
@@ -13,6 +14,11 @@ from .views import (
 app_name = "analyses"
 
 urlpatterns = [
+    path(
+        "ideas/<int:idea_id>/report/pdf/",
+        ValidationReportPDFView.as_view(),
+        name="validation-report-pdf",
+    ),
     path(
         "ideas/<int:idea_id>/mom-test-questions/",
         MomTestQuestionGenerateView.as_view(),

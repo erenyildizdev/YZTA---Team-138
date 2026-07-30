@@ -13,7 +13,7 @@ export function InvestorPitchBody({
   return (
     <div>
       {status === "loading" && (
-        <div data-pdf-block className="space-y-2.5">
+        <div className="space-y-2.5">
           {[0, 1, 2].map((i) => (
             <div key={i} className="h-14 rounded-xl bg-muted/40 border border-border animate-pulse" />
           ))}
@@ -21,7 +21,7 @@ export function InvestorPitchBody({
       )}
 
       {status === "error" && (
-        <div data-pdf-block className="bg-red-900/10 border border-red-800/30 rounded-xl p-4">
+        <div className="bg-red-900/10 border border-red-800/30 rounded-xl p-4">
           <p className="text-xs text-red-400 mb-2.5">{error}</p>
           <button
             onClick={reload}
@@ -33,7 +33,7 @@ export function InvestorPitchBody({
       )}
 
       {status === "empty" && (
-        <div data-pdf-block className="text-center py-6">
+        <div className="text-center py-6">
           <div className="w-11 h-11 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-3">
             <Megaphone size={18} className="text-amber-400" />
           </div>
@@ -52,7 +52,7 @@ export function InvestorPitchBody({
       )}
 
       {status === "generating" && (
-        <div data-pdf-block className="text-center py-6">
+        <div className="text-center py-6">
           <RefreshCw size={18} className="text-amber-400 mx-auto mb-3 animate-spin" />
           <p className="text-xs text-muted-foreground">Yatırımcı sunumu hazırlanıyor...</p>
         </div>
@@ -71,7 +71,7 @@ export function InvestorPitchBody({
             </div>
           )}
 
-          <div data-pdf-block className="rounded-xl border border-amber-800/30 bg-amber-900/10 p-3.5">
+          <div className="rounded-xl border border-amber-800/30 bg-amber-900/10 p-3.5">
             <h4 className="text-xs font-bold text-foreground mb-1">Elevator Pitch</h4>
             <p className="text-sm text-foreground/90 leading-relaxed italic">
               "{data.elevator_pitch}"
@@ -80,7 +80,7 @@ export function InvestorPitchBody({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {data.slides.map((slide, i) => (
-              <div key={i} data-pdf-block className="rounded-xl border border-border bg-muted/30 p-3.5">
+              <div key={i} className="rounded-xl border border-border bg-muted/30 p-3.5">
                 <div className="flex items-center gap-1.5 mb-2">
                   <span className="w-5 h-5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-bold flex items-center justify-center border border-amber-500/20 flex-shrink-0">
                     {i + 1}
@@ -98,7 +98,7 @@ export function InvestorPitchBody({
             ))}
           </div>
 
-          <div data-pdf-block className="rounded-xl border border-border bg-muted/30 p-3.5">
+          <div className="rounded-xl border border-border bg-muted/30 p-3.5">
             <div className="flex items-center gap-1.5 mb-1">
               <Target size={12} className="text-foreground" />
               <h4 className="text-xs font-bold text-foreground">Kapanış / Talep</h4>

@@ -37,7 +37,7 @@ export function ValidationRoadmapBody({
       )}
 
       {status === "loading" && (
-        <div data-pdf-block className="space-y-2.5">
+        <div className="space-y-2.5">
           {[0, 1, 2].map((i) => (
             <div key={i} className="h-14 rounded-xl bg-muted/40 border border-border animate-pulse" />
           ))}
@@ -45,7 +45,7 @@ export function ValidationRoadmapBody({
       )}
 
       {status === "error" && (
-        <div data-pdf-block className="bg-muted border border-destructive/30 rounded-xl p-4">
+        <div className="bg-muted border border-destructive/30 rounded-xl p-4">
           <p className="text-xs text-destructive mb-2.5">{error}</p>
           <button
             onClick={reload}
@@ -57,7 +57,7 @@ export function ValidationRoadmapBody({
       )}
 
       {status === "empty" && (
-        <div data-pdf-block className="text-center py-6">
+        <div className="text-center py-6">
           <div className="w-11 h-11 rounded-xl bg-accent border border-border flex items-center justify-center mx-auto mb-3">
             <Map size={18} className="text-foreground" />
           </div>
@@ -76,7 +76,7 @@ export function ValidationRoadmapBody({
       )}
 
       {status === "generating" && (
-        <div data-pdf-block className="text-center py-6">
+        <div className="text-center py-6">
           <RefreshCw size={18} className="text-foreground mx-auto mb-3 animate-spin" />
           <p className="text-xs text-muted-foreground">Yol haritası oluşturuluyor...</p>
         </div>
@@ -84,7 +84,7 @@ export function ValidationRoadmapBody({
 
       {status === "ready" && data && (
         <div>
-          <div data-pdf-block className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3">
             <span className="text-[11px] text-muted-foreground">
               {data.phases.length} {data.roadmap_type === "weekly" ? "haftalık aşama" : "aşama"}
             </span>
@@ -107,7 +107,6 @@ export function ValidationRoadmapBody({
                 <AccordionItem
                   key={i}
                   value={`phase-${i}`}
-                  data-pdf-block={readOnly ? true : undefined}
                   className="bg-muted/30 border border-border rounded-xl px-4 border-b"
                 >
                   <AccordionTrigger className="hover:no-underline py-3">

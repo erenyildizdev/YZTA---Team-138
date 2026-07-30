@@ -13,7 +13,7 @@ export function CompetitorAnalysisBody({
   return (
     <div>
       {status === "loading" && (
-        <div data-pdf-block className="space-y-2.5">
+        <div className="space-y-2.5">
           {[0, 1, 2].map((i) => (
             <div key={i} className="h-16 rounded-xl bg-muted/40 border border-border animate-pulse" />
           ))}
@@ -21,7 +21,7 @@ export function CompetitorAnalysisBody({
       )}
 
       {status === "error" && (
-        <div data-pdf-block className="bg-red-900/10 border border-red-800/30 rounded-xl p-4">
+        <div className="bg-red-900/10 border border-red-800/30 rounded-xl p-4">
           <p className="text-xs text-red-400 mb-2.5">{error}</p>
           <button
             onClick={reload}
@@ -33,7 +33,7 @@ export function CompetitorAnalysisBody({
       )}
 
       {status === "empty" && (
-        <div data-pdf-block className="text-center py-6">
+        <div className="text-center py-6">
           <div className="w-11 h-11 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mx-auto mb-3">
             <TrendingUp size={18} className="text-violet-400" />
           </div>
@@ -52,7 +52,7 @@ export function CompetitorAnalysisBody({
       )}
 
       {status === "generating" && (
-        <div data-pdf-block className="text-center py-6">
+        <div className="text-center py-6">
           <RefreshCw size={18} className="text-violet-400 mx-auto mb-3 animate-spin" />
           <p className="text-xs text-muted-foreground">Rakip analizi oluşturuluyor...</p>
         </div>
@@ -73,7 +73,7 @@ export function CompetitorAnalysisBody({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {data.competitors.map((c, i) => (
-              <div key={i} data-pdf-block className="rounded-xl border border-border bg-muted/30 p-3.5">
+              <div key={i} className="rounded-xl border border-border bg-muted/30 p-3.5">
                 <h4 className="text-sm font-bold text-foreground">{c.name}</h4>
                 <p className="mt-1 text-xs text-muted-foreground leading-relaxed">{c.description}</p>
 
@@ -95,12 +95,12 @@ export function CompetitorAnalysisBody({
             ))}
           </div>
 
-          <div data-pdf-block className="rounded-xl border border-border bg-muted/30 p-3.5">
+          <div className="rounded-xl border border-border bg-muted/30 p-3.5">
             <h4 className="text-xs font-bold text-foreground mb-1">Pazar Boşluğu</h4>
             <p className="text-sm text-muted-foreground leading-relaxed">{data.market_gap}</p>
           </div>
 
-          <div data-pdf-block className="rounded-xl border border-violet-800/30 bg-violet-900/10 p-3.5">
+          <div className="rounded-xl border border-violet-800/30 bg-violet-900/10 p-3.5">
             <h4 className="text-xs font-bold text-foreground mb-1">Farklılaşma Noktanız</h4>
             <p className="text-sm text-muted-foreground leading-relaxed">{data.differentiation}</p>
           </div>

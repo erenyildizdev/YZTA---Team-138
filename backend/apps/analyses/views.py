@@ -1,5 +1,8 @@
-from django.http import Http404
+import logging
+
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils.http import content_disposition_header
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -48,6 +51,13 @@ from .services.interview_evidence import (
     InterviewNotesNotFoundError,
     analyze_interview_evidence,
 )
+from .services.report_pdf import (
+    build_report_filename,
+    build_report_pdf,
+)
+
+
+logger = logging.getLogger(__name__)
 
 
 def _get_owned_idea(request, idea_id):
@@ -63,6 +73,53 @@ def _get_owned_note(request, idea_id, note_id):
         InterviewNote.objects.filter(idea=idea),
         pk=note_id,
     )
+
+
+class ValidationReportPDFView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, idea_id, *args, **kwargs):
+        idea = get_object_or_404(
+            Idea.objects.filter(user=request.user).select_related(
+                "risky_assumptions",
+                "mom_test_questions_analysis",
+                "moscow_scope_analysis",
+                "validation_roadmap",
+                "general_evaluation",
+                "competitor_analysis",
+                "investor_pitch",
+            ),
+            pk=idea_id,
+        )
+
+        try:
+            pdf_content = build_report_pdf(idea)
+            filename = build_report_filename(idea)
+        except Exception:
+            logger.exception(
+                "Validation report PDF generation failed for idea_id=%s.",
+                idea.pk,
+            )
+            return Response(
+                {
+                    "detail": (
+                        "PDF raporu oluşturulamadı. "
+                        "Lütfen daha sonra tekrar deneyin."
+                    )
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        response = HttpResponse(
+            pdf_content,
+            content_type="application/pdf",
+        )
+        response["Content-Disposition"] = content_disposition_header(
+            True,
+            filename,
+        )
+        response["Cache-Control"] = "private, no-store"
+        return response
 
 
 class ValidationWorkflowView(APIView):

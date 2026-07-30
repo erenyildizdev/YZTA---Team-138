@@ -25,6 +25,25 @@ export function setAccessToken(token: string | null): void {
   else localStorage.removeItem(ACCESS_TOKEN_KEY);
 }
 
+function throwUnauthorizedError(status: number, data?: unknown): never {
+  setAccessToken(null);
+
+  sessionStorage.setItem(
+    "auth_message",
+    "Oturumunuz geçersiz veya süresi dolmuş. Lütfen tekrar giriş yapın.",
+  );
+
+  if (window.location.pathname !== "/login") {
+    window.location.replace("/login");
+  }
+
+  throw new ApiError(
+    "Oturumunuz geçersiz veya süresi dolmuş.",
+    status,
+    data,
+  );
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = getAccessToken();
   const headers = new Headers(options.headers);
@@ -46,22 +65,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
 
   if (response.status === 401) {
-    setAccessToken(null);
-
-    sessionStorage.setItem(
-      "auth_message",
-      "Oturumunuz geçersiz veya süresi dolmuş. Lütfen tekrar giriş yapın.",
-    );
-
-    if (window.location.pathname !== "/login") {
-      window.location.replace("/login");
-    }
-
-    throw new ApiError(
-      "Oturumunuz geçersiz veya süresi dolmuş.",
-      response.status,
-      body,
-    );
+    throwUnauthorizedError(response.status, body);
   }
 
   if (!response.ok) {
@@ -89,6 +93,58 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   }
 
   return body as T;
+}
+
+export async function downloadIdeaReportPdf(
+  ideaId: number,
+  signal?: AbortSignal,
+): Promise<Blob> {
+  const token = getAccessToken();
+  const headers = new Headers();
+
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/analyses/ideas/${ideaId}/report/pdf/`,
+    { headers, signal },
+  );
+
+  if (response.status === 401) {
+    throwUnauthorizedError(response.status);
+  }
+
+  if (!response.ok) {
+    throw new ApiError(
+      "PDF indirilemedi. Lütfen tekrar dener misin?",
+      response.status,
+    );
+  }
+
+  const contentType = response.headers
+    .get("Content-Type")
+    ?.split(";", 1)[0]
+    .trim()
+    .toLowerCase();
+
+  if (contentType !== "application/pdf") {
+    throw new ApiError(
+      "Sunucu geçerli bir PDF dosyası döndürmedi.",
+      response.status,
+    );
+  }
+
+  const blob = await response.blob();
+
+  if (blob.size === 0) {
+    throw new ApiError(
+      "Sunucu boş bir PDF dosyası döndürdü.",
+      response.status,
+    );
+  }
+
+  return blob;
 }
 
 export interface AuthUser {

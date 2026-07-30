@@ -1,7 +1,5 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Download } from "lucide-react";
-import html2canvas from "html2canvas-pro";
-import jsPDF from "jspdf";
 
 import { CompetitorAnalysisBody } from "../components/analysis/CompetitorAnalysisBody";
 import { GeneralEvaluationBody } from "../components/analysis/GeneralEvaluationBody";
@@ -13,6 +11,7 @@ import { ValidationRoadmapBody } from "../components/analysis/ValidationRoadmapB
 import { ActiveIdeaPageState } from "../components/ideas/ActiveIdeaPageState";
 import { useActiveIdeaId } from "../hooks/useActiveIdeaId";
 import { useIdea } from "../hooks/useIdea";
+import { downloadIdeaReportPdf } from "../lib/api";
 
 interface RagSource {
   title: string;
@@ -32,157 +31,118 @@ export function ReportPage({ onBack }: ReportPageProps) {
     reload: reloadIdea,
   } = useIdea(ideaId);
 
-  const reportRef = useRef<HTMLDivElement>(null);
+  const downloadLockRef = useRef(false);
+  const downloadRequestSequence = useRef(0);
+  const activeDownloadController = useRef<AbortController | null>(null);
+  const isMountedRef = useRef(true);
+  const currentIdeaIdRef = useRef(ideaId);
+  currentIdeaIdRef.current = ideaId;
+
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
-  const handleDownloadPdf = async () => {
-    const element = reportRef.current;
+  useEffect(() => {
+    isMountedRef.current = true;
 
-    if (!element || isDownloading) {
+    return () => {
+      isMountedRef.current = false;
+      downloadRequestSequence.current += 1;
+      activeDownloadController.current?.abort();
+      activeDownloadController.current = null;
+      downloadLockRef.current = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    downloadRequestSequence.current += 1;
+    activeDownloadController.current?.abort();
+    activeDownloadController.current = null;
+    downloadLockRef.current = false;
+    setIsDownloading(false);
+    setDownloadError(null);
+  }, [ideaId]);
+
+  const handleDownloadPdf = async () => {
+    const requestedIdeaId = ideaId;
+
+    if (requestedIdeaId === null || downloadLockRef.current) {
       return;
     }
+
+    downloadLockRef.current = true;
+    const requestId = ++downloadRequestSequence.current;
+    const controller = new AbortController();
+    activeDownloadController.current = controller;
 
     setIsDownloading(true);
     setDownloadError(null);
 
-    const hiddenEls = Array.from(
-      element.querySelectorAll<HTMLElement>(".no-print"),
-    );
-
-    hiddenEls.forEach((el) => {
-      el.style.visibility = "hidden";
-    });
-
-    const styleTag = document.createElement("style");
-
-    styleTag.textContent =
-      "*, *::before, *::after { animation: none !important; transition: none !important; }";
-
-    document.head.appendChild(styleTag);
+    let objectUrl: string | null = null;
+    let link: HTMLAnchorElement | null = null;
 
     try {
-      const blockEls = Array.from(
-        element.querySelectorAll<HTMLElement>("[data-pdf-block]"),
+      const blob = await downloadIdeaReportPdf(
+        requestedIdeaId,
+        controller.signal,
       );
 
-      const pageWidth = 595.28;
-      const pageHeight = 841.89;
-      const margin = 24;
-      const contentWidth = pageWidth - margin * 2;
-      const usableHeight = pageHeight - margin * 2;
-      const gap = 16;
-
-      const pdf = new jsPDF({
-        unit: "pt",
-        format: "a4",
-      });
-
-      let cursorY = margin;
-      let pageHasContent = false;
-
-      for (const blockEl of blockEls) {
-        const canvas = await html2canvas(blockEl, {
-          scale: 1.5,
-          useCORS: true,
-          backgroundColor: "#ffffff",
-        });
-
-        const imgHeight = (canvas.height * contentWidth) / canvas.width;
-        const imgData = canvas.toDataURL("image/jpeg", 0.85);
-
-        if (imgHeight > usableHeight) {
-          if (pageHasContent) {
-            pdf.addPage();
-          }
-
-          let sliceOffset = 0;
-          let heightLeft = imgHeight;
-
-          pdf.addImage(
-            imgData,
-            "JPEG",
-            margin,
-            margin - sliceOffset,
-            contentWidth,
-            imgHeight,
-          );
-
-          heightLeft -= usableHeight;
-
-          while (heightLeft > 0) {
-            sliceOffset += usableHeight;
-
-            pdf.addPage();
-
-            pdf.addImage(
-              imgData,
-              "JPEG",
-              margin,
-              margin - sliceOffset,
-              contentWidth,
-              imgHeight,
-            );
-
-            heightLeft -= usableHeight;
-          }
-
-          cursorY = margin;
-          pageHasContent = false;
-
-          continue;
-        }
-
-        if (cursorY + imgHeight > pageHeight - margin) {
-          pdf.addPage();
-          cursorY = margin;
-        }
-
-        pdf.addImage(
-          imgData,
-          "JPEG",
-          margin,
-          cursorY,
-          contentWidth,
-          imgHeight,
-        );
-
-        cursorY += imgHeight + gap;
-        pageHasContent = true;
+      if (
+        !isMountedRef.current ||
+        downloadRequestSequence.current !== requestId ||
+        currentIdeaIdRef.current !== requestedIdeaId
+      ) {
+        return;
       }
 
-      const rawName = idea?.title?.trim() || "Fikir";
-
-      const safeName = rawName
-        .replace(/[\\/:*?"<>|]/g, "")
-        .replace(/\s+/g, " ")
-        .trim();
-
-      const blob = pdf.output("blob");
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-
-      link.href = url;
-      link.download = `${safeName} analiz raporu.pdf`;
+      objectUrl = URL.createObjectURL(blob);
+      link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = `fikirlab-${requestedIdeaId}-dogrulama-raporu.pdf`;
+      link.style.display = "none";
 
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
-
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error(error);
-
-      setDownloadError(
-        "PDF oluşturulamadı. Lütfen tekrar dener misin?",
-      );
-    } finally {
-      hiddenEls.forEach((el) => {
-        el.style.visibility = "";
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, 0);
       });
+    } catch (error) {
+      const requestIsCurrent =
+        isMountedRef.current &&
+        downloadRequestSequence.current === requestId &&
+        currentIdeaIdRef.current === requestedIdeaId;
+      const wasAborted =
+        controller.signal.aborted ||
+        (error instanceof DOMException && error.name === "AbortError");
 
-      styleTag.remove();
-      setIsDownloading(false);
+      if (!wasAborted && requestIsCurrent) {
+        console.error("PDF download failed.", error);
+        setDownloadError(
+          "PDF indirilemedi. Lütfen tekrar dener misin?",
+        );
+      }
+    } finally {
+      try {
+        link?.remove();
+      } finally {
+        if (objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+        }
+      }
+
+      if (activeDownloadController.current === controller) {
+        activeDownloadController.current = null;
+      }
+
+      if (downloadRequestSequence.current === requestId) {
+        downloadLockRef.current = false;
+
+        if (
+          isMountedRef.current &&
+          currentIdeaIdRef.current === requestedIdeaId
+        ) {
+          setIsDownloading(false);
+        }
+      }
     }
   };
 
@@ -237,12 +197,9 @@ export function ReportPage({ onBack }: ReportPageProps) {
       className="print-area hide-scroll flex-1 overflow-y-auto"
       style={{ animation: "page-in 0.3s ease-out" }}
     >
-      <div
-        ref={reportRef}
-        className="mx-auto max-w-3xl px-4 py-7 sm:px-7 sm:py-10"
-      >
+      <div className="mx-auto max-w-3xl px-4 py-7 sm:px-7 sm:py-10">
         <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div data-pdf-block>
+          <div>
             <div className="mb-1 text-xs uppercase tracking-widest text-muted-foreground">
               FikirLab — Doğrulama Raporu
             </div>
@@ -287,7 +244,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
         </button>
 
         <div className="space-y-9">
-          <section data-pdf-block>
+          <section>
             <Divider label="Fikir Özeti" />
 
             <p className="text-sm leading-relaxed text-muted-foreground">
@@ -295,7 +252,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
             </p>
           </section>
 
-          <section data-pdf-block>
+          <section>
             <Divider label="Problem ve Hedef Kitle" />
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -321,7 +278,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
             </div>
           </section>
 
-          <section data-pdf-block>
+          <section>
             <Divider label="Riskli Varsayımlar" />
 
             <RiskyAssumptionsBody
@@ -330,7 +287,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
             />
           </section>
 
-          <section data-pdf-block>
+          <section>
             <Divider label="Müşteri Görüşme Soruları" />
 
             <MomTestQuestionsBody
@@ -339,7 +296,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
             />
           </section>
 
-          <section data-pdf-block>
+          <section>
             <Divider label="MVP Kapsamı (MoSCoW)" />
 
             <MoscowScopeBody
@@ -349,7 +306,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
           </section>
 
           <section>
-            <div data-pdf-block>
+            <div>
               <Divider label="Doğrulama Yol Haritası" />
             </div>
 
@@ -359,7 +316,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
             />
           </section>
 
-          <section data-pdf-block>
+          <section>
             <Divider label="Genel Değerlendirme" />
 
             <GeneralEvaluationBody
@@ -369,7 +326,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
           </section>
 
           <section>
-            <div data-pdf-block>
+            <div>
               <Divider label="Rakip / Pazar Analizi" />
             </div>
 
@@ -380,7 +337,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
           </section>
 
           <section>
-            <div data-pdf-block>
+            <div>
               <Divider label="Yatırımcı Sunumu" />
             </div>
 
@@ -391,7 +348,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
           </section>
 
           {uniqueSources.length > 0 && (
-            <section data-pdf-block>
+            <section>
               <Divider label="Kullanılan Kaynaklar" />
 
               <div className="rounded-xl border border-border bg-card p-5">
