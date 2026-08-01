@@ -1,0 +1,65 @@
+databases:
+  - name: fikirlab-db
+    databaseName: fikirlab
+    user: fikirlab
+    plan: free
+
+services:
+  - type: web
+    name: fikirlab-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: fikirlab-backend.onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://fikirlab-frontend.onrender.com
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://fikirlab-backend.onrender.com
+      - key: DRF_NUM_PROXIES
+        value: "1"
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: fikirlab-db
+          property: database
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: fikirlab-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: fikirlab-db
+          property: password
+      - key: POSTGRES_HOST
+        fromDatabase:
+          name: fikirlab-db
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: fikirlab-db
+          property: port
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL_NAME
+        value: gemini-3.1-flash-lite
+      - key: GEMINI_EMBEDDING_MODEL_NAME
+        value: gemini-embedding-001
+
+  - type: web
+    name: fikirlab-frontend
+    runtime: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://fikirlab-backend.onrender.com/api
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

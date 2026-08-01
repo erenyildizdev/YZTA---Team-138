@@ -88,6 +88,15 @@ ALLOWED_HOSTS = config(
     cast=Csv()
 )
 
+# Required by Django for any state-changing request (e.g. the admin login
+# form) once the app is served from a non-localhost origin. Must include the
+# scheme, e.g. "https://fikirlab-backend.onrender.com".
+CSRF_TRUSTED_ORIGINS = config(
+    "CSRF_TRUSTED_ORIGINS",
+    default="",
+    cast=Csv()
+)
+
 
 # Application definition
 
