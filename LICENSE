@@ -1,0 +1,151 @@
+FIKIRLAB PROPRIETARY LICENSE
+Version 1.0 — 1 August 2026
+
+Copyright © 2026 Team 138 Contributors.
+All Rights Reserved.
+
+Project: FikirLab — AI-Powered Idea Validation Assistant
+
+Contributors:
+
+- Eren Yıldız
+- Sema Yeşilkaya
+- Semiha Çıtırkı
+- Mücahit Ayyıldız
+- Berker Öner
+
+1. OWNERSHIP
+
+Except for Third-Party Materials defined below, the original source code,
+software architecture, database structures, prompts, workflows, user
+interface implementations, documentation, reports, diagrams, visual
+materials, project name, and other original materials contained in this
+repository are proprietary works of their respective Team 138 copyright
+holders.
+
+All rights not expressly granted in this license are reserved.
+
+2. PERMITTED USE BY TEAM MEMBERS
+
+The Team 138 contributors listed above may access, use, run, copy, modify,
+develop, deploy, demonstrate, and maintain the Project for educational,
+portfolio, evaluation, research, and development purposes.
+
+Any commercial use, transfer of ownership, relicensing, or distribution by
+an individual Team 138 contributor requires the prior written approval of
+all relevant copyright holders.
+
+3. LIMITED EVALUATION PERMISSION
+
+Authorized representatives, mentors, instructors, jury members, and
+evaluators of the Yapay Zekâ ve Teknoloji Akademisi may access, review,
+display, and execute the Project solely for Bootcamp evaluation,
+demonstration, and assessment purposes.
+
+This limited permission does not grant the right to reuse, copy, modify,
+publish, distribute, sublicense, commercialize, or incorporate the Project
+or any part of it into another project.
+
+4. PROHIBITED USE
+
+Except for the Team 138 contributors and the limited evaluation permission
+described above, no person or organization may, without prior written
+permission from all relevant copyright holders:
+
+- Use or execute the Project for personal, educational, research,
+  institutional, or commercial purposes;
+- Copy, reproduce, download, republish, or redistribute the original
+  source code or documentation;
+- Modify, adapt, translate, or create derivative works from the Project;
+- Incorporate any part of the original Project into another software
+  application, product, service, assignment, competition entry, or
+  repository;
+- Host, deploy, sell, rent, sublicense, transfer, or commercially exploit
+  the Project;
+- Present the Project or any part of it as their own work;
+- Remove or alter copyright, ownership, attribution, or license notices;
+- Reuse the Project's original prompts, workflow implementations,
+  interface designs, reports, diagrams, or documentation;
+- Use the original Project materials to train, fine-tune, evaluate, or
+  populate another artificial intelligence system or dataset.
+
+Possession of, access to, or visibility of the repository does not
+constitute permission to use its contents.
+
+5. THIRD-PARTY MATERIALS
+
+This license applies only to original materials created by the Team 138
+contributors.
+
+Open-source libraries, frameworks, packages, fonts, APIs, services, and
+other third-party components used by the Project remain subject to their
+respective licenses and terms.
+
+This includes, but is not limited to, Django, Django REST Framework,
+React, Vite, PostgreSQL, pgvector, Google Gemini, Google GenAI, Tailwind
+CSS, React Router, Radix UI, Lucide React, Gunicorn, Docker, and other
+dependencies.
+
+Nothing in this license grants Team 138 ownership of those third-party
+technologies or restricts their lawful use under their own licenses.
+
+6. TÜRKİYE GİRİŞİMCİLİK VAKFI EDUCATIONAL CONTENT
+
+The entrepreneurship training videos and related educational materials
+used as sources for the Project's RAG knowledge base belong to the
+Türkiye Girişimcilik Vakfı and/or their respective rights holders.
+
+The Project team received written confirmation from the assistant assigned
+to the team by the Yapay Zekâ ve Teknoloji Akademisi that these materials
+could be used within the scope of the Bootcamp and competition project.
+
+This permission is understood to apply only to the current educational,
+Bootcamp, jury evaluation, and temporary demonstration context. It does
+not constitute a permanent, transferable, sublicensable, or commercial
+license for the educational materials.
+
+If the Project is converted into a permanent, public commercial, or
+production-level product, Team 138 must either:
+
+- Obtain the necessary written permission or licensing agreement from
+  the Türkiye Girişimcilik Vakfı and any other relevant rights holders; or
+- Remove and replace the related transcripts, metadata, chunks,
+  embeddings, and other derived RAG records with materials that may
+  lawfully be used for the intended purpose.
+
+Team 138 does not claim ownership of, and cannot grant third parties any
+rights concerning, the Türkiye Girişimcilik Vakfı educational materials.
+
+7. NO IMPLIED LICENSE
+
+No license or permission is granted by implication, estoppel, repository
+visibility, disclosure, access, demonstration, or otherwise.
+
+Any permission not expressly stated in this document must be obtained in
+writing from all relevant copyright holders.
+
+8. NO WARRANTY
+
+THE PROJECT IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE, ACCURACY, AVAILABILITY, SECURITY, AND
+NON-INFRINGEMENT.
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE COPYRIGHT HOLDERS
+SHALL NOT BE LIABLE FOR ANY CLAIM, DAMAGE, DATA LOSS, OR OTHER LIABILITY
+ARISING FROM ACCESS TO OR USE OF THE PROJECT.
+
+9. TERMINATION
+
+Any permission granted under this license terminates automatically if its
+terms are violated.
+
+Upon termination, the violating party must stop using the Project and
+delete all unauthorized copies under their control, without limiting any
+other rights or remedies available to the copyright holders.
+
+10. PERMISSION REQUESTS
+
+Requests for permissions not granted by this license must be submitted in
+writing to the repository owner and approved in writing by all relevant
+copyright holders.

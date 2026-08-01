@@ -78,281 +78,764 @@ AI Destekli Fikir Doğrulama Asistanı'nın ana hedef kitlesi, iş fikrini hayat
 
 ### Tamamlanan MVP Özellikleri
 
-- Kullanıcı kayıt ve giriş işlemlerinin gerçekleştirilmesi
-- JWT tabanlı kullanıcı kimlik doğrulama altyapısının sağlanması
-- Kullanıcının yeni bir iş fikrini sisteme ekleyebilmesi
-- Kullanıcının kendisine ait iş fikirlerini listeleyebilmesi
-- Kullanıcının fikir detaylarını görüntüleyebilmesi
-- Kullanıcının eklediği iş fikirlerini güncelleyebilmesi ve silebilmesi
-- Girilen iş fikrinin backend tarafında yapay zekâ destekli olarak analiz edilebilmesi
-- Kullanıcının hedef kitlesiyle gerçekleştireceği görüşmeler için Mom Test prensiplerine uygun sorular üretilmesi
+#### Kullanıcı ve Hesap Yönetimi
+
+- Kullanıcıların hesap oluşturabilmesi
+- Kayıt sırasında e-posta doğrulama kodu gönderilmesi
+- Kullanıcının altı haneli doğrulama koduyla hesabını doğrulayabilmesi
+- Doğrulanmış hesaplarla giriş yapılabilmesi
+- JWT tabanlı kimlik doğrulama altyapısının kullanılması
+- Parolasını unutan kullanıcıların doğrulama koduyla yeni parola belirleyebilmesi
+- Giriş yapan kullanıcının ad ve soyad bilgilerini güncelleyebilmesi
+- Kullanıcının mevcut parolasını doğrulayarak parolasını değiştirebilmesi
+- Parola alanlarında görünürlük kontrolünün sağlanması
+- Kimlik doğrulama ve kod gönderme işlemlerinde istek sınırlandırmalarının uygulanması
+
+#### İş Fikri Yönetimi
+
+- Kullanıcının yeni bir iş fikri oluşturabilmesi
+- Kullanıcının yalnızca kendisine ait iş fikirlerini listeleyebilmesi
+- Fikir detaylarının görüntülenebilmesi
+- Fikir bilgilerinin güncellenebilmesi
+- Fikirlerin silinebilmesi
+- Kullanıcının daha önce oluşturduğu fikirler arasında geçiş yapabilmesi
+- Aktif fikir bilgisinin uygulama ekranları arasında korunması
+- Silinen veya artık erişilemeyen fikirlerin aktif kullanıcı akışından güvenli biçimde temizlenmesi
+- Eski API isteklerinin yeni seçilen fikir üzerinde hatalı işlem oluşturmasının engellenmesi
+
+#### Yapay Zekâ Destekli Fikir Doğrulama
+
+- Girilen iş fikrinin yapay zekâ destekli olarak analiz edilmesi
+- Fikrin temel problemi, hedef kitlesi, değer önerisi ve riskli varsayımlarının değerlendirilmesi
+- Kullanıcının hedef kitlesiyle gerçekleştireceği görüşmeler için Mom Test prensiplerine uygun sorular oluşturulması
 - İş fikrinin MVP kapsamının MoSCoW yöntemiyle önceliklendirilmesi
-- Doğrulama yol haritası üretim servisinin backend tarafında hazırlanması
-- Girişimcilik ve fikir doğrulama içeriklerinin kullanılabilmesi için başlangıç seviyesinde RAG retrieval altyapısının hazırlanması
-- MoSCoW kapsam analizlerinin veritabanında saklanması ve analiz endpointlerinde kullanıcı sahipliği kontrollerinin gerçekleştirilmesi
-- Analiz endpointleri için doğrulama, yetkilendirme ve temel backend testlerinin hazırlanması
+- Kullanıcıya uygulanabilir bir fikir doğrulama yol haritası hazırlanması
+- Rakip ve pazar değerlendirmelerinin oluşturulması
+- Yatırımcı sunumu hazırlama sürecine yönelik yapay zekâ desteği sunulması
+- Kullanıcının fikrine özel sorular sorabildiği AI mentor deneyiminin sağlanması
+- Mentor yanıtlarının Markdown biçiminde gösterilmesi
 
-### Son Sprint Kapsamındaki Çalışmalar
+#### Merkezi Doğrulama Workflow’u
 
-- Backend tarafından oluşturulan analiz sonuçlarının dashboard kullanıcı arayüzüne entegre edilmesi
-- Fikir gönderme, analiz başlatma ve sonuç görüntüleme adımlarının uçtan uca bir kullanıcı akışında birleştirilmesi
-- Sprint 2 kapsamında geliştirilen analiz modüllerinin frontend ekranlarında gösterilmesi
-- Uçtan uca MVP akışına yönelik temel test senaryolarının hazırlanması
-- Kullanıcının daha önce oluşturduğu fikirleri ve analiz sonuçlarını arayüz üzerinden görüntüleyebilmesi
-- Ürünün teslim edilebilir ve deploy edilebilir hale getirilmesi
-- Son ürün kontrollerinin, hata düzeltmelerinin ve demo hazırlıklarının tamamlanması
+- Ayrı çalışan doğrulama modüllerinin merkezi bir workflow altında birleştirilmesi
+- Doğrulama analizlerinin belirli bir işlem sırası içerisinde yürütülmesi
+- Analiz aşamalarının birbirinden bağımsız olarak hata yönetimine sahip olması
+- Uzun süren doğrulama işlemlerinde kullanıcıya gerçek zamanlı ilerleme bilgisi gösterilmesi
+- Tamamlanan analiz sonuçlarının veritabanında saklanması
+- Kullanıcının daha önce oluşturulan analiz sonuçlarını tekrar görüntüleyebilmesi
 
-### MVP Sonrasında Geliştirilebilecek Özellikler
+#### RAG Destekli Bilgi Katmanı
+
+- Yapay Zekâ ve Teknoloji Akademisi tarafından sağlanan girişimcilik eğitim videolarının RAG bilgi tabanında kullanılabilmesi
+- Eğitim videolarına ait metadata ve Türkçe transcript içeriklerinin işlenmesi
+- Kaynak içeriklerin parçalara ayrılarak vektör tabanlı biçimde saklanması
+- Gemini embedding modeliyle kaynak ve sorgu vektörlerinin oluşturulması
+- PostgreSQL ve `pgvector` üzerinden benzerlik araması yapılması
+- İlgili eğitim bağlamının beş aşamalı doğrulama workflow’undaki analiz promptlarına eklenmesi
+- Kullanılan kaynakların doğrulama raporu ve PDF çıktısında kaynak listesi olarak gösterilmesi
+
+#### Müşteri Görüşme Notları ve Kanıt Analizi
 
 - Kullanıcının müşteri görüşme notlarını sisteme ekleyebilmesi
-- Görüşme notlarından kanıt, içgörü ve tekrar eden problem analizi yapılması
-- Kullanıcı geri bildirimlerine göre fikir varsayımlarının güncellenmesi
-- Fikrin doğrulama seviyesini gösteren kapsamlı final validasyon raporu oluşturulması
-- Analiz sonuçlarının PDF veya paylaşılabilir rapor olarak dışa aktarılması
-- Kullanıcıya doğrulama sürecindeki ilerlemesini gösteren takip sistemi sunulması
-- RAG bilgi tabanının daha fazla açık kaynak girişimcilik içeriğiyle genişletilmesi
+- Görüşme notlarını listeleyebilmesi
+- Mevcut görüşme notlarını düzenleyebilmesi
+- Görüşme notlarını silebilmesi
+- Görüşme notlarından yapay zekâ destekli kanıt ve içgörü oluşturulması
+- Görüşmelerde belirtilen problem, davranış, ihtiyaç ve itirazların değerlendirilmesi
+- Görüşme sonuçlarının fikir doğrulama sürecine dahil edilmesi
+- Kullanıcıların yalnızca kendilerine ait görüşme notlarına ve analiz sonuçlarına erişebilmesi
+
+#### Bütünleşik Doğrulama Raporu
+
+- Fikir analizi, riskli varsayımlar, Mom Test soruları, MoSCoW kapsamı ve doğrulama yol haritasının tek raporda birleştirilmesi
+- Müşteri görüşme kanıtlarının ve içgörülerinin doğrulama raporuna dahil edilmesi
+- Kullanıcının fikrine ait güncel doğrulama sonuçlarını rapor ekranından inceleyebilmesi
+- Doğrulama raporunun metin tabanlı PDF olarak dışa aktarılabilmesi
+- PDF içerisinde Türkçe karakterlerin ve düzenli metin yapısının korunması
+
+#### Kullanıcı Arayüzü ve Deneyimi
+
+- Backend analiz sonuçlarının dashboard ve ilgili analiz ekranlarına entegre edilmesi
+- Fikir oluşturma, analiz başlatma ve sonuç görüntüleme adımlarının uçtan uca bir kullanıcı akışında birleştirilmesi
+- Gerçek kullanıcı fikirlerinin ve analiz geçmişinin arayüzde gösterilmesi
+- Açık ve koyu tema desteği
+- Responsive sayfa düzenleri
+- Yüklenme durumlarının kullanıcıya gösterilmesi
+- API ve analiz hataları için anlaşılır hata durumlarının hazırlanması
+- Veri bulunmayan ekranlar için boş durum bileşenlerinin oluşturulması
+- Formların klavye üzerinden gönderilebilmesi
+- Kullanılmayan veya güncelliğini kaybeden frontend özelliklerinin temizlenmesi
+
+### Teknik ve Operasyonel Özellikler
+
+- Django ve Django REST Framework tabanlı modüler backend mimarisi
+- React, TypeScript ve Vite tabanlı frontend uygulaması
+- PostgreSQL ve `pgvector` destekli veritabanı altyapısı
+- Docker ve Docker Compose tabanlı geliştirme ortamı
+- Kullanıcı sahipliği ve yetkilendirme kontrolleri
+- Başarısız istek ve erişim senaryolarına yönelik backend testleri
+- SMTP tabanlı e-posta gönderim desteği
+- Production ortam değişkenleri ve güvenlik yapılandırmaları
+- Render üzerinde deployment yapılabilmesi için production yapılandırması
+- Sık kullanılan proje yaşam döngüsü işlemlerini yöneten Makefile
+- Makefile üzerinden proje kurulumu, başlatma, durdurma, build ve temizlik işlemleri
+- Makefile üzerinden RAG kaynaklarının sisteme aktarılması ve bilgi tabanı istatistiklerinin görüntülenmesi
+
+### Gelecekte Geliştirilebilecek Özellikler
+
+- Müşteri görüşmelerinden elde edilen kanıtlara göre riskli varsayımların otomatik olarak yeniden önceliklendirilmesi
+- Fikrin doğrulama seviyesinin zaman içerisindeki değişimini gösteren ayrıntılı ilerleme ve skor sistemi
+- PDF çıktısına ek olarak bağlantı üzerinden paylaşılabilen doğrulama raporları
+- Birden fazla kullanıcının aynı fikir üzerinde birlikte çalışabilmesini sağlayan takım çalışma alanları
+- Görüşme kanıtlarının zaman, hedef kitle ve doğrulama konusu bazında karşılaştırılması
+- RAG bilgi tabanının daha fazla açık kaynak girişimcilik içeriği ve farklı kaynak türleriyle genişletilmesi
+- Kullanıcı davranışlarına göre kişiselleştirilmiş doğrulama önerileri
+- Doğrulama adımları ve yaklaşan görevler için bildirim sistemi
 
 ---
 
 ## Product Backlog
 
-Product Backlog, ürünün geliştirme sürecinde ihtiyaç duyulan özellikleri ve teknik çalışmaları göstermektedir. İşlerin ayrıntılı takibi GitHub Issues, Milestone ve Project Board üzerinden gerçekleştirilmektedir.
+Product Backlog, ürünün geliştirme sürecinde planlanan kullanıcı özelliklerini, yapay zekâ çalışmalarını, teknik altyapı ihtiyaçlarını ve final teslim faaliyetlerini göstermektedir.
+
+Backlog maddelerinin ayrıntılı takibi GitHub Issues, Milestones, branch'ler, pull request'ler ve GitHub Project Board üzerinden gerçekleştirilmiştir.
 
 | ID | Backlog Item | Öncelik | Sprint | Durum |
-| --- | --- | --- | --- | --- |
-| PB-01 | Kullanıcı kayıt ve giriş işlemleri için backend endpointlerinin geliştirilmesi | Yüksek | Sprint 1 | Tamamlandı |
+|---|---|---|---|---|
+| PB-01 | Kullanıcı kayıt ve giriş endpointlerinin geliştirilmesi | Yüksek | Sprint 1 | Tamamlandı |
 | PB-02 | JWT tabanlı kimlik doğrulama altyapısının hazırlanması | Yüksek | Sprint 1 | Tamamlandı |
-| PB-03 | Kullanıcının iş fikri ekleyebilmesi için backend endpointlerinin geliştirilmesi | Yüksek | Sprint 1 | Tamamlandı |
-| PB-04 | Kullanıcının kendi fikirlerini listeleyebilmesi ve detaylarını görüntüleyebilmesi | Yüksek | Sprint 1 | Tamamlandı |
-| PB-05 | Kullanıcının eklediği fikirleri güncelleyebilmesi ve silebilmesi | Orta | Sprint 1 | Tamamlandı |
+| PB-03 | Kullanıcının yeni bir iş fikri oluşturabilmesi | Yüksek | Sprint 1 | Tamamlandı |
+| PB-04 | Kullanıcının kendisine ait fikirleri listeleyebilmesi ve detaylarını görüntüleyebilmesi | Yüksek | Sprint 1 | Tamamlandı |
+| PB-05 | Kullanıcının fikirlerini güncelleyebilmesi ve silebilmesi | Orta | Sprint 1 | Tamamlandı |
 | PB-06 | Django Admin üzerinden temel veri yönetiminin sağlanması | Orta | Sprint 1 | Tamamlandı |
 | PB-07 | Docker ve PostgreSQL tabanlı geliştirme ortamının hazırlanması | Yüksek | Sprint 1 | Tamamlandı |
-| PB-08 | Kullanıcının iş fikrini sisteme gönderebilmesini sağlayan fikir gönderme akışının geliştirilmesi | Yüksek | Sprint 2 | Tamamlandı |
-| PB-09 | İş fikirlerinin doğrulanması için yapay zekâ analiz servisinin geliştirilmesi | Yüksek | Sprint 2 | Backend tamamlandı, frontend entegrasyonu Son Sprint'e aktarıldı |
+| PB-08 | Fikir gönderme akışının frontend ve backend üzerinde geliştirilmesi | Yüksek | Sprint 2 | Tamamlandı |
+| PB-09 | İş fikirleri için yapay zekâ destekli temel analiz servisinin geliştirilmesi | Yüksek | Sprint 2 | Tamamlandı |
 | PB-10 | Mom Test prensiplerine uygun müşteri görüşme sorularının üretilmesi | Yüksek | Sprint 2 | Tamamlandı |
 | PB-11 | MVP kapsamının MoSCoW yöntemiyle önceliklendirilmesi | Yüksek | Sprint 2 | Tamamlandı |
 | PB-12 | Kullanıcıya fikir doğrulama yol haritası oluşturulması | Yüksek | Sprint 2 | Tamamlandı |
-| PB-13 | Girişimcilik içerikleri için başlangıç RAG retrieval altyapısının hazırlanması | Orta | Sprint 2 | Tamamlandı |
-| PB-14 | Analiz sonuçlarının dashboard kullanıcı arayüzüne entegre edilmesi | Yüksek | Son Sprint | Son Sprint'e Aktarıldı |
-| PB-15 | Fikir gönderme, analiz başlatma ve sonuç görüntüleme adımlarının uçtan uca birleştirilmesi | Yüksek | Son Sprint | Planlandı |
-| PB-16 | MVP kullanıcı akışına yönelik temel test senaryolarının hazırlanması | Yüksek | Son Sprint | Planlandı |
-| PB-17 | Kullanıcının önceki fikirlerini ve analiz sonuçlarını arayüz üzerinden görüntüleyebilmesi | Orta | Son Sprint | Planlandı |
-| PB-18 | Ürünün deploy edilebilir hale getirilmesi | Yüksek | Son Sprint | Planlandı |
-| PB-19 | Son ürün kontrollerinin, hata düzeltmelerinin ve demo hazırlıklarının tamamlanması | Yüksek | Son Sprint | Planlandı |
-| PB-20 | Kullanıcının müşteri görüşme notlarını sisteme ekleyebilmesi | Orta | MVP Sonrası | Planlandı |
-| PB-21 | Görüşme notlarından kanıt ve içgörü analizi yapılması | Orta | MVP Sonrası | Planlandı |
-| PB-22 | Kapsamlı final validasyon raporunun oluşturulması | Orta | MVP Sonrası | Planlandı |
-| PB-23 | Analiz sonuçlarının PDF veya paylaşılabilir rapor olarak dışa aktarılması | Düşük | MVP Sonrası | Planlandı |
+| PB-13 | Girişimcilik içerikleri için başlangıç RAG retrieval altyapısının hazırlanması | Yüksek | Sprint 2 | Tamamlandı |
+| PB-14 | Analiz sonuçlarının dashboard ve ilgili frontend ekranlarına entegre edilmesi | Yüksek | Sprint 3 | Tamamlandı |
+| PB-15 | Fikir oluşturma, analiz başlatma ve sonuç görüntüleme adımlarının uçtan uca birleştirilmesi | Yüksek | Sprint 3 | Tamamlandı |
+| PB-16 | Sprint 2 MVP akışı için ayrı temel test senaryolarının hazırlanması | Orta | Sprint 3 | Kapsamdan çıkarıldı – `Block` |
+| PB-17 | Kullanıcının önceki fikirlerini ve analiz geçmişini arayüzden görüntüleyebilmesi | Orta | Sprint 3 | Tamamlandı |
+| PB-18 | RAG kaynaklarının yapay zekâ analiz servisleriyle bütünleştirilmesi | Yüksek | Sprint 3 | Tamamlandı |
+| PB-19 | Doğrulama modüllerinin merkezi bir workflow altında birleştirilmesi | Yüksek | Sprint 3 | Tamamlandı |
+| PB-20 | Müşteri görüşme notları için veri modeli ve CRUD API geliştirilmesi | Yüksek | Sprint 3 | Tamamlandı |
+| PB-21 | Görüşme notlarının frontend üzerinden eklenmesi, düzenlenmesi ve silinmesi | Yüksek | Sprint 3 | Tamamlandı |
+| PB-22 | Görüşme notlarından yapay zekâ destekli kanıt ve içgörü oluşturulması | Yüksek | Sprint 3 | Tamamlandı |
+| PB-23 | Analiz ve görüşme sonuçlarını birleştiren bütünleşik fikir doğrulama raporunun hazırlanması | Yüksek | Sprint 3 | Tamamlandı |
+| PB-24 | Doğrulama raporunun PDF olarak dışa aktarılabilmesi | Orta | Sprint 3 | Tamamlandı |
+| PB-25 | Uzun süren doğrulama işlemleri için gerçek zamanlı ilerleme takibinin geliştirilmesi | Orta | Sprint 3 | Tamamlandı |
+| PB-26 | Yüklenme, hata, boş durum ve responsive arayüz davranışlarının tamamlanması | Yüksek | Sprint 3 | Tamamlandı |
+| PB-27 | Kullanıcı sahipliği, yetkilendirme ve başarısız istek senaryolarının test edilmesi | Yüksek | Sprint 3 | Tamamlandı |
+| PB-28 | Kullanıcı profil bilgileri ve hesap ayarları ekranının geliştirilmesi | Orta | Sprint 3 | Tamamlandı |
+| PB-29 | E-posta doğrulama, doğrulama kodu yeniden gönderme ve parola sıfırlama akışlarının geliştirilmesi | Yüksek | Sprint 3 | Tamamlandı |
+| PB-30 | Mentor yanıtlarında Markdown desteği ve kullanıcı deneyimi iyileştirmelerinin yapılması | Orta | Sprint 3 | Tamamlandı |
+| PB-31 | Aktif fikir yönetimi, silinmiş fikirler ve eski API isteklerinden kaynaklanan durum sorunlarının giderilmesi | Yüksek | Sprint 3 | Tamamlandı |
+| PB-32 | YouTube kaynaklarının RAG bilgi tabanına aktarılması için ingestion pipeline hazırlanması | Orta | Sprint 3 | Tamamlandı |
+| PB-33 | Proje yaşam döngüsü ve RAG komutlarının Makefile üzerinden yönetilmesi | Orta | Sprint 3 | Tamamlandı |
+| PB-34 | Production ortam değişkenleri ve deployment yapılandırmasının hazırlanması | Yüksek | Sprint 3 | Teknik hazırlık tamamlandı |
+| PB-35 | Ürünün canlı ortamda yayınlanması ve canlı bağlantının oluşturulması | Yüksek | Final Delivery | Tamamlandı – <https://fikirlab-frontend.onrender.com> |
+| PB-36 | Sprint 3 ve final proje dokümantasyonunun tamamlanması | Yüksek | Final Delivery | Devam ediyor |
+| PB-37 | Sprint 3 ürün durumu videosunun repository'ye eklenmesi | Orta | Final Delivery | Video çekildi, yükleme bekleniyor |
+| PB-38 | Final ürün demosunun hazırlanması | Yüksek | Final Delivery | Planlanıyor |
+| PB-39 | Üç dakikalık proje tanıtım videosunun hazırlanması | Yüksek | Final Delivery | Devam ediyor |
+| PB-40 | Final Bootcamp teslim bilgilerinin hazırlanması ve teslim formunun tamamlanması | Yüksek | Final Delivery | Devam ediyor |
 
-Sprint 2 sonunda backend ve yapay zekâ ağırlıklı analiz özelliklerinin büyük bölümü tamamlanmıştır. Frontend entegrasyonu, uçtan uca kullanıcı akışı, test çalışmaları ve ürünün deploy edilebilir hale getirilmesi Son Sprint'in öncelikli backlog maddeleri olarak belirlenmiştir.
----
+Sprint 3 sonunda ürünün temel MVP akışı tamamlanmıştır. Önceki sprintlerde ayrı ayrı geliştirilen frontend, backend, yapay zekâ ve RAG bileşenleri tek bir kullanıcı akışı içerisinde birleştirilmiştir.
 
-## Product Backlog URL
+`PB-16` kapsamında takip edilen temel MVP test senaryoları işi, süreç içerisinde ayrı bir backlog maddesi olarak sürdürülmemesine karar verildiği için tamamlanmış kabul edilmemiş ve Project Board üzerinde `Block` durumuna alınmıştır.
 
-Product Backlog; GitHub Issues, Milestone ve GitHub Projects kullanılarak takip edilmektedir.
+Production deployment için gerekli teknik yapılandırmalar tamamlanmış ve ürün Render üzerinde canlı ortama alınmıştır.
 
-Backlog maddelerinin öncelikleri, sprint atamaları, sorumluları ve güncel durumları Project Board üzerinden görüntülenebilir.
+Canlı uygulama: <https://fikirlab-frontend.onrender.com>
 
-URL: <https://github.com/users/erenylldz/projects/2>
+Final dokümantasyonu, ürün demosu, proje videosu ve Bootcamp teslim işlemleri `Final Delivery` kapsamında devam etmektedir.
 
 ---
 
 ## Sprint Board URL
 
-Bootcamp süresince planlanan ve geliştirilen çalışmalar GitHub Projects üzerinde takip edilmektedir.
+Bootcamp süresince planlanan ve geliştirilen çalışmalar GitHub Projects üzerinden takip edilmiştir.
 
 Board üzerinde görevler aşağıdaki durumlara göre yönetilmektedir:
 
-- `Backlog`: Henüz sprint kapsamına alınmamış çalışmalar
-- `To Do`: İlgili sprintte yapılması planlanan çalışmalar
-- `In Progress`: Geliştirmesi devam eden çalışmalar
-- `Done`: Geliştirmesi ve kontrolleri tamamlanan çalışmalar
+- `To Do`: İlgili sprintte yapılması planlanan ancak henüz başlanmamış çalışmalar
+- `In Progress`: Geliştirmesi aktif olarak devam eden çalışmalar
+- `In Review`: Pull request'i açılmış ve inceleme veya birleştirme süreci devam eden çalışmalar
+- `Done`: Geliştirmesi, kontrolleri ve gerekli birleştirme işlemleri tamamlanan çalışmalar
 - `Block`: Sprint sürecinde kapsamdan çıkarılan, önceliği kaldırılan veya artık tamamlanması planlanmayan çalışmalar
 
-Tamamlanan çalışmalar pull request ve kontrol süreçlerinin ardından `Done` durumuna taşınmaktadır.
+Geliştirmesine başlanan işler `In Progress`, pull request aşamasına ulaşan işler `In Review`, geliştirme ve kontrol süreçleri tamamlanan işler ise `Done` durumuna taşınmıştır.
 
-Teknik bir engel nedeniyle geçici olarak bekleyen işler `In Progress` veya ilgili issue açıklaması üzerinden takip edilmektedir. Sprint içerisinde artık yapılmamasına karar verilen, kapsamdan çıkarılan veya önceliği kaldırılan işler ise tamamlanmış gibi gösterilmeden `Block` durumuna alınmaktadır.
+Sprint içerisinde tamamlanamayan ancak geliştirilmesine devam edilmesi planlanan çalışmalar, ilgili issue'lara açıklayıcı yorumlar eklenerek sonraki sprinte veya ayrı bir teslim milestone'una aktarılmıştır.
 
-URL: <https://github.com/users/erenylldz/projects/2>
+Yapılmasından vazgeçilen, kapsamdan çıkarılan veya önceliği kaldırılan çalışmalar ise tamamlanmış olarak gösterilmeden `Block` durumuna alınmıştır.
+
+Product Backlog ve Sprint Board:
+
+<https://github.com/users/erenylldz/projects/2>
 
 ---
 
 ## Kullanılan Teknolojiler
 
-Projenin backend, frontend, yapay zekâ ve geliştirme ortamında kullanılan temel teknolojiler aşağıdaki tabloda gösterilmiştir.
+Projenin backend, frontend, yapay zekâ, RAG, geliştirme ortamı ve deployment süreçlerinde kullanılan temel teknolojiler aşağıdaki tabloda gösterilmiştir.
 
-| Alan | Teknoloji / Yaklaşım |
-| --- | --- |
-| Frontend | React |
-| Frontend Geliştirme Aracı | Vite |
-| Arayüz ve Stil | Tailwind CSS |
-| Backend | Django |
-| REST API | Django REST Framework |
-| Veritabanı | PostgreSQL |
-| Kimlik Doğrulama | JWT ve Django REST Framework SimpleJWT |
-| Admin Panel | Django Admin |
-| Containerization | Docker ve Docker Compose |
-| Yapay Zekâ | OpenAI uyumlu LLM API |
-| RAG | Girişimcilik ve fikir doğrulama kaynakları üzerinden retrieval pipeline |
-| Test | Django Test Framework |
-| Versiyon Kontrolü | Git ve GitHub |
-| Proje Yönetimi | GitHub Issues, Milestones ve GitHub Projects |
-| Dokümantasyon | Markdown |
-| Deployment | Son Sprint kapsamında hazırlanacaktır |
+| Alan | Teknoloji / Yaklaşım | Projedeki Kullanımı |
+|---|---|---|
+| Backend çalışma ortamı | Python 3.12 | Django uygulaması, servis katmanı ve yapay zekâ işlemleri |
+| Backend framework | Django 6.0.6 | Veri modelleri, admin paneli, uygulama ve URL yapısı |
+| REST API | Django REST Framework 3.17.1 | Serializer, APIView, ViewSet ve endpoint geliştirme |
+| Kimlik doğrulama | SimpleJWT 5.5.1 | JWT access ve refresh token tabanlı kullanıcı oturumu |
+| Veritabanı | PostgreSQL 16 | Kullanıcı, fikir, analiz, workflow ve RAG kayıtlarının saklanması |
+| PostgreSQL sürücüsü | psycopg 3.3.4 | Django ile PostgreSQL bağlantısı |
+| Vektör veritabanı katmanı | pgvector | Embedding verilerinin saklanması ve cosine distance tabanlı retrieval |
+| Yapay zekâ üretim modeli | Google Gemini | Fikir analizleri, doğrulama modülleri ve mentor yanıtları |
+| Varsayılan Gemini modeli | `gemini-3.1-flash-lite` | Yapay zekâ destekli içerik üretimi |
+| Embedding modeli | `gemini-embedding-001` | Doküman ve sorgu embedding’lerinin oluşturulması |
+| Yapay zekâ SDK’sı | Google GenAI 2.12.1 | Gemini içerik üretimi, embedding ve native function calling |
+| Alternatif AI sağlayıcı yolu | OpenAI-compatible HTTP client | Yalnızca MoSCoW servisinde Gemini anahtarı bulunmadığında opsiyonel fallback |
+| Frontend | React 18.3.1 | Tek sayfalı web uygulaması |
+| Frontend kaynak dili | TypeScript / TSX | Sayfa, component, hook ve API tiplerinin geliştirilmesi |
+| Frontend geliştirme aracı | Vite 6.3.5 | Development server ve production bundle oluşturma |
+| Arayüz ve stil | Tailwind CSS 4.1.12 | Utility tabanlı stil, tema ve responsive tasarım |
+| Routing | React Router 7.13.0 | Public ve kimlik doğrulama korumalı sayfa yönlendirmeleri |
+| UI bileşenleri | Lucide React, Radix UI, CVA, clsx, tailwind-merge | İkonlar ve ortak arayüz bileşenleri |
+| Markdown gösterimi | React Markdown 10.1.0 | AI mentor yanıtlarının biçimlendirilmiş gösterimi |
+| PDF oluşturma | `@react-pdf/renderer` 4.5.1 | Metin tabanlı doğrulama raporu ve kaynak listesinin PDF çıktısı |
+| Containerization | Docker ve Docker Compose v2 | Django backend ve PostgreSQL geliştirme ortamı |
+| Production sunucusu | Gunicorn 26.0.0 | Render üzerindeki Django WSGI servisi |
+| E-posta altyapısı | Django Console Backend / SMTP | E-posta doğrulama ve parola sıfırlama kodlarının gönderimi |
+| Yerel otomasyon | GNU Make ve Bash | Kurulum, servis yaşam döngüsü, build, temizlik ve RAG işlemleri |
+| Deployment | Render Blueprint | Docker backend, statik frontend ve yönetilen PostgreSQL kurulumu |
+| Backend testleri | Django Test Framework | API, kullanıcı sahipliği, workflow, RAG ve servis testleri |
+| Versiyon kontrolü | Git ve GitHub | Branch, commit, pull request ve kaynak kod yönetimi |
+| Proje yönetimi | GitHub Issues, Milestones ve GitHub Projects | Sprint backlog ve görev durumlarının takibi |
+| Dokümantasyon | Markdown | README ve sprint dokümantasyonlarının hazırlanması |
+
+### Teknoloji Kullanımına İlişkin Notlar
+
+Frontend kaynak kodları TypeScript ve TSX ile yazılmıştır. Bununla birlikte repository içerisinde ayrı bir `tsconfig.json`, TypeScript dependency’si veya bağımsız type-check komutu bulunmamaktadır. Vite ve esbuild kaynak kodu transpile ederek production bundle oluşturmaktadır.
+
+Material UI, Emotion, jsPDF, Motion, Recharts, React DnD, React Hook Form ve bazı Radix UI paketleri dependency listesinde yer almakla birlikte güncel aktif uygulama akışında kullanılmamakta veya yalnızca önceki arayüz geliştirme çalışmalarından kalmış bulunmaktadır.
+
+Projenin ana yapay zekâ sağlayıcısı Google Gemini’dir. OpenAI-compatible istemci bütün yapay zekâ servislerinde kullanılan genel bir abstraction değildir; yalnızca MoSCoW servisi için opsiyonel fallback olarak bulunmaktadır.
+
+Canlı uygulama Render üzerinde yayınlanmaktadır:
+
+<https://fikirlab-frontend.onrender.com>
+
+---
 
 ### Teknik Yaklaşım
 
-Backend tarafında modüler ve sürdürülebilir bir yapı oluşturmak amacıyla Django uygulamaları sorumluluklarına göre ayrılmıştır. Kullanıcı işlemleri `users`, iş fikri işlemleri `ideas`, yapay zekâ destekli doğrulama işlemleri ise `analyses` uygulaması üzerinden yönetilmektedir.
+FikirLab; Django tabanlı backend, React tabanlı frontend, Gemini destekli yapay zekâ servisleri, pgvector tabanlı RAG katmanı ve Render deployment yapılandırmasından oluşan modüler bir web uygulamasıdır.
 
-API geliştirme süreçlerinde Django REST Framework kullanılmakta, kullanıcı kimlik doğrulama işlemleri JWT tabanlı olarak gerçekleştirilmektedir. Veritabanı olarak ilişkisel veri yapısına uygun olması nedeniyle PostgreSQL tercih edilmiştir.
+#### Backend Mimarisi
 
-Yapay zekâ analiz işlemleri doğrudan view katmanında yürütülmek yerine servis katmanı üzerinden gerçekleştirilmektedir. Bu yapı sayesinde LLM bağlantısı, prompt yönetimi, yanıt doğrulama, normalizasyon ve hata yönetimi gibi işlemlerin API katmanından ayrılması hedeflenmiştir.
+Backend tarafı sorumluluklarına göre üç temel Django uygulamasına ayrılmıştır:
 
-Frontend tarafında React ve Vite kullanılmaktadır. Kullanıcı arayüzünün geliştirilmesinde Tailwind CSS tercih edilmiştir. Frontend ile backend arasındaki iletişim REST API endpointleri üzerinden sağlanmaktadır.
+- `users`: Kullanıcı kaydı, giriş, profil bilgileri, e-posta doğrulama ve parola işlemleri
+- `ideas`: İş fikri yönetimi, fikir tabanlı analiz sonuçları, mentor agent, rakip analizi ve yatırımcı sunumu
+- `analyses`: Merkezi doğrulama workflow’u, Mom Test, MoSCoW, görüşme notları, kanıt analizi ve RAG bileşenleri
 
-Projenin farklı geliştirme ortamlarında tutarlı biçimde çalıştırılabilmesi için Docker ve Docker Compose kullanılmaktadır. PostgreSQL veritabanı ve Django backend servisi container yapısı içerisinde çalışacak şekilde yapılandırılmıştır.
+API endpointleri Django REST Framework kullanılarak geliştirilmiştir. Kullanıcı oturumları SimpleJWT üzerinden access ve refresh token ile yönetilmektedir.
+
+Korumalı endpointlerde yalnızca kimliği doğrulanmış kullanıcıların işlem yapmasına izin verilir. Fikir, analiz ve görüşme notu işlemlerinde kullanıcı sahipliği kontrol edilerek bir kullanıcının başka bir kullanıcıya ait verilere erişmesi engellenir.
+
+Yapay zekâ çağrıları doğrudan view katmanında yürütülmek yerine servis fonksiyonlarına ayrılmıştır. Prompt oluşturma, sağlayıcı çağrısı, yanıt doğrulama, veri normalizasyonu ve veritabanına kaydetme işlemleri ilgili servis katmanlarında gerçekleştirilir.
+
+#### Merkezi Doğrulama Workflow’u
+
+Yeni bir fikir oluşturulduktan sonra kullanıcı, aşağıdaki beş aşamadan oluşan doğrulama workflow’unu başlatabilir:
+
+1. Riskli varsayımların oluşturulması
+2. Mom Test görüşme sorularının hazırlanması
+3. MoSCoW tabanlı MVP kapsamının belirlenmesi
+4. Doğrulama yol haritasının oluşturulması
+5. Genel değerlendirmenin hazırlanması
+
+Workflow bir yapay zekâ agent’ı değildir. Aşamaları backend tarafından önceden belirlenmiş sırayla çalıştırılan senkron bir servis orkestrasyonudur.
+
+Her aşamanın sonucu ilgili veri modelinde saklanır. Aşamalardan biri başarısız olduğunda hata ilgili aşama bilgisiyle kaydedilir ve workflow sonraki aşamalara geçmeden durdurulur.
+
+Workflow aşağıdaki endpoint üzerinden başlatılır:
+
+```text
+POST /api/analyses/ideas/<idea_id>/workflow/
+```
+
+Workflow ilerleme durumu ayrı bir endpoint üzerinden takip edilir:
+
+```text
+GET /api/analyses/workflow-runs/<run_id>/
+```
+
+Frontend, ilerleme endpointine yaklaşık bir saniyelik aralıklarla HTTP isteği gönderir. Bu nedenle ilerleme sistemi WebSocket veya Server-Sent Events tabanlı gerçek zamanlı iletişim değil, HTTP polling ile sağlanan yakın gerçek zamanlı ilerleme takibidir.
+
+Rakip analizi, yatırımcı sunumu, AI mentor ve görüşme kanıtı analizi merkezi beş aşamalı workflow’un dışında çalışan ayrı özelliklerdir.
+
+#### RAG Mimarisi
+
+FikirLab’ın RAG katmanı, Yapay Zekâ ve Teknoloji Akademisi tarafından sağlanan girişimcilik eğitim içeriklerinden oluşturulan bilgi tabanını kullanmaktadır.
+
+Fikir doğrulama workflow’unun beş aşaması, analiz sırasında kullanıcının iş fikriyle ilişkili eğitim içeriklerini bulmak ve yapay zekâ promptlarını bu bağlamla desteklemek için ortak RAG katmanından yararlanır.
+
+RAG akışı genel olarak şu şekilde çalışır:
+
+```text
+Fikir bilgileri ve aşamaya özgü analiz amacı
+→ sorgu metninin hazırlanması
+→ Gemini query embedding oluşturulması
+→ PostgreSQL ve pgvector üzerinde cosine distance sorgusu
+→ uygun içerik parçalarının seçilmesi
+→ kaynak bağlamının analiz promptuna eklenmesi
+→ yapay zekâ sonucunun oluşturulması
+→ kullanılan kaynak metadatasının fikir kaydına eklenmesi
+```
+
+Bilgi tabanında iki temel model kullanılmaktadır:
+
+- `KnowledgeSource`: Kaynak başlığı, kaynak türü ve kaynak bağlantısı
+- `KnowledgeChunk`: Kaynağa ait metin parçası, parça sırası ve 768 boyutlu embedding
+
+Doküman embedding’leri `RETRIEVAL_DOCUMENT`, sorgu embedding’leri ise `RETRIEVAL_QUERY` göreviyle oluşturulur.
+
+Retriever aşağıdaki kuralları uygular:
+
+- Embedding modeli: `gemini-embedding-001`
+- Embedding boyutu: 768
+- Mesafe metriği: cosine distance
+- İlk aday sayısı: 12
+- Mesafe eşiği: `0.40`
+- Döndürülen en yüksek içerik sayısı: 4
+- Aynı kaynaktan alınabilecek en yüksek içerik sayısı: 2
+
+Veritabanında HNSW veya IVFFlat tabanlı ayrı bir yaklaşık en yakın komşu indeksi bulunmamaktadır. Retrieval işlemleri mevcut pgvector cosine distance sorguları üzerinden yürütülmektedir.
+
+Workflow aşamalarında bulunan kaynakların metadatası `Idea.rag_sources` alanında saklanır. Bu kaynaklar fikir detay endpointi üzerinden frontend’e iletilir ve mevcut olduklarında doğrulama raporu ile PDF çıktısında kaynak listesi olarak gösterilir.
+
+Gösterilen kaynaklar inline veya cümle bazlı citation değildir. Sistem, model tarafından oluşturulan belirli bir ifadenin hangi kaynak parçasına dayandığını programatik olarak kanıtlamaz. Raporda yalnız retrieval sırasında bulunan kaynakların başlıkları ve varsa bağlantıları listelenir.
+
+#### RAG Kaynaklarının Hazırlanması
+
+RAG bilgi tabanının temel kaynaklarını, Yapay Zekâ ve Teknoloji Akademisi tarafından Bootcamp katılımcılarına sağlanan girişimcilik eğitim videoları oluşturmaktadır.
+
+Bu eğitim içerikleri; iş fikri doğrulama, müşteri görüşmeleri, problem ve hedef kitle analizi, MVP kapsamı, girişimcilik süreçleri ve benzeri konularda proje analizlerini desteklemek amacıyla kullanılmaktadır.
+
+Repository içerisinde videoların doğrudan medya dosyaları yerine, ingestion sürecinde kullanılan metadata ve Türkçe transcript dosyaları bulunmaktadır. Bu içerikler işlenerek metin parçalarına ayrılmakta, Gemini embedding modeliyle vektörleştirilmekte ve PostgreSQL ile pgvector tabanlı bilgi tabanına kaydedilmektedir.
+
+YouTube ingestion süreci:
+
+- Akademi tarafından sağlanan video kaynaklarına ait metadata dosyalarını okur.
+- Videolara ait Türkçe transcript segmentlerini işler.
+- İçerikleri varsayılan olarak yaklaşık 750 karakterlik parçalara ayırır.
+- Ardışık parçalar arasında iki transcript segmenti overlap uygular.
+- Parçalara başlangıç ve bitiş zaman bilgilerini ekler.
+- Gemini embedding modeliyle 768 boyutlu vektörler oluşturur.
+- Kaynak ve içerik parçalarını PostgreSQL veritabanına kaydeder.
+
+#### AI Mentor Agent
+
+AI mentor, merkezi doğrulama workflow’undan farklı olarak gerçek bir tool-calling agent yapısına sahiptir.
+
+Mentor, Google Gemini’nin native function calling özelliğini kullanır. Model, kullanıcının mesajına göre uygun aracı seçebilir, backend seçilen aracı çalıştırır ve araç sonucu function response olarak tekrar modele gönderilir.
+
+Mentor en fazla üç model ve araç turu çalıştırabilir.
+
+Mentor tarafından kullanılabilen araçlar:
+
+- `update_target_audience`
+- `regenerate_validation_roadmap`
+- `regenerate_moscow_scope`
+- `generate_mom_test_questions`
+- `regenerate_risky_assumptions`
+- `regenerate_general_evaluation`
+- `regenerate_competitor_analysis`
+- `generate_investor_pitch`
+- `save_interview_note`
+- `analyze_interview_evidence`
+
+Riskli varsayımlar, Mom Test, MoSCoW, doğrulama yol haritası ve genel değerlendirme araçları, ilgili analiz servislerini çağırdıkları için dolaylı olarak RAG katmanını kullanabilir.
+
+Mentorun serbest sohbet yanıtı doğrudan ayrı bir retrieval işlemi gerçekleştirmez ve mentor cevabında yapılandırılmış kaynak veya citation listesi dönmez.
+
+Mentor sohbet geçmişi backend veritabanında saklanmaz. Mesaj geçmişi fikir bazında frontend `localStorage` içerisinde tutulur ve son mesajların sınırlı bir bölümü yeni mentor isteğiyle backend’e gönderilir.
+
+#### Görüşme Notları ve Kanıt Analizi
+
+Kullanıcılar fikirlerine ait müşteri görüşme notlarını oluşturabilir, listeleyebilir, güncelleyebilir ve silebilir.
+
+Görüşme kanıtı analizi, kayıtlı notları Gemini modeline göndererek problem, davranış, ihtiyaç, itiraz ve doğrulama sinyalleri üretir. Ayrıca mentor içerisindeki kanıt analizi aracı, görüşme notlarına göre riskli varsayımların durumlarını güncelleyebilir.
+
+Görüşme kanıtı analizi merkezi beş aşamalı workflow’un bir parçası değildir.
+
+Güncel frontend yapısında görüşme kanıtı analizinin sonuçları doğrulama raporu veya PDF içerisinde ayrı bir bölüm olarak gösterilmemektedir. Bu nedenle rapor, temel analiz modüllerini ve RAG kaynak listesini birleştirirken standalone evidence analizinin bütün sonuçlarını içeren eksiksiz bir final rapor olarak değerlendirilmemelidir.
+
+#### Frontend Mimarisi
+
+Frontend, React ve Vite kullanılarak tek sayfalı uygulama biçiminde geliştirilmiştir.
+
+Uygulama içerisinde:
+
+- Sayfalar `pages` klasöründe
+- Tekrar kullanılabilir arayüz parçaları `components` klasöründe
+- Kullanıcı ve tema durumu `context` klasöründe
+- API tabanlı veri ve işlem mantığı `hooks` klasöründe
+- REST API istemcisi `lib/api.ts` içerisinde
+- PDF raporu `pdf/ReportDocument.tsx` içerisinde
+
+yönetilmektedir.
+
+React Router, public sayfalar ile JWT oturumu gerektiren korumalı uygulama sayfalarını birbirinden ayırır.
+
+Aktif fikir bilgisi frontend state ve yerel depolama üzerinden korunur. Silinen veya artık erişilemeyen fikirlerde aktif fikir temizlenir ve bağımlı API çağrılarının hatalı biçimde devam etmesi engellenir.
+
+Tema yönetimi açık ve koyu görünüm desteği sağlar. Mentor yanıtları React Markdown ile gösterilir. Doğrulama raporu `@react-pdf/renderer` kullanılarak metin tabanlı PDF olarak oluşturulur.
+
+#### Geliştirme ve Deployment Yaklaşımı
+
+Yerel geliştirme ortamında Django backend ve PostgreSQL servisi Docker Compose içerisinde çalışır. React frontend ise Makefile tarafından host üzerinde Vite development server ile başlatılır.
+
+Makefile aşağıdaki işlemleri merkezi biçimde yönetir:
+
+- Sistem ve proje kurulumu
+- Ortam değişkeni dosyasının hazırlanması
+- Backend image build işlemi
+- PostgreSQL servisinin başlatılması
+- Migration işlemlerinin uygulanması
+- Frontend bağımlılıklarının kurulması
+- Backend ve frontend servislerinin başlatılması
+- Production build oluşturulması
+- RAG ingestion ve bilgi tabanı istatistikleri
+- Servislerin durdurulması ve yeniden başlatılması
+- Yerel geliştirme verilerinin temizlenmesi
+
+Production ortamı Render Blueprint üzerinden tanımlanmıştır:
+
+- Yönetilen PostgreSQL veritabanı
+- Docker tabanlı Django backend servisi
+- Statik React frontend servisi
+
+Backend production başlangıcında migration ve static dosya toplama işlemleri çalıştırılır, ardından uygulama Gunicorn ile başlatılır.
+
+Frontend production build çıktısı `frontend/dist` klasöründen yayınlanır ve SPA route’ları `index.html` dosyasına yönlendirilir.
+
+Canlı uygulama:
+
+<https://fikirlab-frontend.onrender.com>
 
 ---
 
 ## Proje Yapısı
 
-Proje; Django tabanlı backend, React tabanlı frontend, yapay zekâ analiz servisleri, RAG altyapısı ve sprint dokümantasyonlarından oluşmaktadır.
+Proje; Django tabanlı backend, React tabanlı frontend, Gemini destekli yapay zekâ servisleri, pgvector tabanlı RAG altyapısı, AI mentor agent, PDF raporlama sistemi ve sprint dokümantasyonlarından oluşmaktadır.
 
 ```text
 .
 ├── backend/
 │   ├── apps/
-│   │   ├── analyses/
-│   │   │   ├── rag/                 # RAG kaynakları ve retrieval işlemleri
-│   │   │   ├── services/            # AI analiz ve doğrulama servisleri
-│   │   │   ├── tests/               # Analiz modüllerine ait testler
+│   │   ├── users/
+│   │   │   ├── migrations/             # Kullanıcı ve doğrulama kodu migration dosyaları
 │   │   │   ├── admin.py
 │   │   │   ├── apps.py
-│   │   │   ├── models.py            # Analiz sonuçlarına ait veri modelleri
-│   │   │   ├── serializers.py       # Analiz API serializer'ları
-│   │   │   ├── urls.py              # Analiz endpoint tanımları
-│   │   │   └── views.py             # Analiz API view'ları
-│   │   ├── ideas/
-│   │   │   ├── admin.py
-│   │   │   ├── apps.py
-│   │   │   ├── models.py            # İş fikri veri modeli
-│   │   │   ├── serializers.py       # Fikir API serializer'ları
-│   │   │   ├── tests.py             # Fikir işlemlerine ait testler
+│   │   │   ├── models.py               # Özel kullanıcı modeli ve doğrulama kodları
+│   │   │   ├── serializers.py          # Kayıt, profil ve parola işlemleri
+│   │   │   ├── services.py             # E-posta doğrulama ve parola sıfırlama servisleri
+│   │   │   ├── throttles.py            # Kimlik doğrulama istek sınırlandırmaları
+│   │   │   ├── tests.py
 │   │   │   ├── urls.py
-│   │   │   └── views.py             # Fikir CRUD endpointleri
-│   │   └── users/
+│   │   │   └── views.py
+│   │   │
+│   │   ├── ideas/
+│   │   │   ├── migrations/
+│   │   │   ├── admin.py
+│   │   │   ├── apps.py
+│   │   │   ├── mentor_agent.py         # Gemini native function-calling mentor agent
+│   │   │   ├── models.py               # Fikir ve fikir tabanlı analiz sonuçları
+│   │   │   ├── rag_context.py          # RAG sorgusu, context ve kaynak kayıt işlemleri
+│   │   │   ├── serializers.py
+│   │   │   ├── services.py             # Risk, roadmap, evaluation, rakip ve pitch servisleri
+│   │   │   ├── tests.py
+│   │   │   ├── urls.py
+│   │   │   └── views.py                # Fikir CRUD ve ViewSet action endpointleri
+│   │   │
+│   │   └── analyses/
+│   │       ├── migrations/
+│   │       ├── rag/
+│   │       │   ├── embedding_service.py
+│   │       │   ├── retriever.py
+│   │       │   ├── chunker.py
+│   │       │   ├── rag_answer_service.py
+│   │       │   ├── ingestion.py
+│   │       │   └── ingestion/
+│   │       │       ├── transcript_parser.py
+│   │       │       ├── youtube_ingestion.py
+│   │       │       └── youtube_metadata.py
+│   │       │
+│   │       ├── services/
+│   │       │   ├── validation_workflow.py
+│   │       │   ├── workflow_runs.py
+│   │       │   ├── mom_test_questions.py
+│   │       │   ├── moscow_scope.py
+│   │       │   ├── interview_evidence.py
+│   │       │   ├── llm_client.py
+│   │       │   ├── prompts.py
+│   │       │   └── schemas.py
+│   │       │
+│   │       ├── tests/
+│   │       │   ├── test_validation_workflow.py
+│   │       │   ├── test_retriever.py
+│   │       │   ├── test_rag.py
+│   │       │   └── ...
+│   │       │
 │   │       ├── admin.py
 │   │       ├── apps.py
-│   │       ├── models.py            # Özel kullanıcı modeli
-│   │       ├── serializers.py       # Kayıt ve kullanıcı serializer'ları
-│   │       ├── tests.py             # Kullanıcı işlemlerine ait testler
+│   │       ├── models.py               # Workflow, görüşme notları ve RAG modelleri
+│   │       ├── serializers.py
 │   │       ├── urls.py
-│   │       └── views.py             # Kayıt ve kimlik doğrulama işlemleri
+│   │       ├── views.py
+│   │       └── workflow_contract.py    # Workflow aşama ve çıktı sözleşmeleri
+│   │
 │   ├── config/
-│   │   ├── settings.py              # Django proje ayarları
-│   │   ├── urls.py                  # Ana URL yönlendirmeleri
+│   │   ├── settings.py                 # Django, Gemini, e-posta, CORS ve DB ayarları
+│   │   ├── urls.py                     # Ana URL yönlendirmeleri ve health endpointi
 │   │   ├── asgi.py
 │   │   └── wsgi.py
+│   │
+│   ├── data/
+│   │   └── youtube/
+│   │       ├── metadata/               # YouTube kaynak metadata dosyaları
+│   │       ├── transcripts/            # Türkçe transcript JSON3 dosyaları
+│   │       ├── video_urls.txt
+│   │       └── test_urls.txt
+│   │
+│   ├── scripts/
+│   │   └── ingest_all_youtube_videos.py
+│   │
 │   ├── manage.py
 │   └── requirements.txt
+│
 ├── frontend/
+│   ├── public/
+│   │   └── fonts/                      # PDF raporunda kullanılan Noto Sans fontları
+│   │
 │   ├── src/
+│   │   ├── main.tsx                    # Frontend başlangıç noktası
+│   │   │
 │   │   ├── app/
-│   │   │   ├── App.tsx              # Ana React uygulama bileşeni
-│   │   │   ├── components/
-│   │   │   │   ├── common/          # Ortak kullanılan bileşenler
-│   │   │   │   ├── figma/           # Tasarımdan uyarlanan bileşenler
-│   │   │   │   ├── layout/          # Sayfa düzeni bileşenleri
-│   │   │   │   ├── mentor/          # AI mentor bileşenleri
-│   │   │   │   └── ui/              # Temel arayüz bileşenleri
-│   │   │   ├── data/
-│   │   │   │   └── mockData.ts      # Geliştirme sürecindeki örnek veriler
+│   │   │   ├── App.tsx                 # Public ve korumalı route yapısı
+│   │   │   │
 │   │   │   ├── pages/
-│   │   │   │   ├── AnalysisPage.tsx
+│   │   │   │   ├── LoginPage.tsx
+│   │   │   │   ├── RegisterPage.tsx
+│   │   │   │   ├── VerifyEmailPage.tsx
+│   │   │   │   ├── ForgotPasswordPage.tsx
+│   │   │   │   ├── ResetPasswordPage.tsx
+│   │   │   │   ├── AccountSettingsPage.tsx
 │   │   │   │   ├── DashboardPage.tsx
+│   │   │   │   ├── NewIdeaPage.tsx
+│   │   │   │   ├── AnalysisPage.tsx
 │   │   │   │   ├── HistoryPage.tsx
-│   │   │   │   ├── LoadingPage.tsx
+│   │   │   │   ├── ComparePage.tsx
 │   │   │   │   ├── MentorPage.tsx
 │   │   │   │   └── ReportPage.tsx
-│   │   │   └── types/
-│   │   │       └── index.ts          # TypeScript tip tanımları
-│   │   ├── main.tsx                  # Frontend başlangıç noktası
-│   │   └── styles/
-│   │       ├── fonts.css
-│   │       ├── globals.css
-│   │       ├── index.css
-│   │       ├── tailwind.css
-│   │       └── theme.css
-│   ├── guidelines/
-│   │   └── Guidelines.md
+│   │   │   │
+│   │   │   ├── components/
+│   │   │   │   ├── analysis/           # Analiz kartları ve sonuç bileşenleri
+│   │   │   │   ├── auth/               # Kimlik doğrulama bileşenleri
+│   │   │   │   ├── common/             # Ortak durum ve yardımcı bileşenler
+│   │   │   │   ├── ideas/              # Fikir yönetimi bileşenleri
+│   │   │   │   ├── layout/             # Uygulama düzeni ve navigasyon
+│   │   │   │   ├── mentor/             # Mentor sohbet ve Markdown bileşenleri
+│   │   │   │   └── ui/                 # Tekrar kullanılabilir UI bileşenleri
+│   │   │   │
+│   │   │   ├── context/
+│   │   │   │   ├── AuthContext.tsx
+│   │   │   │   └── ThemeContext.tsx
+│   │   │   │
+│   │   │   ├── hooks/                  # Fikir, analiz, not, mentor ve rapor hook’ları
+│   │   │   │
+│   │   │   ├── lib/
+│   │   │   │   ├── api.ts              # REST API istemcisi ve response tipleri
+│   │   │   │   └── authForm.ts         # Auth form yardımcıları
+│   │   │   │
+│   │   │   ├── pdf/
+│   │   │   │   └── ReportDocument.tsx  # Metin tabanlı PDF raporu
+│   │   │   │
+│   │   │   └── types/                  # Ortak TypeScript tipleri
+│   │   │
+│   │   └── styles/                     # Global stil, tema ve Tailwind dosyaları
+│   │
 │   ├── index.html
 │   ├── package.json
 │   ├── package-lock.json
-│   ├── postcss.config.mjs
-│   ├── vite.config.ts
-│   └── README.md
+│   └── vite.config.ts
+│
 ├── docs/
-│   ├── product/                      # Ürün kapsamı ve ürün dokümantasyonu
-│   ├── sprint-1/
-│   │   ├── screenshots/              # Sprint 1 ekran görüntüleri
-│   │   ├── backlog-distribution.md
-│   │   ├── daily-scrum.md
-│   │   ├── product-status.md
-│   │   ├── sprint-board.md
-│   │   ├── sprint-review.md
-│   │   ├── sprint-retrospective.md
-│   │   ├── sprint1-demo.gif
-│   │   └── sprint1-demo.webm
-│   ├── sprint-2/
-│   │   ├── screenshots/
-│   │   │   └── sprint-board.png
-│   │   └── sprint2-demo.gif
-│   └── sprint-3/
-├── Dockerfile                       # Django backend container tanımı
-├── docker-compose.yml               # Backend ve PostgreSQL servisleri
-├── .env.example                     # Ortam değişkenleri için örnek dosya
+│   ├── product/                        # Ürün kapsamı ve ürün dokümantasyonu
+│   ├── sprint-1/                       # Sprint 1 notları, görselleri ve demo kayıtları
+│   ├── sprint-2/                       # Sprint 2 notları, görselleri ve demo kayıtları
+│   └── sprint-3/                       # Sprint 3 board görselleri ve ürün durumu kaydı
+│
+├── .dockerignore
+├── .env.example                       # Yerel ve production ortam değişkenleri örneği
 ├── .gitignore
+├── Dockerfile                         # Django backend production image tanımı
+├── docker-compose.yml                 # Backend ve pgvector PostgreSQL servisleri
+├── Makefile                           # Kurulum, yaşam döngüsü, build ve RAG komutları
+├── render.yaml                        # Render backend, frontend ve DB yapılandırması
 └── README.md
 ```
 
-`dist/`, `node_modules/`, Python sanal ortamları, `__pycache__`, migration dosyaları ve geçici arşiv dosyaları okunabilirliği korumak amacıyla proje ağacında gösterilmemiştir.
+### Backend Uygulama Ayrımı
+
+Backend içerisindeki uygulamalar sorumluluklarına göre ayrılmıştır:
+
+- `users`, kimlik doğrulama ve kullanıcı hesabı işlemlerini yönetir.
+- `ideas`, iş fikri CRUD işlemlerini ve fikir odaklı AI özelliklerini yönetir.
+- `analyses`, doğrulama workflow’unu, RAG altyapısını, görüşme notlarını ve kapsam analizlerini yönetir.
+
+Yapay zekâ üretim işlemleri mümkün olduğunca servis katmanında tutulur. View katmanı; kimlik doğrulama, kullanıcı sahipliği, istek doğrulama ve HTTP response üretiminden sorumludur.
+
+### RAG Dosya Yapısı
+
+RAG altyapısının temel bileşenleri `backend/apps/analyses/rag/` altında yer almaktadır:
+
+- `embedding_service.py`: Doküman ve sorgu embedding’lerini oluşturur.
+- `retriever.py`: PostgreSQL ve pgvector üzerinden cosine distance sorgusu yapar.
+- `chunker.py`: Genel metinleri overlap kullanarak parçalara ayırır.
+- `rag_answer_service.py`: RAG bağlamıyla cevap üretmek için hazırlanmış servis katmanıdır.
+- `ingestion/`: YouTube metadata ve transcript dosyalarını işler.
+
+Workflow aşamalarının retrieval sorguları ve kullanılan kaynakların fikir kaydına eklenmesi `backend/apps/ideas/rag_context.py` üzerinden yönetilmektedir.
+
+### Frontend Uygulama Ayrımı
+
+Frontend içerisinde sayfa, veri ve arayüz sorumlulukları ayrı klasörlerde yönetilmektedir:
+
+- `pages`: Route seviyesindeki sayfalar
+- `components`: Tekrar kullanılabilir arayüz bileşenleri
+- `hooks`: API çağrıları ve frontend veri yönetimi
+- `context`: Kullanıcı oturumu ve tema durumu
+- `lib/api.ts`: Backend API istemcisi
+- `pdf`: Doğrulama raporunun PDF çıktısı
+
+### Gösterilmeyen Dosyalar
+
+Okunabilirliği korumak amacıyla aşağıdaki dosya ve klasörler proje ağacında gösterilmemiştir:
+
+- `.git/`
+- `.make/`
+- `.run/`
+- `node_modules/`
+- `frontend/dist/`
+- Python sanal ortamları
+- `__pycache__/`
+- `*.pyc`
+- Geçici cache ve log dosyaları
+- Migration klasörlerinin içerisindeki tek tek migration dosyaları
 
 ---
 
 ## Kurulum
 
-Proje, Django REST Framework tabanlı backend, PostgreSQL veritabanı ve React tabanlı frontend uygulamasından oluşmaktadır.
+FikirLab; Django REST Framework tabanlı backend, PostgreSQL ve pgvector tabanlı veritabanı ile React tabanlı frontend uygulamasından oluşmaktadır.
 
-Backend ve veritabanının çalıştırılması için Docker Compose kullanılması önerilmektedir. Frontend uygulaması ise Vite geliştirme sunucusu üzerinden ayrı olarak çalıştırılmaktadır.
+Yerel geliştirme ortamının kurulumu ve proje servislerinin yönetimi Makefile üzerinden gerçekleştirilebilir.
 
-### Gereksinimler
+Canlı uygulama:
 
-Projeyi çalıştırmak için aşağıdaki araçların sistemde kurulu olması gerekir:
+<https://fikirlab-frontend.onrender.com>
+
+### Sistem Gereksinimleri
+
+Makefile akışı Linux `/proc` dosya sistemi ve GNU araçlarını kullandığı için Linux ve WSL2 ortamları hedeflenmektedir.
+
+Otomatik sistem paketi kurulumu yalnızca Ubuntu ve Debian dağıtımlarında desteklenmektedir.
+
+Projeyi çalıştırmak için gereken temel araçlar:
 
 - Git
+- GNU Make
+- Bash
 - Docker
-- Docker Compose
-- Node.js
+- Docker Compose v2
+- Node.js 22, 24 veya 26
 - npm
 
-### 1. Repoyu klonlama
+Ubuntu veya Debian üzerinde eksik sistem paketlerinin otomatik kurulabilmesi için `sudo` yetkisi gerekebilir.
+
+### 1. Repository’yi Klonlama
 
 ```bash
 git clone https://github.com/erenylldz/YZTA---Team-138.git
 cd YZTA---Team-138
 ```
 
-### 2. Ortam değişkenlerini hazırlama
+### 2. Hızlı Kurulum
 
-Proje kök dizininde bulunan `.env.example` dosyası örnek alınarak `.env` dosyası oluşturulmalıdır.
+Ubuntu veya Debian tabanlı bir sistemde eksik araçları kontrol etmek, gerekli kurulumları gerçekleştirmek ve projeyi başlatmak için:
+
+```bash
+make setup
+```
+
+`make setup` aşağıdaki işlemleri gerçekleştirir:
+
+- Gerekli GNU araçlarını kontrol eder.
+- Docker ve Docker Compose kurulumunu kontrol eder.
+- Node.js sürümünü kontrol eder.
+- Node.js sürümü desteklenmiyorsa Node.js 24 kurar.
+- `.env` dosyası yoksa `.env.example` üzerinden oluşturur.
+- Frontend bağımlılıklarını hazırlar.
+- Backend Docker image’ını oluşturur.
+- PostgreSQL servisini başlatır.
+- Veritabanı migration işlemlerini uygular.
+- Django backend servisini başlatır.
+- Frontend Vite geliştirme sunucusunu başlatır.
+
+`make setup`, sistem paketi kurulumu yaptığı için yalnızca Ubuntu ve Debian üzerinde kullanılmalıdır.
+
+Gerekli sistem araçları zaten kuruluysa projeyi doğrudan başlatmak için:
+
+```bash
+make up
+```
+
+Tek başına aşağıdaki komutun çalıştırılması da aynı sonucu verir:
+
+```bash
+make
+```
+
+Makefile’ın varsayılan hedefi `up` olduğu için `make` komutu `make up` ile aynıdır.
+
+### 3. Ortam Değişkenlerinin Hazırlanması
+
+Makefile, proje kök dizininde `.env` dosyası bulunmuyorsa `.env.example` üzerinden yeni bir dosya oluşturur.
+
+Manuel olarak oluşturmak için:
 
 ```bash
 cp .env.example .env
 ```
 
-Oluşturulan `.env` dosyasındaki veritabanı, Django ve yapay zekâ servislerine ait değişkenler geliştirme ortamına göre düzenlenmelidir.
+Var olan `.env` dosyası Makefile tarafından değiştirilmez. Güvenlik amacıyla symbolic link biçimindeki `.env` dosyaları kabul edilmez.
 
-AI destekli analiz özellikleri için kullanılan temel ortam değişkenleri:
+Yapay zekâ ve RAG özellikleri için temel değişkenler:
+
+```env
+GEMINI_API_KEY=<gerçek-api-anahtarı>
+GEMINI_MODEL_NAME=gemini-3.1-flash-lite
+GEMINI_EMBEDDING_MODEL_NAME=gemini-embedding-001
+```
+
+`.env.example` içerisinde bulunan örnek API anahtarı gerçek bir erişim anahtarı değildir. Uygulama kullanılmadan önce geçerli bir Gemini API anahtarı tanımlanmalıdır.
+
+MoSCoW servisi için isteğe bağlı OpenAI-compatible fallback değişkenleri:
 
 ```env
 AI_API_URL=
@@ -361,129 +844,336 @@ AI_PROVIDER=
 AI_MODEL_NAME=
 ```
 
-Gizli anahtarlar ve gerçek erişim bilgileri GitHub reposuna gönderilmemelidir.
+Bu değişkenler projenin ana yapay zekâ sağlayıcısını belirlemez. Temel analiz servisleri Google Gemini kullanmaktadır. OpenAI-compatible yapı yalnızca MoSCoW servisinde opsiyonel fallback olarak bulunmaktadır.
 
-#### E-posta ve doğrulama kodu ayarları
+Gerçek API anahtarları ve gizli erişim bilgileri repository’ye gönderilmemelidir.
 
-Geliştirme ortamında varsayılan `django.core.mail.backends.console.EmailBackend`
-kullanılır ve e-postalar gerçek bir SMTP sunucusuna gönderilmeden terminalde
-görüntülenir. Production ortamında sağlayıcıdan bağımsız olarak
-`EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend` seçilmeli ve
-`EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` ile
-`DEFAULT_FROM_EMAIL` değerleri `.env` üzerinden yapılandırılmalıdır.
+### 4. E-posta Ayarları
 
-`EMAIL_USE_TLS` ve `EMAIL_USE_SSL` aynı anda `True` olamaz. Genellikle STARTTLS
-için TLS, implicit TLS bağlantısı için SSL seçilir; kullanılan port SMTP
-sağlayıcısının dokümantasyonuyla eşleşmelidir. SMTP parolası ve diğer gerçek
-erişim bilgileri yalnız `.env` veya production secret yönetim sistemi içinde
-tutulmalı, repository'ye gönderilmemelidir. Bağlantı zaman aşımı
-`EMAIL_TIMEOUT` ile saniye cinsinden belirlenir.
+Yerel geliştirme ortamında varsayılan olarak Django console e-posta backend’i kullanılır:
 
-Doğrulama ve parola sıfırlama kodlarının varsayılan politikası 10 dakika
-geçerlilik, yeniden gönderimler arasında 60 saniye bekleme ve en fazla 5 yanlış
-denemedir. Bu değerler sırasıyla `AUTH_CODE_TTL_MINUTES`,
-`AUTH_CODE_RESEND_COOLDOWN_SECONDS` ve `AUTH_CODE_MAX_ATTEMPTS` ile
-değiştirilebilir; tamamı pozitif tam sayı olmalıdır. Güvenli yapılandırma
-sınırları sırasıyla 1440 dakika, 86400 saniye ve 100 denemedir; SMTP timeout
-değeri en fazla 300 saniye olabilir. Geçersiz veya açıkça boş boolean
-değerleri uygulama başlangıcında reddedilir.
-
-IP tabanlı throttle'ın güvenilir istemci adresini kullanabilmesi için
-`DRF_NUM_PROXIES` doğrudan bağlantıda `0` bırakılmalı; production ortamında
-yalnız uygulamanın önündeki güvenilir reverse proxy sayısına ayarlanmalıdır.
-
-### 3. Backend ve veritabanını çalıştırma
-
-Proje kök dizininde aşağıdaki komut çalıştırılmalıdır:
-
-```bash
-docker compose up --build
+```env
+EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 ```
 
-Bu komut Django backend uygulamasını ve PostgreSQL veritabanını başlatır.
+Bu yapılandırmada e-posta doğrulama ve parola sıfırlama kodları gerçek bir e-posta adresine gönderilmez. Oluşturulan e-posta içeriği backend container loglarında görüntülenir.
 
-Servisleri arka planda çalıştırmak için:
+Gerçek SMTP gönderimi için aşağıdaki ayarlar `.env` içerisinde yapılandırılmalıdır:
 
-```bash
-docker compose up --build -d
+```env
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=
+EMAIL_PORT=
+EMAIL_HOST_USER=
+EMAIL_HOST_PASSWORD=
+EMAIL_USE_TLS=True
+EMAIL_USE_SSL=False
+DEFAULT_FROM_EMAIL=
+EMAIL_TIMEOUT=30
 ```
 
-### 4. Veritabanı migration işlemlerini çalıştırma
+`EMAIL_USE_TLS` ve `EMAIL_USE_SSL` aynı anda `True` olmamalıdır. Kullanılan port ve bağlantı güvenliği SMTP sağlayıcısının yapılandırmasıyla uyumlu olmalıdır.
 
-Container'lar çalışmaya başladıktan sonra migration işlemleri ayrı bir terminal üzerinden yürütülmelidir:
+Doğrulama kodu politikaları aşağıdaki değişkenlerle yönetilebilir:
 
-```bash
-docker compose exec web python manage.py migrate
+```env
+AUTH_CODE_TTL_MINUTES=10
+AUTH_CODE_RESEND_COOLDOWN_SECONDS=60
+AUTH_CODE_MAX_ATTEMPTS=5
 ```
 
-Bu komut e-posta doğrulama alanını ve tek kullanımlık doğrulama kodu tablosunu
-da mevcut verileri koruyarak uygular.
+Production ortamında gerçek SMTP bilgileri Render secret veya benzeri güvenli bir secret yönetim sistemi üzerinden tanımlanmalıdır.
 
-### 5. Admin kullanıcısı oluşturma
+### 5. Projeyi Başlatma
 
-Django Admin panelini kullanmak için isteğe bağlı olarak superuser oluşturulabilir:
-
-```bash
-docker compose exec web python manage.py createsuperuser
-```
-
-### 6. Frontend bağımlılıklarını yükleme
-
-Yeni bir terminal açılarak frontend klasörüne geçilmelidir:
+Backend, PostgreSQL ve frontend servislerini başlatmak için:
 
 ```bash
-cd frontend
-npm install
+make up
 ```
 
-### 7. Frontend uygulamasını çalıştırma
+Bu komut:
 
-```bash
-npm run dev
-```
+1. `.env` dosyasını kontrol eder.
+2. Frontend bağımlılıklarını hazırlar.
+3. Backend Docker image’ını oluşturur.
+4. PostgreSQL servisini başlatır.
+5. Veritabanının hazır olmasını bekler.
+6. Django migration işlemlerini otomatik uygular.
+7. Backend servisini başlatır.
+8. Frontend Vite geliştirme sunucusunu başlatır.
 
-Vite geliştirme sunucusu başlatıldıktan sonra terminalde gösterilen bağlantı tarayıcı üzerinden açılabilir.
+Migration işlemleri `make up`, `make setup` ve `make restart` sırasında otomatik olarak çalıştırıldığı için normal Makefile kullanımında ayrıca `python manage.py migrate` komutu çalıştırılması gerekmez.
 
-Frontend varsayılan olarak:
+### 6. Yerel Servis Adresleri
+
+Frontend:
 
 ```text
 http://localhost:5173/
 ```
 
-Backend API varsayılan olarak:
+Backend:
 
 ```text
 http://localhost:8000/
 ```
 
-Django Admin paneli:
+Backend API:
+
+```text
+http://localhost:8000/api/
+```
+
+Django Admin:
 
 ```text
 http://localhost:8000/admin/
 ```
 
-### 8. Servisleri durdurma
+Backend health check:
 
-Docker servislerini durdurmak için proje kök dizininde:
+```text
+http://localhost:8000/health/
+```
+
+PostgreSQL host portu:
+
+```text
+localhost:5455
+```
+
+### 7. RAG Bilgi Tabanının Hazırlanması
+
+RAG bilgi tabanının temel kaynaklarını, Yapay Zekâ ve Teknoloji Akademisi tarafından Bootcamp katılımcılarına sağlanan girişimcilik eğitim videoları oluşturmaktadır.
+
+Repository içerisinde bu videolara ait metadata ve Türkçe transcript dosyaları bulunmaktadır.
+
+Backend ve PostgreSQL servisleri çalışır durumdayken ingestion işlemini başlatmak için:
+
+```bash
+make rag-ingest
+```
+
+Bu komut:
+
+- YouTube metadata dosyalarını okur.
+- Türkçe transcript dosyalarını işler.
+- İçerikleri parçalara ayırır.
+- Gemini embedding modeli üzerinden vektörler oluşturur.
+- `KnowledgeSource` ve `KnowledgeChunk` kayıtlarını veritabanına ekler.
+
+Komutun çalışabilmesi için:
+
+- Backend `web` container’ı çalışıyor olmalıdır.
+- Migration işlemleri uygulanmış olmalıdır.
+- Geçerli bir `GEMINI_API_KEY` bulunmalıdır.
+- İnternet bağlantısı ve yeterli API kotası bulunmalıdır.
+
+Ingestion scripti video bazlı hataları yakalayarak sonuç özetine ekler. Bazı videolar başarısız olsa bile komut sıfır exit code ile tamamlanabileceğinden, işlem sonunda başarı ve hata sayıları ayrıca kontrol edilmelidir.
+
+Bilgi tabanındaki kaynak ve chunk sayılarını görüntülemek için:
+
+```bash
+make rag-stats
+```
+
+Örnek çıktı:
+
+```text
+KnowledgeSource: 33
+KnowledgeChunk: 426
+```
+
+Yerel geliştirme veritabanının doldurulması, production veritabanının otomatik olarak aynı RAG kaynaklarını içereceği anlamına gelmez. Production veritabanı için ingestion işlemi ayrıca gerçekleştirilmelidir.
+
+### 8. Servisleri Durdurma ve Yeniden Başlatma
+
+Frontend ile Docker Compose servislerini durdurmak için:
+
+```bash
+make down
+```
+
+Bu komut veritabanı volume’unu, Docker image’larını ve frontend bağımlılıklarını silmez.
+
+Tüm servisleri yeniden başlatmak için:
+
+```bash
+make restart
+```
+
+`make restart`, sırasıyla `make down` ve `make up` işlemlerini uygular.
+
+### 9. Production Build Oluşturma
+
+Backend Docker image’ını ve frontend production build çıktısını oluşturmak için:
+
+```bash
+make build
+```
+
+Bu komut servisleri başlatmaz.
+
+Backend image’ını Docker cache kullanmadan yeniden oluşturmak için:
+
+```bash
+make build NO_CACHE=1
+```
+
+`NO_CACHE` yalnızca `0` veya `1` değerini kabul eder.
+
+`NO_CACHE=1` seçeneği yalnızca `make build` hedefini etkiler. `make up`, `make setup` ve `make restart` içerisindeki build işlemleri cache kullanmaya devam eder.
+
+Frontend production çıktısı aşağıdaki klasörde oluşturulur:
+
+```text
+frontend/dist/
+```
+
+### 10. Yerel Verileri Temizleme
+
+Onay alarak proje container’larını, volume’ları, veritabanını, frontend bağımlılıklarını ve build çıktılarını temizlemek için:
+
+```bash
+make clean
+```
+
+Onay istemeden aynı işlemleri gerçekleştirmek için:
+
+```bash
+make force-clean
+```
+
+> `make clean` ve `make force-clean`, PostgreSQL volume’unu ve yerel veritabanı kayıtlarını siler. Silinen veriler geri alınamaz.
+
+Temizlik işlemi aşağıdaki öğeleri kaldırabilir:
+
+- Docker Compose container’ları
+- Docker Compose network’leri
+- PostgreSQL volume’u ve yerel veritabanı
+- Projeye ait local Docker image’ları
+- `frontend/node_modules/`
+- `frontend/dist/`
+- Makefile runtime dosyaları
+- Python cache dosyaları
+
+`.env` dosyası ve proje kaynak kodları korunur.
+
+`make force-clean` yalnızca veri kaybının kabul edildiği durumlarda kullanılmalıdır.
+
+### 11. Manuel Docker Komutları
+
+Makefile kullanmadan backend ve PostgreSQL servislerini başlatmak için:
+
+```bash
+docker compose up --build
+```
+
+Servisleri arka planda başlatmak için:
+
+```bash
+docker compose up --build -d
+```
+
+Migration işlemlerini manuel uygulamak için:
+
+```bash
+docker compose exec web python manage.py migrate
+```
+
+Django Admin kullanıcısı oluşturmak için:
+
+```bash
+docker compose exec web python manage.py createsuperuser
+```
+
+Frontend’i manuel başlatmak için:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Servisleri manuel olarak durdurmak için:
 
 ```bash
 docker compose down
 ```
 
-Veritabanı volume'larını da silerek tamamen temiz bir kurulum yapmak için:
+Veritabanı volume’unu da silmek için:
 
 ```bash
 docker compose down -v
 ```
 
-> `docker compose down -v` komutu PostgreSQL içerisinde saklanan yerel verileri siler. Bu nedenle yalnızca temiz bir geliştirme ortamı gerektiğinde kullanılmalıdır.
+> `docker compose down -v` yerel PostgreSQL verilerini kalıcı olarak siler.
+
+### 12. Production Deployment
+
+Production ortamı `render.yaml` üzerinden aşağıdaki kaynaklarla tanımlanmıştır:
+
+- Render Managed PostgreSQL veritabanı
+- Docker tabanlı Django backend servisi
+- React production build’ini yayınlayan statik frontend servisi
+
+Backend başlangıç süreci:
+
+```text
+Migration işlemleri
+→ static dosyaların toplanması
+→ Gunicorn sunucusunun başlatılması
+```
+
+Frontend build süreci:
+
+```text
+npm install
+→ npm run build
+→ frontend/dist çıktısının yayınlanması
+```
+
+Frontend API adresi production ortamında aşağıdaki backend servisine yönlendirilir:
+
+```text
+https://fikirlab-backend.onrender.com/api
+```
+
+Canlı uygulama:
+
+<https://fikirlab-frontend.onrender.com>
+
+Canlı backend health check:
+
+<https://fikirlab-backend.onrender.com/health/>
+
+### Render Ücretsiz Plan Notu
+
+Proje, geçici Bootcamp teslim ortamı için Render’ın ücretsiz servisleri kullanılarak yayınlanmıştır.
+
+Render ücretsiz web servisleri yaklaşık 15 dakika boyunca istek almadığında otomatik olarak durdurulur. Bu nedenle uygulama bir süre kullanılmadıktan sonra yapılan ilk giriş, fikir listeleme veya analiz isteğinde backend servisinin yeniden başlaması beklenebilir. İlk istek normalden daha uzun sürebilir; servis yeniden çalışmaya başladıktan sonra sonraki istekler normal şekilde devam eder.
+
+Bu gecikme PostgreSQL veritabanının uykuya geçmesinden değil, ücretsiz Django backend web servisinin yeniden başlatılmasından kaynaklanmaktadır.
+
+Ayrıca ücretsiz Render PostgreSQL veritabanları oluşturulduktan 30 gün sonra sona ermektedir. Projenin uzun süreli kullanılmaya devam edilmesi durumunda veritabanının ücretli bir plana taşınması veya veriler için ayrı bir yedekleme ve taşıma planı hazırlanması gerekir.s
+
+---
 
 ## API Kullanımı
 
-Backend API, varsayılan olarak aşağıdaki temel adres üzerinden çalışmaktadır:
+FikirLab backend API’si Django REST Framework ile geliştirilmiştir.
+
+Yerel geliştirme ortamındaki temel API adresi:
 
 ```text
 http://localhost:8000/api/
+```
+
+Production API adresi:
+
+```text
+https://fikirlab-backend.onrender.com/api/
 ```
 
 Kimlik doğrulama gerektiren endpointlere JWT access token ile istek gönderilmelidir:
@@ -492,57 +1182,237 @@ Kimlik doğrulama gerektiren endpointlere JWT access token ile istek gönderilme
 Authorization: Bearer <access_token>
 ```
 
-### Kimlik Doğrulama Endpointleri
+Fikir ve analiz endpointlerinde kullanıcı sahipliği kontrolü uygulanır. Kullanıcılar yalnızca kendilerine ait fikirler, analiz sonuçları ve görüşme notları üzerinde işlem yapabilir.
 
-| Metot | Endpoint | Açıklama | Kimlik Doğrulama |
-| --- | --- | --- | --- |
-| `POST` | `/api/auth/register/` | Doğrulanmamış kullanıcı kaydı oluşturur ve e-posta doğrulama kodu gönderir. | Gerekli değil |
-| `POST` | `/api/auth/verify-email/` | E-posta adresini altı haneli kodla doğrular. | Gerekli değil |
-| `POST` | `/api/auth/resend-verification/` | Uygun hesaba yeni doğrulama kodu gönderir. | Gerekli değil |
-| `POST` | `/api/auth/login/` | Doğrulanmış kullanıcı için JWT bilgilerini döndürür. | Gerekli değil |
-| `POST` | `/api/auth/password-reset/request/` | Uygun hesaba parola sıfırlama kodu gönderir. | Gerekli değil |
-| `POST` | `/api/auth/password-reset/confirm/` | Kod ve yeni parola ile parola sıfırlamayı tamamlar. | Gerekli değil |
-| `GET` | `/api/auth/me/` | Giriş yapan kullanıcının profilini döndürür. | Gerekli |
-| `PATCH` | `/api/auth/me/` | Giriş yapan kullanıcının ad ve soyadını günceller. | Gerekli |
-| `POST` | `/api/auth/change-password/` | Mevcut parola ile giriş yapan kullanıcının parolasını değiştirir. | Gerekli |
+### Kimlik Doğrulama ve Kullanıcı Hesabı
 
-Kayıt ve kod gönderme endpointleri IP başına saatte 5, kod doğrulama
-endpointleri ise IP başına saatte 20 istekle sınırlandırılır. Yeniden gönderme
-bekleme süresi hesap bazında ayrıca uygulanır. Birden fazla worker kullanılan
-production ortamında IP throttle sayaçlarının tüm worker'larca paylaşılması
-için ortak bir Django cache backend'i yapılandırılmalıdır; varsayılan local
-memory cache yalnız süreç bazında koruma sağlar.
+| Metot | Endpoint | Açıklama | Erişim | Frontend Kullanımı |
+|---|---|---|---|---|
+| `POST` | `/api/auth/register/` | Yeni kullanıcı hesabı ve e-posta doğrulama kodu oluşturur. | Public | Kayıt sayfası |
+| `POST` | `/api/auth/login/` | Doğrulanmış kullanıcı için access token, refresh token ve kullanıcı bilgilerini döndürür. | Public | Giriş sayfası |
+| `POST` | `/api/auth/verify-email/` | Altı haneli doğrulama koduyla e-posta adresini doğrular. | Public | E-posta doğrulama sayfası |
+| `POST` | `/api/auth/resend-verification/` | Uygun kullanıcı için yeni doğrulama kodu gönderir. | Public | E-posta doğrulama sayfası |
+| `POST` | `/api/auth/password-reset/request/` | Parola sıfırlama kodu gönderir. | Public | Şifremi unuttum sayfası |
+| `POST` | `/api/auth/password-reset/confirm/` | Doğrulama kodu ve yeni parola ile parola sıfırlama işlemini tamamlar. | Public | Parola sıfırlama sayfası |
+| `GET` | `/api/auth/me/` | Giriş yapan kullanıcının profil bilgilerini getirir. | JWT | Hesap ayarları |
+| `PATCH` | `/api/auth/me/` | Giriş yapan kullanıcının ad ve soyad bilgilerini günceller. | JWT | Hesap ayarları |
+| `POST` | `/api/auth/change-password/` | Mevcut parola doğrulandıktan sonra kullanıcının parolasını değiştirir. | JWT | Hesap ayarları |
 
-### İş Fikri Endpointleri
+Kayıt isteği örneği:
 
-İş fikri işlemleri Django REST Framework `DefaultRouter` ve `IdeaViewSet` üzerinden yönetilmektedir.
+```json
+{
+  "email": "kullanici@example.com",
+  "password": "guclu-parola",
+  "password_confirm": "guclu-parola",
+  "first_name": "Eren",
+  "last_name": "Yıldız"
+}
+```
 
-| Metot | Endpoint | Açıklama | Kimlik Doğrulama |
-| --- | --- | --- | --- |
-| `GET` | `/api/ideas/` | Kullanıcının kendisine ait iş fikirlerini listeler. | Gerekli |
-| `POST` | `/api/ideas/` | Yeni bir iş fikri oluşturur. | Gerekli |
-| `GET` | `/api/ideas/<idea_id>/` | Belirtilen iş fikrinin detaylarını getirir. | Gerekli |
-| `PUT` | `/api/ideas/<idea_id>/` | İş fikrinin bütün alanlarını günceller. | Gerekli |
-| `PATCH` | `/api/ideas/<idea_id>/` | İş fikrinin belirtilen alanlarını günceller. | Gerekli |
-| `DELETE` | `/api/ideas/<idea_id>/` | İş fikrini siler. | Gerekli |
+E-posta doğrulama isteği örneği:
 
-Kullanıcılar yalnızca kendilerine ait fikirler üzerinde işlem yapabilir.
+```json
+{
+  "email": "kullanici@example.com",
+  "code": "123456"
+}
+```
 
-### Yapay Zekâ Fikir Analizi
+Giriş isteği örneği:
 
-| Metot | Endpoint | Açıklama | Kimlik Doğrulama |
-| --- | --- | --- | --- |
-| `POST` | `/api/analyses/analyze/` | Gönderilen iş fikri için yapay zekâ destekli temel analiz oluşturur. | Gerekli |
+```json
+{
+  "email": "kullanici@example.com",
+  "password": "guclu-parola"
+}
+```
 
-Bu endpoint, iş fikrinin temel doğrulama analizinin backend tarafında gerçekleştirilmesi için kullanılmaktadır.
+Profil güncelleme isteği örneği:
+
+```json
+{
+  "first_name": "Eren",
+  "last_name": "Yıldız"
+}
+```
+
+Parola değiştirme isteği örneği:
+
+```json
+{
+  "old_password": "mevcut-parola",
+  "new_password": "yeni-parola",
+  "new_password_confirm": "yeni-parola"
+}
+```
+
+Backend tarafında ayrı bir refresh-token endpointi veya logout endpointi bulunmamaktadır. Frontend logout işlemi, tarayıcıda tutulan token ve oturum bilgilerini temizleyerek gerçekleştirilir.
+
+### İş Fikri Yönetimi
+
+İş fikri işlemleri Django REST Framework `ViewSet` ve router yapısı üzerinden yönetilmektedir.
+
+| Metot | Endpoint | Açıklama | Erişim ve Sahiplik | Frontend Kullanımı |
+|---|---|---|---|---|
+| `GET` | `/api/ideas/` | Kullanıcının kendisine ait fikirleri listeler. | JWT, yalnız kendi fikirleri | Dashboard, geçmiş ve karşılaştırma |
+| `POST` | `/api/ideas/` | Yeni bir iş fikri oluşturur. | JWT, sahip mevcut kullanıcı olur | Yeni fikir sayfası |
+| `GET` | `/api/ideas/<idea_id>/` | Fikir detaylarını, analiz özetlerini ve kayıtlı RAG kaynaklarını getirir. | JWT, fikir sahipliği | Analiz, mentor ve rapor sayfaları |
+| `PUT` | `/api/ideas/<idea_id>/` | Fikrin bütün güncellenebilir alanlarını değiştirir. | JWT, fikir sahipliği | Aktif frontend çağrısı yok |
+| `PATCH` | `/api/ideas/<idea_id>/` | Fikrin belirtilen alanlarını kısmen günceller. | JWT, fikir sahipliği | Analiz sayfası |
+| `DELETE` | `/api/ideas/<idea_id>/` | Fikri ve ilişkili kullanıcı akışını siler. | JWT, fikir sahipliği | Geçmiş sayfası |
+| `GET` | `/api/ideas/compare/?ids=1,2` | İki veya üç fikri karşılaştırır. | JWT, tüm fikirlerde sahiplik | Fikir karşılaştırma sayfası |
+
+Yeni fikir isteği örneği:
+
+```json
+{
+  "title": "AI destekli eğitim platformu",
+  "description": "Öğrenciler için kişiselleştirilmiş çalışma planı oluşturan platform.",
+  "target_audience": "Üniversite öğrencileri"
+}
+```
+
+Karşılaştırma endpointinde iki veya üç fikir ID’si virgülle ayrılarak gönderilir:
+
+```text
+GET /api/ideas/compare/?ids=1,2,3
+```
+
+Kullanıcı karşılaştırmaya dahil edilen bütün fikirlerin sahibi olmalıdır.
+
+### Merkezi Doğrulama Workflow’u
+
+Yeni bir fikir oluşturulduktan sonra beş aşamalı doğrulama workflow’u aşağıdaki endpoint üzerinden başlatılır:
+
+| Metot | Endpoint | Açıklama | Erişim ve Sahiplik | Frontend Kullanımı |
+|---|---|---|---|---|
+| `POST` | `/api/analyses/ideas/<idea_id>/workflow/` | Beş aşamalı fikir doğrulama workflow’unu başlatır. | JWT, fikir sahipliği | Yeni fikir sayfası |
+| `GET` | `/api/analyses/workflow-runs/<run_id>/` | Workflow çalışma durumu ve aşama ilerlemesini getirir. | JWT, workflow’a bağlı fikir sahipliği | Yaklaşık bir saniyelik HTTP polling |
+
+Workflow sırasıyla şu aşamaları çalıştırır:
+
+1. Riskli varsayımlar
+2. Mom Test görüşme soruları
+3. MoSCoW MVP kapsamı
+4. Doğrulama yol haritası
+5. Genel değerlendirme
+
+Workflow başlatma isteği request body gerektirmez:
+
+```http
+POST /api/analyses/ideas/15/workflow/
+Authorization: Bearer <access_token>
+```
+
+Workflow başlatıldıktan sonra dönen çalışma kimliğiyle ilerleme sorgulanır:
+
+```http
+GET /api/analyses/workflow-runs/42/
+Authorization: Bearer <access_token>
+```
+
+Workflow aşamalarından biri başarısız olursa çalışma ilgili aşamada durur ve sonraki aşamalar çalıştırılmaz.
+
+Workflow response’u RAG kaynaklarını doğrudan içermez. Retrieval sırasında kullanılan kaynaklar fikir kaydında tutulur ve daha sonra fikir detay endpointindeki `sources` alanı üzerinden alınır.
+
+### Riskli Varsayımlar
+
+| Metot | Endpoint | Açıklama | Erişim ve Sahiplik | Frontend Kullanımı |
+|---|---|---|---|---|
+| `GET` | `/api/ideas/<idea_id>/risky-assumptions/` | Fikir için kayıtlı riskli varsayımları getirir. | JWT, fikir sahipliği | Riskli varsayımlar bileşeni |
+| `POST` | `/api/ideas/<idea_id>/generate-risky-assumptions/` | Riskli varsayımları yapay zekâ ve RAG bağlamıyla üretir veya yeniler. | JWT, fikir sahipliği | Analiz sayfası |
+
+Üretim isteği request body gerektirmez:
+
+```http
+POST /api/ideas/15/generate-risky-assumptions/
+Authorization: Bearer <access_token>
+```
+
+### Doğrulama Yol Haritası
+
+| Metot | Endpoint | Açıklama | Erişim ve Sahiplik | Frontend Kullanımı |
+|---|---|---|---|---|
+| `GET` | `/api/ideas/<idea_id>/roadmap/` | Kayıtlı doğrulama yol haritasını getirir. | JWT, fikir sahipliği | Doğrulama yol haritası bileşeni |
+| `POST` | `/api/ideas/<idea_id>/generate-roadmap/` | Fikir için yeni doğrulama yol haritası üretir veya mevcut sonucu yeniler. | JWT, fikir sahipliği | Analiz sayfası |
+
+### Genel Değerlendirme
+
+| Metot | Endpoint | Açıklama | Erişim ve Sahiplik | Frontend Kullanımı |
+|---|---|---|---|---|
+| `GET` | `/api/ideas/<idea_id>/evaluation/` | Fikir için kayıtlı genel değerlendirmeyi getirir. | JWT, fikir sahipliği | Genel değerlendirme bileşeni |
+| `POST` | `/api/ideas/<idea_id>/generate-evaluation/` | Genel değerlendirme sonucunu üretir veya yeniler. | JWT, fikir sahipliği | Analiz sayfası |
+
+### Rakip ve Pazar Analizi
+
+| Metot | Endpoint | Açıklama | Erişim ve Sahiplik | Frontend Kullanımı |
+|---|---|---|---|---|
+| `GET` | `/api/ideas/<idea_id>/competitor-analysis/` | Kayıtlı rakip ve pazar analizini getirir. | JWT, fikir sahipliği | Rakip analizi bileşeni |
+| `POST` | `/api/ideas/<idea_id>/generate-competitor-analysis/` | Fikir için rakip ve pazar analizi üretir veya yeniler. | JWT, fikir sahipliği | Analiz sayfası |
+
+Rakip analizi doğrudan Gemini modeliyle oluşturulur. Bu özellik web araması veya RAG retrieval kullanmamaktadır. Sonuçlar doğrulanmış dış kaynak veya citation içermez.
+
+### Yatırımcı Sunumu
+
+| Metot | Endpoint | Açıklama | Erişim ve Sahiplik | Frontend Kullanımı |
+|---|---|---|---|---|
+| `GET` | `/api/ideas/<idea_id>/pitch/` | Kayıtlı yatırımcı sunumu içeriğini getirir. | JWT, fikir sahipliği | Yatırımcı sunumu bileşeni |
+| `POST` | `/api/ideas/<idea_id>/generate-pitch/` | Fikir ve mevcut analiz sonuçlarına göre yatırımcı sunumu oluşturur veya yeniler. | JWT, fikir sahipliği | Analiz sayfası |
+
+Yatırımcı sunumu hazırlanırken fikir bilgileriyle birlikte mevcut riskli varsayımlar, MoSCoW `must_have` maddeleri, rakip analizi farklılaşma bilgileri ve genel değerlendirme sonuçları kullanılabilir.
+
+### AI Mentor
+
+| Metot | Endpoint | Açıklama | Erişim ve Sahiplik | Frontend Kullanımı |
+|---|---|---|---|---|
+| `POST` | `/api/ideas/<idea_id>/mentor-chat/` | Kullanıcı mesajını işler, mentor yanıtı ve varsa tool action sonuçlarını döndürür. | JWT, fikir sahipliği | Mentor ve analiz sayfaları |
+
+İstek örneği:
+
+```json
+{
+  "message": "Hedef kitlemi daha daraltmak için ne yapmalıyım?",
+  "history": [
+    {
+      "role": "user",
+      "content": "Fikrim üniversite öğrencilerine yönelik."
+    },
+    {
+      "role": "assistant",
+      "content": "Öncelikle belirli bir öğrenci grubuna odaklanabiliriz."
+    }
+  ]
+}
+```
+
+Mentor, Gemini native function calling kullanarak aşağıdaki araçlardan uygun olanı seçebilir:
+
+- `update_target_audience`
+- `regenerate_validation_roadmap`
+- `regenerate_moscow_scope`
+- `generate_mom_test_questions`
+- `regenerate_risky_assumptions`
+- `regenerate_general_evaluation`
+- `regenerate_competitor_analysis`
+- `generate_investor_pitch`
+- `save_interview_note`
+- `analyze_interview_evidence`
+
+Mentor en fazla üç model ve araç turu çalıştırabilir.
+
+Mentor response’u serbest metin yanıtına ek olarak çalıştırılan araçları ve işlem durumlarını içerebilir. Ancak structured RAG source veya cümle bazlı citation listesi döndürmez.
+
+Mentor sohbet geçmişi backend veritabanında saklanmaz. Frontend mesajları fikir bazında `localStorage` içerisinde tutar ve geçmişin sınırlı bir bölümünü yeni istekle backend’e gönderir.
 
 ### Mom Test Görüşme Soruları
 
-| Metot | Endpoint | Açıklama | Kimlik Doğrulama |
-| --- | --- | --- | --- |
-| `POST` | `/api/analyses/ideas/<idea_id>/mom-test-questions/` | Belirtilen fikir için Mom Test yaklaşımına uygun müşteri görüşme soruları üretir. | Gerekli |
+| Metot | Endpoint | Açıklama | Erişim ve Sahiplik | Frontend Kullanımı |
+|---|---|---|---|---|
+| `GET` | `/api/analyses/ideas/<idea_id>/mom-test-questions/` | Daha önce oluşturulmuş Mom Test sorularını getirir. | JWT, fikir sahipliği | Mom Test bileşeni |
+| `POST` | `/api/analyses/ideas/<idea_id>/mom-test-questions/` | Fikir için Mom Test yaklaşımına uygun sorular oluşturur veya yeniler. | JWT, fikir sahipliği | Analiz sayfası |
 
-İstek içerisinde üretilecek soru sayısı belirtilebilir:
+İstek içerisinde oluşturulacak soru sayısı belirtilebilir:
 
 ```json
 {
@@ -550,96 +1420,180 @@ Bu endpoint, iş fikrinin temel doğrulama analizinin backend tarafında gerçek
 }
 ```
 
-`question_count` değeri 8 ile 10 arasında olmalıdır. Değer gönderilmediğinde varsayılan olarak 10 soru üretilir.
+`question_count` değeri 8 ile 10 arasında olmalıdır. Değer gönderilmediğinde varsayılan olarak 10 soru oluşturulur.
 
-Endpoint, yalnızca giriş yapan kullanıcının kendisine ait fikirler için kullanılabilir.
+Mom Test servisi workflow veya bağımsız endpoint üzerinden çağrıldığında RAG bağlamını kullanabilir.
 
-### MoSCoW MVP Kapsam Analizi
+### MoSCoW MVP Kapsamı
 
-| Metot | Endpoint | Açıklama | Kimlik Doğrulama |
-| --- | --- | --- | --- |
-| `GET` | `/api/analyses/ideas/<idea_id>/moscow-scope/` | Daha önce oluşturulmuş MoSCoW analizini getirir. | Gerekli |
-| `POST` | `/api/analyses/ideas/<idea_id>/moscow-scope/` | Fikir için yeni bir MoSCoW kapsam analizi oluşturur veya mevcut analizi yeniler. | Gerekli |
+| Metot | Endpoint | Açıklama | Erişim ve Sahiplik | Frontend Kullanımı |
+|---|---|---|---|---|
+| `GET` | `/api/analyses/ideas/<idea_id>/moscow-scope/` | Kayıtlı MoSCoW kapsam analizini getirir. | JWT, fikir sahipliği | MoSCoW bileşeni |
+| `POST` | `/api/analyses/ideas/<idea_id>/moscow-scope/` | Yeni MoSCoW kapsam analizi oluşturur veya mevcut analizi yeniler. | JWT, fikir sahipliği | Analiz sayfası |
 
-`GET` isteğinde kayıtlı analiz bulunmuyorsa `404 Not Found` yanıtı döndürülür.
+`POST` isteği request body gerektirmez.
 
-`POST` isteği request body gerektirmez. İlk kez oluşturulan analiz için `201 Created`, mevcut analizin yenilenmesi durumunda `200 OK` yanıtı döndürülür.
+Kayıtlı analiz bulunmayan `GET` isteğinde `404 Not Found` yanıtı dönebilir.
 
-Örnek yanıt:
+MoSCoW analizi aşağıdaki grupları içerir:
+
+- `must_have`
+- `should_have`
+- `could_have`
+- `wont_have`
+
+MoSCoW servisinin ana sağlayıcısı Gemini’dir. Gemini anahtarı bulunmadığında opsiyonel OpenAI-compatible fallback kullanılabilir.
+
+### Müşteri Görüşme Notları
+
+| Metot | Endpoint | Açıklama | Erişim ve Sahiplik | Frontend Kullanımı |
+|---|---|---|---|---|
+| `GET` | `/api/analyses/ideas/<idea_id>/interview-notes/` | Fikre ait görüşme notlarını listeler. | JWT, fikir sahipliği | Görüşme notları bileşeni |
+| `POST` | `/api/analyses/ideas/<idea_id>/interview-notes/` | Yeni müşteri görüşme notu oluşturur. | JWT, fikir sahipliği | Görüşme notları bileşeni |
+| `GET` | `/api/analyses/ideas/<idea_id>/interview-notes/<note_id>/` | Belirtilen görüşme notunu getirir. | JWT, fikir ve not sahipliği | Aktif frontend çağrısı yok |
+| `PUT` | `/api/analyses/ideas/<idea_id>/interview-notes/<note_id>/` | Görüşme notunun bütün alanlarını günceller. | JWT, fikir ve not sahipliği | Aktif frontend çağrısı yok |
+| `PATCH` | `/api/analyses/ideas/<idea_id>/interview-notes/<note_id>/` | Görüşme notunun belirtilen alanlarını günceller. | JWT, fikir ve not sahipliği | Görüşme notları bileşeni |
+| `DELETE` | `/api/analyses/ideas/<idea_id>/interview-notes/<note_id>/` | Görüşme notunu siler. | JWT, fikir ve not sahipliği | Görüşme notları bileşeni |
+
+Not oluşturma isteği örneği:
 
 ```json
 {
-  "id": 1,
-  "idea_id": 5,
-  "summary": "MVP temel doğrulama akışına odaklanmalıdır.",
-  "must_have": [
-    {
-      "title": "Fikir girişi",
-      "reason": "Analiz için temel fikir bilgilerinin alınması gereklidir."
-    }
-  ],
-  "should_have": [
-    {
-      "title": "Analiz geçmişi",
-      "reason": "Önceki sonuçlarla karşılaştırma yapılmasını kolaylaştırır."
-    }
-  ],
-  "could_have": [
-    {
-      "title": "PDF çıktısı",
-      "reason": "Sonucun paydaşlarla paylaşılmasını kolaylaştırır."
-    }
-  ],
-  "wont_have": [
-    {
-      "title": "Ödeme sistemi",
-      "reason": "İlk MVP değerini test etmek için gerekli değildir."
-    }
-  ],
-  "prompt_version": "moscow-v1",
-  "provider": "openai-compatible",
-  "model_name": "configured-model"
+  "participant_name": "Katılımcı 1",
+  "content": "Kullanıcı mevcut sürecin çok fazla manuel işlem gerektirdiğini belirtti."
 }
 ```
 
-MoSCoW endpointi yalnızca kullanıcının kendisine ait fikirler için erişilebilir. Başka bir kullanıcıya ait fikir istendiğinde kaynak bilgisi gizlenerek `404 Not Found` yanıtı döndürülür.
+Not alanlarının kesin biçimi backend serializer doğrulamasına tabidir.
 
-### Yapay Zekâ Servisi Ayarları
+### Görüşme Kanıtı Analizi
 
-Yapay zekâ analiz servisleri OpenAI uyumlu chat completions altyapısını kullanmaktadır.
+| Metot | Endpoint | Açıklama | Erişim ve Sahiplik | Frontend Kullanımı |
+|---|---|---|---|---|
+| `GET` | `/api/analyses/ideas/<idea_id>/interview-evidence-analysis/` | Fikir için oluşturulan son görüşme kanıtı analizini getirir. | JWT, fikir sahipliği | API fonksiyonu bulunuyor ancak aktif caller yok |
+| `POST` | `/api/analyses/ideas/<idea_id>/interview-evidence-analysis/` | Görüşme notlarından yeni kanıt analizi oluşturur. | JWT, fikir sahipliği | Aktif frontend çağrısı yok |
 
-Gerekli ortam değişkenleri:
+Standalone görüşme kanıtı analizi merkezi beş aşamalı workflow’un bir parçası değildir.
 
-```env
-AI_API_URL=
-AI_API_KEY=
-AI_PROVIDER=
-AI_MODEL_NAME=
+Güncel frontend response tipi ile backend serializer çıktısı arasında uyumsuzluk bulunmaktadır. Frontend nested `result` alanı beklerken backend düz yapıda evidence alanları döndürmektedir.
+
+Bu nedenle evidence endpointleri backend tarafında mevcut olsa da güncel aktif kullanıcı akışında tam olarak kullanılmamaktadır.
+
+Görüşme kanıtı sonuçları güncel rapor ve PDF içerisinde ayrı bir bölüm olarak gösterilmemektedir.
+
+### RAG Kaynaklarının API Üzerinden Alınması
+
+RAG için ayrı bir public endpoint veya ayrı frontend RAG sayfası bulunmamaktadır.
+
+Workflow aşamalarında retrieval ile bulunan kaynaklar fikir kaydındaki `rag_sources` alanında saklanır. Bu kaynaklar fikir detay endpointi üzerinden `sources` alanıyla alınır:
+
+```http
+GET /api/ideas/<idea_id>/
+Authorization: Bearer <access_token>
 ```
 
-Gerçek API anahtarları `.env` dosyasında saklanmalı ve GitHub reposuna gönderilmemelidir.
+Kaynak nesnesi aşağıdaki alanları içerebilir:
+
+```json
+{
+  "title": "Kaynak başlığı",
+  "source_type": "youtube",
+  "source_url": "https://www.youtube.com/...",
+  "chunk_id": 42,
+  "chunk_index": 3,
+  "distance": 0.18
+}
+```
+
+Bu bilgiler doğrulama raporu ve PDF çıktısında kaynak listesi oluşturmak için kullanılmaktadır.
+
+Kaynak listesi, belirli bir model cümlesinin hangi kaynağa dayandığını gösteren inline veya claim-level citation sistemi değildir.
+
+### Sistem Endpointleri
+
+| Metot | Endpoint | Açıklama | Erişim |
+|---|---|---|---|
+| `GET` | `/health/` | Backend servisinin sağlık durumunu kontrol eder. | Public |
+| — | `/admin/` | Django Admin paneli | Staff kullanıcı ve session |
+
+Yerel health check:
+
+```text
+http://localhost:8000/health/
+```
+
+Production health check:
+
+```text
+https://fikirlab-backend.onrender.com/health/
+```
+
+### Frontend Tarafından Kullanılmayan Endpointler
+
+Backend üzerinde tanımlı olmasına rağmen güncel frontend kullanıcı akışında çağrılmayan başlıca endpointler:
+
+- `PUT /api/ideas/<idea_id>/`
+- `GET /api/analyses/ideas/<idea_id>/interview-notes/<note_id>/`
+- `PUT /api/analyses/ideas/<idea_id>/interview-notes/<note_id>/`
+- `POST /api/analyses/ideas/<idea_id>/interview-evidence-analysis/`
+
+Görüşme kanıtı analizinin `GET` fonksiyonu frontend API istemcisinde tanımlıdır ancak aktif bir component veya sayfa tarafından çağrılmamaktadır.
+
+Önceki dokümantasyonda yer alan aşağıdaki endpoint güncel URL yapılandırmasında bulunmamaktadır:
+
+```text
+POST /api/analyses/analyze/
+```
+
+Temel fikir doğrulama işlemleri merkezi workflow ve fikir bazlı analiz endpointleri üzerinden gerçekleştirilmektedir.
 
 ---
 
 ## Geliştirme Ortamı
 
-Proje geliştirme sürecinde backend ve frontend uygulamaları ayrı geliştirme sunucuları üzerinden çalıştırılmaktadır.
+FikirLab geliştirme ortamında Django backend ve PostgreSQL veritabanı Docker Compose içerisinde, React frontend ise host sistem üzerinde Vite geliştirme sunucusu ile çalışmaktadır.
 
-Backend tarafında Django ve Django REST Framework, frontend tarafında ise React, TypeScript ve Vite kullanılmaktadır. PostgreSQL veritabanı ile Django backend servisinin Docker Compose üzerinden çalıştırılması önerilmektedir.
+Proje yaşam döngüsü işlemlerinin Makefile üzerinden yürütülmesi önerilmektedir.
 
-### Backend Geliştirme Ortamı
+### Günlük Geliştirme Akışı
 
-Backend ve PostgreSQL servislerini başlatmak için proje kök dizininde:
-
-```bash
-docker compose up --build
-```
-
-Servisleri arka planda çalıştırmak için:
+Projeyi başlatmak için:
 
 ```bash
-docker compose up --build -d
+make up
 ```
+
+Makefile’ın varsayılan hedefi `up` olduğu için aşağıdaki komut da aynı işlemi gerçekleştirir:
+
+```bash
+make
+```
+
+Servisleri durdurmak için:
+
+```bash
+make down
+```
+
+Servisleri yeniden başlatmak için:
+
+```bash
+make restart
+```
+
+Backend image’ını ve frontend production build çıktısını oluşturmak için:
+
+```bash
+make build
+```
+
+Backend Docker image’ını cache kullanmadan oluşturmak için:
+
+```bash
+make build NO_CACHE=1
+```
+
+### Backend Geliştirme Komutları
 
 Django sistem kontrollerini çalıştırmak için:
 
@@ -647,16 +1601,62 @@ Django sistem kontrollerini çalıştırmak için:
 docker compose exec web python manage.py check
 ```
 
-Veritabanı migration işlemlerini uygulamak için:
+Model değişikliklerinden sonra yeni migration oluşturmak için:
+
+```bash
+docker compose exec web python manage.py makemigrations
+```
+
+Oluşturulmamış migration bulunup bulunmadığını kontrol etmek için:
+
+```bash
+docker compose exec web python manage.py makemigrations --check
+```
+
+Migration işlemlerini manuel olarak uygulamak için:
 
 ```bash
 docker compose exec web python manage.py migrate
 ```
 
-Backend testlerini çalıştırmak için:
+Normal Makefile akışında migration işlemleri `make up`, `make setup` ve `make restart` sırasında otomatik olarak çalıştırılmaktadır.
+
+Django shell açmak için:
 
 ```bash
-docker compose exec web python manage.py test
+docker compose exec web python manage.py shell
+```
+
+Admin kullanıcısı oluşturmak için:
+
+```bash
+docker compose exec web python manage.py createsuperuser
+```
+
+Backend container loglarını görüntülemek için:
+
+```bash
+docker compose logs -f web
+```
+
+PostgreSQL loglarını görüntülemek için:
+
+```bash
+docker compose logs -f db
+```
+
+Yerel geliştirme ortamında console e-posta backend’i kullanılıyorsa e-posta doğrulama ve parola sıfırlama kodları backend loglarında görüntülenir:
+
+```bash
+docker compose logs -f web
+```
+
+### Backend Testleri
+
+Bütün backend testlerini çalıştırmak için:
+
+```bash
+docker compose exec web python manage.py test --noinput
 ```
 
 Belirli bir uygulamanın testlerini çalıştırmak için:
@@ -667,78 +1667,279 @@ docker compose exec web python manage.py test apps.ideas
 docker compose exec web python manage.py test apps.analyses
 ```
 
-Backend uygulaması varsayılan olarak aşağıdaki adreste çalışır:
-
-```text
-http://localhost:8000/
-```
-
-### Docker Kullanmadan Backend Geliştirme
-
-Backend uygulamasını Docker kullanmadan çalıştırmak için Python sanal ortamı oluşturulabilir.
+Belirli bir test modülünü çalıştırmak için:
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+docker compose exec web python manage.py test \
+  apps.analyses.tests.test_validation_workflow
 ```
 
-Bağımlılıkları yüklemek için:
+RAG ve retrieval testlerini çalıştırmak için ilgili test modülleri ayrıca seçilebilir:
 
 ```bash
-pip install -r backend/requirements.txt
+docker compose exec web python manage.py test \
+  apps.analyses.tests.test_rag \
+  apps.analyses.tests.test_retriever
 ```
 
-Backend dizinine geçerek migration işlemlerini uygulamak ve geliştirme sunucusunu başlatmak için:
+Güncel teknik kontrolde:
 
-```bash
-cd backend
-python manage.py migrate
-python manage.py runserver
-```
+- Django sistem kontrolü hatasız tamamlandı.
+- Bekleyen migration bulunmadığı doğrulandı.
+- Toplam 202 backend testi başarıyla geçti.
+- Workflow testleri başarıyla tamamlandı.
+- RAG, retriever ve YouTube ingestion testleri başarıyla tamamlandı.
+- Görüşme notları ve evidence servislerine yönelik backend testleri çalıştı.
 
-Docker kullanılmadan çalıştırıldığında PostgreSQL bağlantısı ve gerekli ortam değişkenleri lokal geliştirme ortamına uygun biçimde yapılandırılmalıdır.
+AI mentor agent için ayrı bir dispatcher veya function-calling test paketi bulunmamaktadır.
 
-### Frontend Geliştirme Ortamı
+### Frontend Geliştirme Komutları
 
-Frontend bağımlılıklarını yüklemek için:
+Frontend bağımlılıklarını manuel olarak yüklemek için:
 
 ```bash
 cd frontend
 npm install
 ```
 
+Lockfile ile temiz bağımlılık kurulumu yapmak için:
+
+```bash
+cd frontend
+npm ci
+```
+
 Vite geliştirme sunucusunu başlatmak için:
 
 ```bash
+cd frontend
 npm run dev
 ```
 
-Frontend uygulaması varsayılan olarak aşağıdaki adreste çalışır:
-
-```text
-http://localhost:5173/
-```
-
-Üretim için frontend build çıktısı oluşturmak için:
+Production build oluşturmak için:
 
 ```bash
+cd frontend
 npm run build
 ```
 
-Oluşturulan build dosyaları `frontend/dist/` klasöründe yer alır.
+Production build çıktısı:
 
-### Geliştirme Akışı
+```text
+frontend/dist/
+```
 
-Yeni geliştirmeler doğrudan `main` branch üzerinde yapılmamalıdır. Her çalışma için ilgili issue üzerinden ayrı bir branch oluşturulmalı, değişiklikler commit edildikten sonra pull request açılmalıdır.
+Güncel teknik kontrolde frontend production build işlemi başarıyla tamamlanmıştır.
 
-Geliştirme tamamlanmadan önce aşağıdaki kontroller gerçekleştirilmelidir:
+Frontend kaynak kodu TypeScript ve TSX kullanılarak geliştirilmiştir. Ancak repository içerisinde ayrı bir `typecheck` scripti veya bağımsız TypeScript kontrol adımı bulunmamaktadır. Vite ve esbuild kaynak kodu transpile ederek build çıktısı üretmektedir.
 
-- İlgili issue kapsamındaki gereksinimlerin karşılandığının doğrulanması
-- Backend sistem kontrollerinin çalıştırılması
+Frontend tarafında ayrıca tanımlanmış bir unit test, component test veya browser E2E test altyapısı bulunmamaktadır.
+
+### RAG Geliştirme Komutları
+
+RAG bilgi tabanına Akademi tarafından sağlanan girişimcilik eğitim içeriklerini aktarmak için:
+
+```bash
+make rag-ingest
+```
+
+Bilgi tabanındaki kaynak ve chunk sayılarını görüntülemek için:
+
+```bash
+make rag-stats
+```
+
+Teknik inceleme sırasında yerel geliştirme veritabanında aşağıdaki değerler doğrulanmıştır:
+
+```text
+KnowledgeSource: 33
+KnowledgeChunk: 426
+```
+
+Kaynakların tamamı YouTube türündedir ve 426 chunk kaydının tamamında embedding bulunmaktadır.
+
+`make rag-ingest` çalıştırılmadan önce:
+
+- Backend `web` container’ının çalıştığı
+- Migration işlemlerinin tamamlandığı
+- Geçerli bir Gemini API anahtarının bulunduğu
+- İnternet bağlantısı ve API kotasının yeterli olduğu
+
+kontrol edilmelidir.
+
+Ingestion işlemi veritabanına yeni kaynak ve chunk kayıtları yazar. İşlem bazı videolarda başarısız olsa bile script sıfır exit code ile tamamlanabileceğinden komut çıktısındaki başarı ve hata sayıları ayrıca incelenmelidir.
+
+### Makefile Runtime Dosyaları
+
+Makefile, frontend sürecini ve proje yaşam döngüsünü takip etmek için bazı yerel runtime dosyaları oluşturur:
+
+```text
+.run/frontend.pid
+.run/frontend.log
+.run/frontend.lock
+.make/compose-project
+```
+
+Bu dosyaların amaçları:
+
+- `frontend.pid`: Frontend process group kimliği
+- `frontend.log`: Vite geliştirme sunucusu logları
+- `frontend.lock`: Frontend sürecine ait lock bilgisi
+- `compose-project`: Docker Compose proje adı bilgisi
+
+Frontend logunu doğrudan görüntülemek için:
+
+```bash
+tail -f .run/frontend.log
+```
+
+Makefile aynı proje dizininde eş zamanlı ve çakışan işlemleri engellemek amacıyla `/tmp` altında proje yoluna özel bir lock dosyası kullanır.
+
+Docker Compose proje adı checkout yolundan oluşturulan hash ile belirlenir. Bununla birlikte `docker-compose.yml` içerisinde sabit container isimleri ve host portları kullanıldığı için aynı projeye ait iki farklı checkout’un aynı anda tamamen izole biçimde çalıştırılması garanti edilmez.
+
+### Docker Kullanmadan Backend Geliştirme
+
+Backend uygulaması Docker dışında da çalıştırılabilir; ancak PostgreSQL, pgvector extension’ı ve gerekli ortam değişkenleri manuel olarak hazırlanmalıdır.
+
+Python sanal ortamı oluşturmak için:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Backend bağımlılıklarını yüklemek için:
+
+```bash
+pip install -r backend/requirements.txt
+```
+
+Backend dizinine geçmek için:
+
+```bash
+cd backend
+```
+
+Migration işlemlerini uygulamak ve geliştirme sunucusunu başlatmak için:
+
+```bash
+python manage.py migrate
+python manage.py runserver
+```
+
+Docker kullanılmadığında aşağıdaki altyapılar geliştirici tarafından ayrıca hazırlanmalıdır:
+
+- PostgreSQL 16
+- pgvector extension
+- Uygun veritabanı bağlantı bilgileri
+- Gemini API anahtarı
+- Gerekli e-posta ayarları
+- CORS ve frontend URL ayarları
+
+RAG retrieval işlemlerinin çalışabilmesi için PostgreSQL veritabanında pgvector extension’ının etkin olması gerekir.
+
+### Doğrulanan Test ve Build Sonuçları
+
+Güncel teknik incelemede aşağıdaki kontroller gerçekleştirilmiştir:
+
+| Kontrol | Sonuç |
+|---|---|
+| `docker compose config --quiet` | Başarılı |
+| `python manage.py check` | Sorun bulunmadı |
+| `python manage.py makemigrations --check` | Yeni migration gerekmiyor |
+| Backend testleri | 202 test başarılı |
+| `npm ci` | Başarılı |
+| `npm run build` | Başarılı |
+| `git diff --check` | Başarılı |
+| `make rag-stats` | 33 kaynak, 426 chunk |
+
+Frontend build çıktısında yaklaşık 2 MB büyüklüğündeki JavaScript bundle için Vite boyut uyarısı alınmıştır. Build işlemi bu uyarıya rağmen başarıyla tamamlanmıştır.
+
+Bağımlılık kurulumu sırasında npm tarafından bir orta ve üç yüksek seviye güvenlik uyarısı raporlanmıştır. Bu uyarılar uygulamanın build işlemini engellememektedir ancak bağımlılık güncellemeleri sırasında ayrıca değerlendirilmelidir.
+
+### Mevcut Test Kapsamı ve Eksikler
+
+Backend tarafında aşağıdaki alanlar için testler bulunmaktadır:
+
+- Kullanıcı kayıt ve kimlik doğrulama işlemleri
+- Fikir CRUD işlemleri
+- Kullanıcı sahipliği ve yetkilendirme
+- Merkezi doğrulama workflow’u
+- RAG retriever
+- pgvector sorguları
+- RAG cevap servisi
+- YouTube transcript işleme ve ingestion
+- Mom Test ve MoSCoW servisleri
+- Görüşme notları ve evidence analizi
+
+Aşağıdaki alanlarda ayrı veya kapsamlı test altyapısı bulunmamaktadır:
+
+- Gemini embedding servisinin gerçek provider entegrasyonu
+- Mentor agent function-calling ve tool dispatcher
+- Workflow endpointinden gerçek RAG persistence zinciri için kalıcı entegrasyon testi
+- Rapor ekranındaki kaynak gösterimi
+- Frontend unit ve component testleri
+- Frontend API testleri
+- Browser tabanlı uçtan uca testler
+- Production RAG corpus doğrulaması
+- Canlı Gemini provider smoke testi
+
+Bu eksikler, mevcut backend testlerinin başarısız olduğu anlamına gelmez. Mevcut test paketi 202 testle başarıyla tamamlanmaktadır; ancak belirtilen alanlar için ek entegrasyon ve frontend testleri geliştirilebilir.
+
+### Temizlik İşlemleri
+
+Yerel geliştirme verilerini onay alarak temizlemek için:
+
+```bash
+make clean
+```
+
+Onay istemeden temizlemek için:
+
+```bash
+make force-clean
+```
+
+> Bu komutlar PostgreSQL volume’unu, yerel veritabanını, frontend bağımlılıklarını ve build çıktılarını silebilir.
+
+Temizlik sonrasında proje tekrar aşağıdaki komutla kurulabilir:
+
+```bash
+make up
+```
+
+RAG bilgi tabanı silindiyse yeniden oluşturmak için:
+
+```bash
+make rag-ingest
+```
+
+### Git ve Pull Request Akışı
+
+Yeni geliştirmeler doğrudan `main` branch üzerinde yapılmamalıdır.
+
+Önerilen geliştirme akışı:
+
+1. Çalışmayla ilgili GitHub issue oluşturulur veya mevcut issue seçilir.
+2. Issue için ayrı bir branch açılır.
+3. Geliştirme ve test işlemleri tamamlanır.
+4. Değişiklikler anlamlı commitlere ayrılır.
+5. GitHub üzerinde pull request açılır.
+6. Çalışma Project Board üzerinde `In Review` durumuna taşınır.
+7. Kontroller tamamlandıktan sonra pull request birleştirilir.
+8. Tamamlanan issue kapatılır ve `Done` durumuna taşınır.
+
+Geliştirme tamamlanmadan önce aşağıdaki kontrollerin yapılması önerilir:
+
+- İlgili issue kabul kriterlerinin karşılandığının doğrulanması
+- Django sistem kontrolünün çalıştırılması
+- Yeni migration gerekip gerekmediğinin kontrol edilmesi
 - İlgili backend testlerinin başarıyla tamamlanması
-- Frontend build işleminin hatasız tamamlanması
-- Ortam değişkenleri ve gizli anahtarların repoya eklenmediğinin kontrol edilmesi
-- Project Board ve issue durumlarının güncellenmesi
+- Frontend production build işleminin hatasız tamamlanması
+- Ortam değişkenleri ve gizli anahtarların repository’ye eklenmediğinin kontrol edilmesi
+- `git diff --check` ile biçim ve whitespace kontrolü
+- Issue, milestone ve Project Board durumlarının güncellenmesi
+
 ---
 
 ## Sprint Dokümantasyonu
@@ -1278,169 +2479,536 @@ Paylaşılan güncel Project Board görüntüsünde durum dağılımı aşağıd
 
 Sprint sonunda teknik geliştirme backlog'u kapatılmış; devam eden çalışmalar ürün geliştirmesinden ziyade dokümantasyon, demo videosu ve final Bootcamp teslimi üzerine yoğunlaşmıştır.
 
-#### Sprint Board Ekran Görüntüsü
-
-Sprint 3 sonundaki Project Board ve Milestone durumu `docs/sprint-3/screenshots/` klasörü altında paylaşılmaktadır.
+![Sprint 3 Board](docs/sprint-3/sprint-board.png)
+![Sprint 3 Board2](docs/sprint-3/sprint-board-2.png)
+![Sprint 3 Board3](docs/sprint-3/sprint-board-3.png)
 
 ### Ürün Durumu
 
-Sprint 3 sonunda ürün, önceki sprintlerde ayrı ayrı geliştirilen backend, frontend, yapay zekâ ve RAG bileşenlerinin bir araya getirildiği, kullanıcı tarafından uçtan uca deneyimlenebilen bir MVP seviyesine ulaşmıştır.
+Sprint 3 sonunda FikirLab; önceki sprintlerde ayrı ayrı geliştirilen backend, frontend, yapay zekâ ve RAG bileşenlerinin tek bir kullanıcı akışında birleştirildiği, uçtan uca kullanılabilir bir MVP seviyesine ulaşmıştır.
 
-Kullanıcı, uygulama üzerinden hesap oluşturabilmekte, e-posta adresini doğrulayabilmekte ve giriş yapabilmektedir. Parola sıfırlama, parola değiştirme ve kullanıcı profil bilgilerini güncelleme akışları da ürün içerisine dahil edilmiştir.
+Kullanıcılar uygulama üzerinden:
 
-Giriş yapan kullanıcı kendisine ait iş fikirlerini oluşturabilmekte, listeleyebilmekte, görüntüleyebilmekte, güncelleyebilmekte ve silebilmektedir. Aktif fikir yönetimi iyileştirilmiş; silinen veya artık erişilemeyen bir fikrin analiz, mentor ve rapor ekranlarında hatalı istekler oluşturmasının önüne geçilmiştir.
+- Hesap oluşturabilir.
+- E-posta adreslerini doğrulayabilir.
+- Giriş yapabilir.
+- Parolalarını sıfırlayabilir veya değiştirebilir.
+- Ad ve soyad bilgilerini hesap ayarları üzerinden güncelleyebilir.
 
-Kullanıcının oluşturduğu fikir için aşağıdaki yapay zekâ destekli doğrulama çıktıları üretilebilmektedir:
+Giriş yapan kullanıcılar kendilerine ait iş fikirlerini oluşturabilir, listeleyebilir, görüntüleyebilir, güncelleyebilir, silebilir ve iki veya üç fikir arasında karşılaştırma yapabilir.
 
-- Fikrin temel analizi ve riskli varsayımları
-- Mom Test yaklaşımına uygun müşteri görüşme soruları
-- MoSCoW yöntemiyle MVP kapsam analizi
-- Fikir doğrulama yol haritası
+Aktif fikir yönetimi iyileştirilmiş; silinen veya artık erişilemeyen bir fikrin analiz, mentor ve rapor ekranlarında eski istekler oluşturmaya devam etmesi engellenmiştir.
+
+#### Beş Aşamalı Doğrulama Akışı
+
+Kullanıcının oluşturduğu fikir için aşağıdaki beş aşamalı doğrulama workflow’u çalıştırılmaktadır:
+
+1. Riskli varsayımların oluşturulması
+2. Mom Test görüşme sorularının hazırlanması
+3. MoSCoW yöntemiyle MVP kapsamının belirlenmesi
+4. Doğrulama yol haritasının oluşturulması
+5. Genel değerlendirmenin hazırlanması
+
+Bu yapı bir agent zinciri değildir. Backend tarafından önceden belirlenmiş sırayla yürütülen bir servis orkestrasyonudur.
+
+Workflow aşamalarının durumu backend üzerinde kaydedilmekte, frontend ise ilerleme endpointine yaklaşık bir saniyelik aralıklarla HTTP isteği göndererek kullanıcıya hangi aşamanın çalıştığını göstermektedir. Bu nedenle ilerleme gösterimi WebSocket veya SSE tabanlı gerçek zamanlı iletişim değil, HTTP polling ile sağlanan yakın gerçek zamanlı ilerleme takibidir.
+
+#### RAG Destekli Analizler
+
+Doğrulama workflow’unun beş aşaması, Yapay Zekâ ve Teknoloji Akademisi tarafından Bootcamp katılımcılarına sağlanan girişimcilik eğitim videolarından oluşturulan RAG bilgi tabanını kullanmaktadır.
+
+Analiz sırasında:
+
+- Fikir bilgileri ve aşamaya özgü sorgu hazırlanır.
+- Sorgu için Gemini embedding oluşturulur.
+- PostgreSQL ve pgvector üzerinde cosine distance tabanlı benzerlik araması yapılır.
+- Uygun eğitim içeriği parçaları analiz promptuna bağlam olarak eklenir.
+- Retrieval sırasında bulunan kaynak bilgileri fikir kaydında saklanır.
+- Kaynaklar mevcut olduğunda rapor ve PDF çıktısında kaynak listesi olarak gösterilir.
+
+Repository içerisindeki YouTube ingestion süreci videoları internetten indirmek yerine, proje içerisinde bulunan metadata ve Türkçe transcript dosyalarını işlemektedir.
+
+Gösterilen kaynak listesi inline veya cümle bazlı citation değildir. Sistem, oluşturulan belirli bir cümlenin hangi kaynak parçasına dayandığını ayrıca işaretlememektedir.
+
+#### Ek Yapay Zekâ Özellikleri
+
+Beş aşamalı doğrulama workflow’undan bağımsız olarak aşağıdaki özellikler de kullanıcıya sunulmaktadır:
+
 - Rakip ve pazar analizi
-- Yatırımcı sunumu hazırlama desteği
-- AI mentor üzerinden fikir odaklı yönlendirmeler
+- Yatırımcı sunumu oluşturma
+- AI mentor desteği
+- Müşteri görüşme notlarının yönetimi
+- Görüşme notlarına göre riskli varsayımların değerlendirilmesi
 
-Bu analiz modülleri tek bir doğrulama workflow'u altında birleştirilmiştir. Uzun süren analiz işlemlerinde kullanıcıya işlemin hangi aşamada olduğu hakkında gerçek zamanlı ilerleme bilgisi gösterilmektedir.
+Rakip analizi, web araması veya RAG retrieval üzerinden doğrulanmış güncel pazar verisi sağlamaz. Sonuçlar, kullanıcının fikir bilgileri üzerinden Gemini tarafından oluşturulan ve kullanıcı tarafından ayrıca doğrulanması gereken bir ön analiz niteliğindedir.
 
-RAG altyapısı analiz servisleriyle bütünleştirilmiş; girişimcilik ve fikir doğrulama kaynaklarının model yanıtlarında kullanılabilmesi sağlanmıştır. Ayrıca YouTube kaynaklarının sisteme alınması, parçalanması ve yanıt servisinde kullanılmasına yönelik RAG ingestion akışı geliştirilmiştir.
+AI mentor, Gemini native function calling kullanan gerçek bir tool-calling agent yapısına sahiptir. Mentor; analizleri yenileme, hedef kitleyi güncelleme, görüşme notu kaydetme ve görüşme kanıtlarını değerlendirme gibi işlemler için backend araçlarını çalıştırabilir.
 
-Müşteri görüşmelerinden elde edilen bilgilerin yalnızca kullanıcı tarafında tutulması yerine doğrulama sürecinin bir parçası haline getirilmesi sağlanmıştır. Kullanıcı görüşme notlarını ekleyebilmekte, düzenleyebilmekte ve silebilmektedir. Yapay zekâ servisi bu notlardan kanıtlar, içgörüler ve fikir doğrulamasında kullanılabilecek değerlendirmeler oluşturabilmektedir.
+Mentorun serbest sohbet yanıtı doğrudan RAG retrieval gerçekleştirmez ve yanıtta yapılandırılmış kaynak veya citation listesi sunmaz. Bununla birlikte mentorun çağırdığı bazı analiz araçları, ilgili servisler üzerinden dolaylı olarak RAG katmanını kullanabilir.
 
-Fikir analizi, MVP kapsamı, doğrulama yol haritası, görüşme kanıtları ve diğer sonuçlar bütünleşik doğrulama raporu ekranında bir araya getirilmiştir. Rapor, metin tabanlı ve düzenlenmiş bir PDF çıktısı olarak dışa aktarılabilmektedir.
+#### Görüşme Notları ve Kanıt Yönetimi
 
-Frontend tarafında ürün bütünlüğünü ve kullanıcı deneyimini geliştirmek amacıyla aşağıdaki çalışmalar tamamlanmıştır:
+Kullanıcılar müşteri görüşmelerinden elde ettikleri notları:
+
+- Oluşturabilir.
+- Listeleyebilir.
+- Güncelleyebilir.
+- Silebilir.
+
+Mentor içerisindeki görüşme kanıtı aracı, kayıtlı notları analiz ederek riskli varsayımların desteklenme durumlarını güncelleyebilir.
+
+Standalone görüşme kanıtı analiz endpointleri backend tarafında bulunmasına rağmen güncel frontend kullanıcı akışına tam olarak bağlanmamıştır. Bu analizlerin sonuçları doğrulama raporu veya PDF içerisinde ayrı bir evidence bölümü olarak gösterilmemektedir.
+
+#### Raporlama ve PDF
+
+Kullanıcı, fikir için oluşturulan temel analiz sonuçlarını tek bir doğrulama raporu ekranında görüntüleyebilir.
+
+Raporda aşağıdaki bölümler yer alabilir:
+
+- Riskli varsayımlar
+- Mom Test görüşme soruları
+- MoSCoW MVP kapsamı
+- Doğrulama yol haritası
+- Genel değerlendirme
+- Rakip analizi
+- Yatırımcı sunumu
+- Retrieval sırasında bulunan kaynak listesi
+
+Rapor, `@react-pdf/renderer` kullanılarak seçilebilir ve aranabilir metin içeren PDF biçiminde dışa aktarılabilir.
+
+Görüşme kanıtı analizinin bütün sonuçları güncel rapor ve PDF içerisinde ayrı bir bölüm olarak birleştirilmemektedir.
+
+#### Kullanıcı Deneyimi İyileştirmeleri
+
+Sprint 3 kapsamında frontend tarafında aşağıdaki iyileştirmeler tamamlanmıştır:
 
 - Gerçek kullanıcı fikirlerinin ve analiz geçmişinin yüklenmesi
+- Analiz sonuçlarının frontend ekranlarına bağlanması
+- Workflow ilerleme ekranı
 - Açık ve koyu tema desteği
 - Responsive ekran düzenlemeleri
 - Yüklenme, hata ve boş durum ekranları
 - Mentor mesajlarında Markdown gösterimi
-- Formların klavye ile gönderilebilmesi
+- Formların Enter tuşuyla gönderilebilmesi
 - Parola alanlarında görünürlük kontrolü
 - Hesap ayarları ekranı
-- Kullanılmayan frontend özelliklerinin ve endpointlerin temizlenmesi
+- Silinen ve erişilemeyen fikirler için güvenli aktif fikir yönetimi
+- Kullanılmayan frontend özelliklerinin temizlenmesi
 
-Backend tarafında kullanıcı sahipliği ve yetkilendirme kontrolleri uygulanmıştır. Kullanıcıların başka kullanıcılara ait fikir, analiz ve görüşme notlarına erişmesi engellenmiş; başarısız istekler ve hata senaryoları için gerekli kontroller hazırlanmıştır.
+#### Güvenlik ve Yetkilendirme
 
-Projenin geliştirme sürecini kolaylaştırmak amacıyla Makefile eklenmiş ve sık kullanılan proje yaşam döngüsü komutları merkezi hale getirilmiştir. Production ortam değişkenleri, e-posta ayarları, güvenlik yapılandırmaları ve deployment için gerekli teknik hazırlıklar gerçekleştirilmiştir.
+Backend tarafında kullanıcı sahipliği ve yetkilendirme kontrolleri uygulanmıştır.
 
-Sprint sonunda ürünün temel özellikleri çalışır ve birbiriyle entegre durumdadır. Bununla birlikte ürün henüz canlı bir production adresinde yayınlanmamıştır. Canlıya alma, son dokümantasyon, demo videosu ve Bootcamp teslim işlemleri ayrı `Final Delivery` milestone'u altında devam etmektedir.
+Kullanıcıların başka kullanıcılara ait:
+
+- Fikirlere
+- Analiz sonuçlarına
+- Workflow çalışmalarına
+- Görüşme notlarına
+- Rapor verilerine
+
+erişmesi engellenmiştir.
+
+E-posta doğrulama, parola sıfırlama ve doğrulama kodu işlemlerinde istek sınırlandırma, yeniden gönderme bekleme süresi ve başarısız doğrulama deneme sınırı uygulanmaktadır.
+
+#### Geliştirme ve Deployment
+
+Projenin sık kullanılan kurulum, servis yönetimi, build, test ve RAG işlemlerini kolaylaştırmak amacıyla Makefile hazırlanmıştır.
+
+Production ortamı Render üzerinde aşağıdaki servislerle yayınlanmıştır:
+
+- Yönetilen PostgreSQL veritabanı
+- Docker tabanlı Django backend servisi
+- Statik React frontend servisi
+
+Canlı uygulama:
+
+<https://fikirlab-frontend.onrender.com>
+
+Proje geçici Bootcamp teslim ortamı için Render’ın ücretsiz servisleri kullanılarak yayınlandığından, backend servisi bir süre istek almadığında durabilir. Bu durumda ilk API isteğinin yanıtlanması normalden daha uzun sürebilir.
+
+Sprint 3 sonunda ürünün temel fonksiyonları çalışır, birbirine bağlı ve kullanıcı tarafından uçtan uca deneyimlenebilir durumdadır. Devam eden çalışmalar yeni temel özellik geliştirmekten ziyade final dokümantasyonu, demo videosu, teslim formu ve son ürün kontrollerine odaklanmaktadır.
+
+![Sprint 3 Ürün Durumu](docs/sprint-3/sprint-3-demo.gif)
 
 
 ### Sprint Review
 
-Sprint 3 sonunda takım; ürünün kullanıcı akışını, tamamlanan teknik geliştirmeleri, Sprint 3 Milestone durumunu ve final teslim hazırlıklarını değerlendirmiştir.
+Sprint 3 Review kapsamında ürün; sprint hedefi, tamamlanan backlog maddeleri, kullanıcı akışı, teknik entegrasyonlar, test sonuçları ve final teslim gereksinimleri üzerinden değerlendirilmiştir.
 
-Bu sprintte temel amaç, önceki sprintlerde geliştirilen backend, frontend, yapay zekâ ve RAG bileşenlerini tek bir ürün akışı içerisinde birleştirmekti. Sprint sonunda kullanıcıların kayıt ve giriş işlemlerinden başlayarak fikir oluşturabildiği, yapay zekâ destekli doğrulama analizlerini çalıştırabildiği, müşteri görüşme notlarını yönetebildiği ve sonuçları bütünleşik rapor üzerinden inceleyebildiği uçtan uca MVP akışı oluşturulmuştur.
+Sprintin temel hedefi, önceki sprintlerde ayrı katmanlarda geliştirilen frontend, backend ve yapay zekâ özelliklerini tek bir kullanıcı akışında birleştirerek çalışır bir MVP ortaya çıkarmaktı. Review sonucunda bu hedefin büyük ölçüde gerçekleştirildiği değerlendirilmiştir.
 
-Sprint kapsamında tamamlanan başlıca çalışmalar şunlardır:
+#### Tamamlanan Ürün Artımı
 
-- Sprint 2’den aktarılan analiz sonuçlarının frontend kullanıcı arayüzüne entegrasyonu tamamlandı.
-- Ayrı çalışan doğrulama modülleri merkezi bir workflow altında birleştirildi.
-- RAG kaynakları yapay zekâ analiz servislerine entegre edildi.
-- Müşteri görüşme notları için backend veri modeli ve CRUD API geliştirildi.
-- Görüşme notlarının eklenmesi, düzenlenmesi ve silinmesi için frontend akışı hazırlandı.
-- Görüşme notlarından kanıt ve içgörü üreten yapay zekâ servisi geliştirildi.
-- Analiz ve görüşme sonuçlarını bir araya getiren bütünleşik fikir doğrulama raporu oluşturuldu.
-- Doğrulama raporunun PDF olarak dışa aktarılması sağlandı.
-- Yüklenme, hata, boş durum ve responsive arayüz davranışları iyileştirildi.
-- Kullanıcı sahipliği, yetkilendirme ve başarısız istek senaryolarına yönelik kontroller tamamlandı.
-- Hesap ayarları, e-posta doğrulama, parola değiştirme ve parola sıfırlama akışları ürüne dahil edildi.
-- Kullanılmayan veya güncelliğini kaybeden frontend özellikleri ve endpointler temizlendi.
-- Uzun süren doğrulama işlemleri için gerçek zamanlı ilerleme takibi eklendi.
-- Sık kullanılan geliştirme, test ve proje yaşam döngüsü komutlarını kolaylaştırmak amacıyla Makefile hazırlandı.
-- Production ortamı ve deployment için gerekli yapılandırmalar oluşturuldu.
+Sprint 3 sonunda aşağıdaki ürün artımları elde edilmiştir:
 
-Sprint 3 Milestone kapsamında takip edilen 11 issue'nun tamamı kapatılmıştır. Bu issue'lardan 10'u geliştirilerek tamamlanmış ve Project Board üzerinde `Done` durumuna taşınmıştır.
+- Sprint 2’den aktarılan analiz sonuçları frontend ekranlarına bağlandı.
+- Fikir oluşturma ve analiz başlatma adımları tek bir kullanıcı akışında birleştirildi.
+- Riskli varsayımlar, Mom Test soruları, MoSCoW kapsamı, doğrulama yol haritası ve genel değerlendirme merkezi bir workflow altında sıralı biçimde çalıştırıldı.
+- Workflow aşamalarının backend üzerinde kaydedilen durumu, frontend tarafında HTTP polling ile takip edilebilir hâle getirildi.
+- RAG retrieval katmanı beş temel analiz servisine bağlandı.
+- Akademi tarafından sağlanan girişimcilik eğitim videolarına ait metadata ve Türkçe transcript içerikleri RAG bilgi tabanına aktarıldı.
+- Retrieval sonucunda bulunan kaynakların analiz promptlarına bağlam olarak eklenmesi ve fikir kaydında saklanması sağlandı.
+- Kullanıcıların müşteri görüşme notlarını oluşturabileceği, güncelleyebileceği ve silebileceği not yönetimi geliştirildi.
+- Görüşme notlarının riskli varsayımların desteklenme durumlarını güncellemek amacıyla analiz edilebilmesi sağlandı.
+- Gemini native function calling kullanan AI mentor, backend araçlarını çalıştırabilecek şekilde ürün akışına bağlandı.
+- Rakip analizi ve yatırımcı sunumu özellikleri analiz ekranına eklendi.
+- Temel analiz sonuçlarını bir araya getiren doğrulama raporu ve metin tabanlı PDF çıktısı hazırlandı.
+- Hesap ayarları, e-posta doğrulama, parola sıfırlama ve parola değiştirme akışları tamamlandı.
+- Yüklenme, hata, boş durum ve responsive arayüz iyileştirmeleri gerçekleştirildi.
+- Kullanıcı sahipliği, yetkilendirme ve başarısız istek senaryolarına yönelik backend kontrolleri tamamlandı.
+- Kurulum, servis yönetimi, build ve RAG işlemleri için Makefile hazırlandı.
+- Uygulama Render üzerinde canlı ortama alındı.
 
-#23 numaralı temel MVP test senaryoları çalışmasının ise ayrı bir backlog maddesi olarak devam ettirilmesinden süreç içerisinde vazgeçilmiştir. Bu çalışma tamamlanmış gibi gösterilmemiş, Project Board üzerinde `Block` durumuna alınmıştır. Milestone'un GitHub üzerinde yüzde 100 görünmesi, milestone içerisindeki bütün issue'ların kapatılmış olmasından kaynaklanmaktadır.
+#### Sprint Backlog Sonucu
 
-Sprint Review sonucunda ürünün temel MVP kapsamının tamamlandığı ve kullanıcı tarafından uçtan uca deneyimlenebilir duruma geldiği değerlendirilmiştir. Önceki sprintlerde görülen frontend-backend entegrasyon eksikliği büyük ölçüde giderilmiş, ayrı geliştirilen modüller ürün bütünlüğü içerisinde birleştirilmiştir.
+Sprint 3 Milestone kapsamında toplam 11 issue takip edilmiştir.
 
-Sprint sonunda teknik geliştirme ağırlıklı Sprint 3 Milestone kapatılmıştır. Kalan çalışmalar ürünün temel fonksiyonlarının geliştirilmesinden ziyade aşağıdaki final teslim faaliyetlerine odaklanmaktadır:
+Bu issue’lardan 10’u geliştirilerek tamamlanmış ve Project Board üzerinde `Done` durumuna taşınmıştır.
+
+`#23 – Add Basic Test Scenarios for Sprint 2 MVP Flow` çalışmasının ayrı bir backlog maddesi olarak devam ettirilmesinden süreç içerisinde vazgeçilmiştir. Bu issue tamamlanmış gibi gösterilmemiş; kapsamdan çıkarıldığını belirtmek amacıyla kapatılarak Project Board üzerinde `Block` durumuna taşınmıştır.
+
+Bu nedenle GitHub Milestone ilerlemesinin `%100` görünmesi, milestone içerisindeki bütün issue’ların kapatılmış olmasından kaynaklanmaktadır. Bu oran, `#23` numaralı çalışmanın geliştirilerek tamamlandığı anlamına gelmemektedir.
+
+Sprint 3 sonunda issue durumları özetle:
+
+- **10 issue:** Geliştirilerek tamamlandı ve `Done` durumuna taşındı.
+- **1 issue (`#23`):** Kapsamdan çıkarıldı ve `Block` durumuna taşındı.
+- **Sprint 3 Milestone:** Kapatıldı.
+
+#### Teknik Doğrulama Sonuçları
+
+Sprint Review öncesinde güncel `main` branch üzerinde gerçekleştirilen teknik kontrollerde:
+
+- Docker Compose yapılandırması doğrulandı.
+- Django sistem kontrolü hatasız tamamlandı.
+- Bekleyen migration bulunmadığı doğrulandı.
+- Toplam 202 backend testi başarıyla geçti.
+- Frontend bağımlılık kurulumu tamamlandı.
+- Frontend production build işlemi başarıyla sonuçlandı.
+- RAG workflow zinciri kontrollü runtime smoke testiyle doğrulandı.
+- Beş workflow aşamasının retrieval çağrısı yaptığı görüldü.
+- Gerçek PostgreSQL ve pgvector cosine sorgularının çalıştığı doğrulandı.
+- RAG bağlamının beş analiz promptuna da eklendiği görüldü.
+- Kaynak bilgilerinin fikir kaydında saklanabildiği doğrulandı.
+- Yerel geliştirme veritabanında 33 kaynak ve 426 embedding’li chunk bulunduğu kontrol edildi.
+- Canlı frontend ve backend health endpointinin erişilebilir olduğu doğrulandı.
+
+Frontend tarafında ayrı bir unit, component veya browser E2E test altyapısı bulunmamaktadır. AI mentorun function-calling dispatcher yapısı için de ayrı bir otomatik test paketi henüz hazırlanmamıştır.
+
+#### Review Sırasında Belirlenen Sınırlar
+
+Sprint Review sırasında ürünün güncel teknik sınırları da açık biçimde değerlendirilmiştir:
+
+- Workflow ilerlemesi WebSocket veya SSE ile değil, yaklaşık bir saniyelik HTTP polling ile izlenmektedir.
+- RAG kaynakları raporda toplu kaynak listesi olarak gösterilmektedir; cümle veya iddia bazlı inline citation sistemi bulunmamaktadır.
+- Rakip analizi web araması veya doğrulanmış güncel pazar kaynakları kullanmamaktadır.
+- AI mentorun serbest sohbet yanıtı doğrudan retrieval yapmamakta ve yapılandırılmış kaynak listesi döndürmemektedir.
+- Standalone görüşme kanıtı analiz endpointleri güncel frontend akışına tam olarak bağlanmamıştır.
+- Görüşme kanıtı analizinin bütün sonuçları rapor ve PDF içerisinde ayrı bir bölüm olarak gösterilmemektedir.
+- Yerel geliştirme veritabanındaki RAG kaynakları production veritabanına otomatik olarak aktarılmamaktadır.
+- Render üzerinde kullanılan ücretsiz backend servisi bir süre trafik almadığında durabildiği için ilk API isteğinde gecikme yaşanabilmektedir.
+
+Bu sınırlar, mevcut özelliklerin çalışmadığı anlamına gelmemektedir. Ürünün hangi özellikleri kapsadığı ve hangi noktalarda ek geliştirme gerektirdiği şeffaf biçimde dokümante edilmiştir.
+
+#### Sprint Review Sonucu
+
+Sprint Review sonucunda FikirLab’ın temel MVP kapsamının tamamlandığı ve ürünün kullanıcı tarafından uçtan uca deneyimlenebilir duruma ulaştığı değerlendirilmiştir.
+
+Önceki sprintlerde görülen frontend-backend entegrasyon eksikliği giderilmiş; fikir oluşturma, analiz başlatma, sonuçları görüntüleme, mentor desteği, görüşme notları, raporlama ve PDF dışa aktarma özellikleri ortak bir ürün akışı içerisinde birleştirilmiştir.
+
+Canlı uygulama:
+
+<https://fikirlab-frontend.onrender.com>
+
+Sprint 3 sonunda teknik geliştirme ağırlıklı milestone kapatılmıştır. Kalan çalışmalar yeni temel özellik geliştirmekten çok final teslim faaliyetlerine odaklanmaktadır:
 
 - Sprint 3 ve final proje dokümantasyonunun tamamlanması
-- Güncel ürün ekran görüntülerinin ve demo kayıtlarının hazırlanması
-- Üç dakikalık proje tanıtım videosunun oluşturulması
+- Güncel ekran görüntülerinin ve demo kayıtlarının hazırlanması
+- Üç dakikalık proje tanıtım videosunun tamamlanması
 - Final Bootcamp teslim formunun doldurulması
-- Canlı ortam ve erişim bilgilerinin kesinleştirilmesi
+- Canlı ortamda son kullanıcı akışlarının kontrol edilmesi
+- Teslim bağlantılarının ve proje bilgilerinin kesinleştirilmesi
 
-Bu çalışmalar #40 ve #41 numaralı issue'lar üzerinden ayrı `Final Delivery` milestone'u altında takip edilmektedir.
+Bu çalışmalar `#40` ve `#41` numaralı issue’lar üzerinden ayrı `Final Delivery` milestone’u altında takip edilmektedir.
 
-Sprint Review sonunda ürünün yarışmaya sunulabilecek temel teknik seviyeye ulaştığı, final teslim öncesinde ise dokümantasyon, demo, canlı ortam kontrolleri ve sunum hazırlıklarının tamamlanması gerektiği sonucuna varılmıştır.
+### Sprint Retrospective
 
-#### Sprint Retrospective
+Sprint 3 Retrospective kapsamında ekip; sprint boyunca uygulanan çalışma biçimini, teknik kararları, ekip içi koordinasyonu, karşılaşılan sorunları ve final teslim sürecine aktarılacak iyileştirme alanlarını değerlendirmiştir.
 
-Sprint 3 sonunda takım; teknik geliştirme sürecini, entegrasyon çalışmalarını, görev yönetimini, ürün kapsamını ve final teslim hazırlıklarını birlikte değerlendirmiştir.
-
-Bu sprintte önceki sprintlerden farklı olarak yalnızca bağımsız özelliklerin geliştirilmesine değil, geliştirilen bütün parçaların gerçek bir kullanıcı akışı içerisinde birlikte çalışmasına odaklanılmıştır. Frontend, backend, yapay zekâ ve RAG bileşenlerinin birleştirilmesi sırasında ortaya çıkan eksikler giderilmiş ve ürünün temel MVP akışı büyük ölçüde tamamlanmıştır.
+Sprintin temel odağı, önceki sprintlerde ayrı ayrı geliştirilen backend, frontend ve yapay zekâ özelliklerini bir araya getirerek çalışır bir MVP oluşturmaktı. Sprint sonunda temel kullanıcı akışının tamamlanması, RAG entegrasyonunun doğrulama workflow’una bağlanması, uygulamanın canlı ortama alınması ve final teslim aşamasına geçilmesi sprintin en önemli çıktıları olmuştur.
 
 #### İyi Giden Noktalar
 
-- Sprint 2’den aktarılan analiz sonuçlarının frontend entegrasyonu tamamlandı.
-- Ayrı ayrı geliştirilen analiz modülleri merkezi bir doğrulama workflow'u altında birleştirildi.
-- RAG altyapısı analiz servisleriyle entegre edilerek ürün içerisinde işlevsel biçimde kullanılmaya başlandı.
-- Müşteri görüşme notları için backend ve frontend tarafında bütünleşik bir yönetim akışı oluşturuldu.
-- Görüşme notlarından kanıt ve içgörü üreten yapay zekâ özelliği doğrulama sürecine dahil edildi.
-- Analiz sonuçlarını ve görüşme kanıtlarını bir araya getiren bütünleşik rapor ekranı hazırlandı.
-- Raporların PDF olarak dışa aktarılması sağlandı.
-- Yüklenme, hata, boş durum ve responsive arayüz davranışları iyileştirildi.
-- E-posta doğrulama, parola sıfırlama, parola değiştirme ve hesap ayarları gibi kullanıcı hesabı akışları tamamlandı.
-- Kullanıcı sahipliği, yetkilendirme ve başarısız istek senaryoları daha kapsamlı şekilde kontrol edildi.
-- Gerçek zamanlı workflow ilerleme takibi sayesinde uzun süren analiz işlemleri kullanıcı açısından daha anlaşılır hale getirildi.
-- Kullanılmayan frontend özellikleri ve eski endpointler temizlenerek ürün bütünlüğü artırıldı.
-- Makefile eklenerek sık kullanılan geliştirme ve proje yaşam döngüsü komutlarının daha düzenli yönetilmesi sağlandı.
-- Görevler issue, branch, commit, pull request, milestone ve Project Board üzerinden takip edildi.
-- Sprint 3 kapsamında tamamlanan çalışmalar `Done`, kapsamdan çıkarılan çalışma ise `Block` durumunda açıkça gösterildi.
+- Sprint başında hedeflenen frontend ve backend entegrasyonu büyük ölçüde tamamlandı.
+- Fikir oluşturma, analiz başlatma, sonuçları görüntüleme, mentor desteği, raporlama ve PDF dışa aktarma işlemleri ortak bir kullanıcı akışında birleştirildi.
+- Beş aşamalı doğrulama workflow’u merkezi bir yapı altında çalışır hâle getirildi.
+- Workflow ilerlemesinin kullanıcıya aşama bazlı gösterilmesi sağlandı.
+- Yapay Zekâ ve Teknoloji Akademisi tarafından sağlanan girişimcilik eğitim içerikleri RAG bilgi tabanına aktarıldı.
+- RAG retrieval katmanı doğrulama workflow’unun beş temel analiz servisine bağlandı.
+- Akademi eğitim içeriklerinden elde edilen bağlamın analiz promptlarına eklenmesi sağlandı.
+- AI mentor, Gemini native function calling kullanan gerçek bir tool-calling agent yapısıyla ürün akışına dahil edildi.
+- Müşteri görüşme notlarının oluşturulması, güncellenmesi ve silinmesi için kullanıcı arayüzü ve backend desteği tamamlandı.
+- Hesap ayarları, e-posta doğrulama, parola sıfırlama ve parola değiştirme akışları tamamlandı.
+- Kullanıcı sahipliği ve yetkilendirme kontrolleri güçlendirildi.
+- Loading, error, empty state ve responsive arayüz düzenlemeleri yapıldı.
+- Makefile sayesinde proje kurulumu, servis yönetimi, build ve RAG işlemleri daha kolay ve standart hâle getirildi.
+- Uygulama Render üzerinde canlı ortama alındı.
+- Backend testleri ve frontend production build işlemi başarıyla tamamlandı.
+- Issue, milestone ve Project Board kullanımı sprint boyunca düzenli şekilde sürdürüldü.
 
 #### Karşılaşılan Zorluklar
 
-- Önceki sprintlerde frontend ve backend çalışmalarının farklı hızlarda ilerlemesi, Sprint 3 içerisinde yoğun bir entegrasyon yükü oluşturdu.
-- Ayrı geliştirilen modüllerin tek bir kullanıcı akışında birleştirilmesi sırasında beklenmeyen veri akışı ve durum yönetimi sorunları ortaya çıktı.
-- Aktif fikir yönetimi, silinen fikirler, eski isteklerin sonuçları ve farklı sayfalardaki bağımlı API çağrıları ek düzenlemeler gerektirdi.
-- Entegrasyon sırasında ilk backlog planında yer almayan kullanıcı hesabı, e-posta doğrulama, parola yönetimi ve arayüz iyileştirmeleri gibi tamamlayıcı ihtiyaçlar ortaya çıktı.
-- Sprint kapsamının genişlemesi, dokümantasyon, demo ve final teslim çalışmalarının teknik geliştirmelerle paralel yürütülmesini zorlaştırdı.
-- Production yapılandırmaları hazırlanmasına rağmen canlıya alma işlemi sprint kapanışı sırasında henüz kesinleştirilemedi.
-- #23 numaralı temel MVP test senaryoları çalışmasının ayrı bir backlog maddesi olarak sürdürülmesinden vazgeçildi. Bu iş tamamlanmış kabul edilmeden `Block` durumuna alındı.
-- Sprint milestone'unun yalnızca kapatılan issue sayısına göre yüzde 100 görünmesi, tamamlanan ve kapsamdan çıkarılan işlerin ayrıca açıklanması gerektiğini gösterdi.
+Sprint boyunca teknik entegrasyonların kapsamı başlangıçta öngörülenden daha geniş olmuştur.
 
-#### Öğrenilenler
+Özellikle aşağıdaki alanlarda ek çalışma gerekmiştir:
 
-- Frontend ve backend entegrasyonu sprintin sonuna bırakılmamalı, özellikler tamamlandıkça küçük parçalar halinde doğrulanmalıdır.
-- Bir özelliğin yalnızca backend veya frontend tarafında tamamlanması, ürün açısından tamamlandığı anlamına gelmemektedir.
-- Issue açıklamalarında bağımlılıklar, beklenen API yapıları, hata durumları ve kabul kriterleri daha erken tanımlanmalıdır.
-- Kullanıcı akışındaki yüklenme, boş durum, yetkilendirme ve silinmiş veri senaryoları geliştirme başlangıcından itibaren ele alınmalıdır.
-- Sprint backlog'u hazırlanırken yalnızca yeni özellikler değil, entegrasyon, temizlik, test, dokümantasyon ve deployment çalışmaları için de zaman ayrılmalıdır.
-- Kapatılan her issue'nun tamamlanmış olduğu varsayılmamalı; `Done` ve `Block` durumları ayrı biçimde raporlanmalıdır.
-- Final dokümantasyonu ve demo hazırlıkları sprintin son günlerine bırakılmadan geliştirme süreciyle paralel yürütülmelidir.
-- Projenin kurulum ve geliştirme komutlarının Makefile gibi merkezi bir yapı üzerinden sunulması ekip içi kullanım ve teslim kolaylığı sağlamaktadır.
+- Önceki sprintlerde geliştirilen analiz sonuçlarının frontend veri yapılarıyla uyumlu hâle getirilmesi
+- Backend response tipleri ile frontend type tanımlarının eşleştirilmesi
+- Silinen veya artık erişilemeyen fikirlerde eski aktif fikir bilgisinin temizlenmesi
+- Eski API isteklerinin yeni seçilen fikir durumunu bozmasını engelleyen race-condition kontrollerinin eklenmesi
+- Workflow ilerlemesinin kullanıcıya anlaşılır biçimde gösterilmesi
+- RAG altyapısının yalnızca servis katmanında bulunması yerine gerçek kullanıcı workflow’una bağlanması
+- Akademi eğitim videolarına ait transcript ve metadata dosyalarının ingestion sürecine uygun hâle getirilmesi
+- RAG kaynaklarının analiz sonuçlarıyla birlikte saklanması ve raporda gösterilmesi
+- Production deployment için CORS, CSRF, environment variable ve servis başlangıç komutlarının düzenlenmesi
+- E-posta doğrulama ve parola sıfırlama işlemleri için SMTP yapılandırmasının hazırlanması
+- Canlı ortamın ücretsiz servis sınırlamalarıyla birlikte çalıştırılması
+- Teknik dokümantasyonun hızla değişen proje yapısına göre güncel tutulması
+
+RAG entegrasyonunun ilk aşamasında embedding, retriever ve pgvector altyapısı bulunmasına rağmen kullanıcı tarafından başlatılan workflow retrieval katmanını çağırmıyordu. Bu durum teknik inceleme sonucunda fark edilmiş ve sonraki geliştirmelerle beş temel analiz servisi RAG katmanına bağlanmıştır.
+
+#### Süreçte Öğrenilenler
+
+Sprint 3 boyunca aşağıdaki önemli çıkarımlar elde edilmiştir:
+
+- Bir özelliğin repository içerisinde bulunması, gerçek kullanıcı akışına bağlı olduğu anlamına gelmez.
+- AI veya RAG özellikleri yalnızca servis ve test seviyesinde değil, frontend aksiyonundan veritabanına kadar uçtan uca doğrulanmalıdır.
+- RAG entegrasyonunda corpus bulunması, retrieval çalışması ve kaynakların kullanıcıya gösterilmesi ayrı ayrı kontrol edilmelidir.
+- Kaynak listesi göstermek ile cümle bazlı citation sağlamak aynı şey değildir.
+- Ana doğrulama workflow’u ile tool seçebilen mentor agent mimari olarak ayrı kavramlardır.
+- Frontend ve backend response tipleri geliştirme sırasında birlikte güncellenmelidir.
+- Kullanıcı sahipliği kontrolleri yalnız fikir endpointlerinde değil, bütün ilişkili analiz ve not endpointlerinde uygulanmalıdır.
+- Loading, error ve empty state ekranları ürünün kullanılabilirliği açısından temel özellikler kadar önemlidir.
+- Deployment hazırlığı geliştirme tamamlandıktan sonra yapılacak ayrı bir işlem olarak görülmemeli, sprint boyunca değerlendirilmelidir.
+- Ücretsiz deployment servislerinin cold start ve veritabanı yaşam süresi gibi sınırları dokümantasyonda açıkça belirtilmelidir.
+- README ve teknik dokümantasyon, gerçek uygulama davranışıyla düzenli olarak karşılaştırılmalıdır.
+
+#### Geliştirilmesi Gereken Alanlar
+
+Sprint sonunda ürün çalışır bir MVP seviyesine ulaşmış olsa da aşağıdaki geliştirme alanları belirlenmiştir:
+
+- Frontend için unit ve component test altyapısının kurulması
+- Browser tabanlı uçtan uca testlerin eklenmesi
+- AI mentor function-calling ve tool dispatcher yapısı için otomatik testlerin hazırlanması
+- Workflow ile RAG arasındaki gerçek entegrasyonu kalıcı olarak doğrulayan testlerin eklenmesi
+- RAG kaynaklarının hangi analiz aşamasında kullanıldığını gösterecek daha ayrıntılı kaynak takibi
+- Kaynak listesi yerine cümle veya iddia bazlı citation yaklaşımının araştırılması
+- PostgreSQL üzerinde HNSW veya IVFFlat vector index kullanımının değerlendirilmesi
+- Standalone görüşme kanıtı analizinin frontend kullanıcı akışına bağlanması
+- Görüşme kanıtı sonuçlarının rapor ve PDF içerisinde ayrı bir bölüm olarak gösterilmesi
+- Rakip analizinin doğrulanmış dış kaynaklarla desteklenmesi
+- Frontend JavaScript bundle büyüklüğünün azaltılması
+- Kullanılmayan frontend dependency’lerinin temizlenmesi
+- npm tarafından bildirilen güvenlik uyarılarının değerlendirilmesi
+- Production RAG corpus’unun hazırlanması ve doğrulanması
+- Production SMTP yapılandırmasının tamamlanması
+- Uzun süreli kullanım için kalıcı deployment ve veritabanı planının oluşturulması
+
+Bu maddeler Sprint 3 MVP kapsamının başarısız olduğu anlamına gelmemektedir. Ürünün mevcut sürümü Bootcamp teslimi için temel kullanıcı akışlarını sağlamaktadır; belirtilen alanlar ürünün daha güvenilir, ölçeklenebilir ve sürdürülebilir hâle getirilmesi için sonraki geliştirme fırsatlarıdır.
+
+#### Ekip ve İş Dağılımı Değerlendirmesi
+
+Sprint boyunca ekip üyeleri backend, frontend, yapay zekâ, RAG, test, deployment ve dokümantasyon çalışmalarını paralel biçimde yürütmüştür.
+
+Issue tabanlı çalışma yöntemi sayesinde:
+
+- Yapılacak işler görünür hâle getirildi.
+- Görevler ekip üyeleri tarafından üstlenildi.
+- Çalışmalar branch ve pull request üzerinden takip edildi.
+- Tamamlanan işler Project Board üzerinde `Done` durumuna taşındı.
+- Kapsamdan çıkarılan işler tamamlanmış gibi gösterilmeden `Block` durumunda tutuldu.
+- Teknik geliştirme işleri ile final teslim işleri ayrı milestone’lar altında takip edildi.
+
+Bazı entegrasyon ve dokümantasyon görevlerinin birden fazla ekip üyesinin alanını ilgilendirmesi, görevlerin başlangıçta öngörülenden daha fazla koordinasyon gerektirmesine neden olmuştur.
+
+Gelecek çalışmalarda frontend, backend ve AI katmanlarını birlikte etkileyen issue’lar için geliştirme başlamadan önce ortak veri sözleşmesi ve kabul kriterlerinin daha ayrıntılı hazırlanması planlanmaktadır.
 
 #### Final Teslim İçin Aksiyonlar
 
-- Sprint 3 ve final proje dokümantasyonu tamamlanacaktır.
-- README içerisindeki ürün özellikleri, Product Backlog, proje yapısı, kullanılan teknolojiler ve kurulum adımları güncel proje yapısına göre yenilenecektir.
-- Makefile içerisinde yer alan komutlar doğrulanarak kurulum ve geliştirme dokümantasyonuna eklenecektir.
-- Güncel ürün ekran görüntüleri ve demo kayıtları `docs/sprint-3/` klasörüne eklenecektir.
-- Üç dakikalık proje tanıtım videosu hazırlanacaktır.
-- Final ürün akışı teslim öncesinde uçtan uca yeniden kontrol edilecektir.
-- Public repository, proje videosu, canlı bağlantı ve teslim formu bilgileri kesinleştirilecektir.
-- Deployment gerçekleştirilebilirse canlı bağlantı teslim dokümantasyonuna eklenecektir.
-- #40 ve #41 numaralı final teslim çalışmaları `Final Delivery` milestone'u üzerinden tamamlanacaktır.
+Sprint Retrospective sonucunda final teslim süreci için aşağıdaki aksiyonlar belirlenmiştir:
 
-Sprint Retrospective sonucunda takım, ürünün temel MVP hedeflerine ulaştığını; ancak başarılı bir final teslim için dokümantasyon, demo videosu, son kullanıcı akışı kontrolleri ve deployment çalışmalarının tamamlanması gerektiğini değerlendirmiştir.
+- README içerisindeki güncelliğini kaybetmiş teknik bilgilerin düzeltilmesi
+- Canlı uygulama ve repository bağlantılarının kontrol edilmesi
+- Sprint 3 ürün durumu görsellerinin ve demo kaydının tamamlanması
+- Üç dakikalık proje tanıtım videosunun hazırlanması
+- Final proje raporunun tamamlanması
+- Final teslim formunun doldurulması
+- Canlı ortamda kayıt, giriş, fikir oluşturma, analiz ve rapor akışlarının tekrar kontrol edilmesi
+- Production e-posta yapılandırmasının kontrol edilmesi
+- Production RAG corpus durumunun doğrulanması
+- Repository’de lisans ve kullanım hakları bildiriminin hazırlanması
+- Takım üyeleri ve iletişim bilgilerinin son kez doğrulanması
+- Final teslim bağlantılarının ekip üyeleriyle paylaşılması
+
+Bu aksiyonlar `Final Delivery` milestone’u altındaki issue’lar üzerinden takip edilmektedir.
+
+#### Retrospective Sonucu
+
+Sprint 3 sonunda ekip, ürünün temel MVP kapsamını tamamlamış ve projeyi final teslim aşamasına taşımıştır.
+
+Sprint boyunca yalnızca yeni özellik geliştirmeye değil, önceki sprintlerde oluşturulan parçaların gerçek kullanıcı akışında birlikte çalışmasına odaklanılmıştır. Teknik incelemeler sayesinde yalnız kod içerisinde bulunan ancak kullanıcı akışına bağlanmamış yapılar tespit edilmiş, özellikle RAG entegrasyonu gerçek workflow zincirine dahil edilmiştir.
+
+Ekip; sprint planlama, issue yönetimi, branch ve pull request akışı, teknik entegrasyon, test, deployment ve dokümantasyon konularında önemli deneyim kazanmıştır.
+
+Sonraki aşamada öncelik, yeni temel özellikler eklemek yerine mevcut ürünün final teslim için doğru, anlaşılır ve doğrulanabilir biçimde sunulmasıdır.
+
+---
 
 ## Proje Teslim Bilgileri
 
-| Teslim Kalemi | Durum |
+FikirLab, Yapay Zekâ ve Teknoloji Akademisi Bootcamp sürecinde Team 138 tarafından geliştirilen AI destekli fikir doğrulama platformudur.
+
+Projenin temel geliştirme çalışmaları tamamlanmış, uygulama canlı ortama alınmış ve final teslim hazırlıklarına geçilmiştir.
+
+### Teslim Bağlantıları
+
+| Teslim Öğesi | Bağlantı / Konum | Durum |
+|---|---|---|
+| Canlı uygulama | <https://fikirlab-frontend.onrender.com> | Yayında |
+| Backend sağlık kontrolü | <https://fikirlab-backend.onrender.com/health/> | Yayında |
+| GitHub repository | <https://github.com/erenylldz/YZTA---Team-138> | Public |
+| GitHub Project Board | <https://github.com/users/erenylldz/projects/2> | Güncel |
+| Sprint dokümantasyonları | `docs/sprint-1/`, `docs/sprint-2/`, `docs/sprint-3/` | Repository içerisinde |
+| Sprint 3 ürün durumu | `docs/sprint-3/sprint-3-demo.gif` | Repository içerisinde |
+| Final proje tanıtım videosu | Teslim bağlantısı eklenecektir. | Hazırlanıyor |
+| Final proje raporu | Teslim bağlantısı veya dosya yolu eklenecektir. | Hazırlanıyor |
+| Bootcamp final teslim formu | Akademi teslim sistemi üzerinden paylaşılacaktır. | Final teslim aşamasında |
+
+### Proje Durumu
+
+Final teslim hazırlıkları sırasında aşağıdaki temel özellikler çalışır durumdadır:
+
+- Kullanıcı kaydı ve e-posta doğrulama
+- JWT tabanlı kullanıcı girişi
+- Parola sıfırlama ve parola değiştirme
+- Hesap bilgilerinin güncellenmesi
+- İş fikri oluşturma, listeleme, güncelleme ve silme
+- İki veya üç fikri karşılaştırma
+- Beş aşamalı fikir doğrulama workflow’u
+- RAG destekli riskli varsayım analizi
+- RAG destekli Mom Test soruları
+- RAG destekli MoSCoW kapsam analizi
+- RAG destekli doğrulama yol haritası
+- RAG destekli genel değerlendirme
+- Rakip ve pazar analizi
+- Yatırımcı sunumu oluşturma
+- Gemini function calling tabanlı AI mentor
+- Müşteri görüşme notlarının yönetimi
+- Görüşme notlarına göre riskli varsayımların değerlendirilmesi
+- Birleşik doğrulama raporu
+- Metin tabanlı PDF çıktısı
+- Açık ve koyu tema desteği
+- Responsive kullanıcı arayüzü
+- Kullanıcı sahipliği ve yetkilendirme kontrolleri
+- Render üzerinde canlı deployment
+
+### Final Teslim Çalışmaları
+
+Final teslim kapsamında kalan çalışmalar yeni bir temel ürün özelliği geliştirmekten çok mevcut ürünün sunuma hazırlanmasına odaklanmaktadır:
+
+- README ve teknik dokümantasyonun son kez kontrol edilmesi
+- Sprint 3 dokümantasyonunun tamamlanması
+- Güncel ürün ekran görüntülerinin düzenlenmesi
+- Final proje tanıtım videosunun hazırlanması
+- Final proje raporunun tamamlanması
+- Canlı uygulamadaki temel kullanıcı akışlarının yeniden test edilmesi
+- Production SMTP ayarlarının kontrol edilmesi
+- Production RAG bilgi tabanının durumunun doğrulanması
+- Repository lisans ve kullanım hakları bildiriminin eklenmesi
+- Bootcamp final teslim formunun doldurulması
+- Bütün teslim bağlantılarının ekip tarafından doğrulanması
+
+Bu çalışmalar GitHub üzerinde `Final Delivery` milestone’u altında takip edilmektedir.
+
+### Canlı Ortam Hakkında
+
+Proje, Bootcamp değerlendirme sürecinde erişilebilir olması amacıyla Render üzerinde yayınlanmıştır.
+
+Ücretsiz Render backend servisi bir süre istek almadığında otomatik olarak durabilir. Bu nedenle uygulama uzun süre kullanılmadıktan sonra yapılan ilk giriş veya API isteği normalden daha uzun sürebilir. Backend servisi yeniden çalışmaya başladıktan sonra sonraki işlemler normal biçimde devam eder.
+
+Canlı ortam geçici değerlendirme amacıyla hazırlanmıştır. Uzun süreli veya production seviyesinde kullanım için kalıcı veritabanı, yedekleme, SMTP, servis izleme ve ücretli hosting seçeneklerinin ayrıca yapılandırılması gerekir.
+
+Canlı ortamda kullanılan RAG bilgi tabanı, Türkiye Girişimcilik Vakfına ait girişimcilik eğitim içerikleri temel alınarak yalnızca Bootcamp değerlendirmesi amacıyla hazırlanmıştır. Mevcut deployment kalıcı veya ticari kullanım izni anlamına gelmez. Projenin jüri değerlendirmesinden sonra yayında tutulması ya da gerçek bir ürüne dönüştürülmesi durumunda ilgili içerikler için yazılı kullanım izni alınması veya RAG bilgi tabanının kullanım hakkı açık kaynaklarla değiştirilmesi gerekecektir.
+
+### Teslim Öncesi Kontrol Listesi
+
+- [x] Public GitHub repository hazırlandı.
+- [x] Sprint milestone ve issue kayıtları güncellendi.
+- [x] Sprint 1, Sprint 2 ve Sprint 3 dokümantasyonları repository’ye eklendi.
+- [x] Backend ve frontend entegrasyonu tamamlandı.
+- [x] RAG katmanı merkezi doğrulama workflow’una bağlandı.
+- [x] Yerel RAG bilgi tabanı oluşturuldu.
+- [x] Backend testleri çalıştırıldı.
+- [x] Frontend production build işlemi doğrulandı.
+- [x] Uygulama Render üzerinde canlı ortama alındı.
+- [x] Canlı frontend ve backend sağlık kontrolü doğrulandı.
+- [x] Production RAG corpus durumu son kez kontrol edilecek.
+- [x] Production SMTP ayarları son kez kontrol edilecek.
+- [ ] Final proje tanıtım videosu tamamlanacak.
+- [x] Final proje raporu tamamlanacak.
+- [ ] Bootcamp final teslim formu gönderilecek.
+- [x] Repository lisans ve kullanım hakları bildirimi eklenecek.
+
+### Team 138
+
+| Ekip Üyesi | Proje Rolü |
 |---|---|
-| GitHub reposu | Hazır |
-| Public repo | Hazır – <https://github.com/erenylldz/YZTA---Team-138> |
-| Sprint 3 ürün durumu videosu | Çekildi, repository'ye yüklenmesi bekleniyor |
-| Ürün demosu | Planlanıyor |
-| Canlı link | Henüz bulunmuyor |
-| Proje videosu | Hazırlanıyor |
-| Final raporu ve dokümantasyon | Hazırlanıyor |
+| Eren Yıldız | Scrum Master, backend, AI ve veri koordinasyonu |
+| Sema Yeşilkaya | Product Owner ve backend geliştirme |
+| Semiha Çıtırkı | Frontend geliştirme |
+| Mücahit Ayyıldız | Backend ve veri geliştirme |
+| Berker Öner | Backend, AI ve RAG geliştirme |
 
-## Lisans
+Final teslim bağlantıları tamamlandıkça bu bölüm güncellenecektir.
 
-Belirlenecek.
+## Telif ve Kullanım Hakları
+
+FikirLab açık kaynaklı bir proje değildir.
+
+Team 138 tarafından oluşturulan özgün kaynak kodu, yapay zekâ promptları, workflow uygulamaları, veritabanı yapıları, kullanıcı arayüzleri, dokümantasyon, raporlar ve diğer özgün proje içerikleri üzerindeki tüm haklar ilgili Team 138 katkıcılarına aittir.
+
+Aşağıda belirtilen sınırlı değerlendirme izni dışında, takım üyeleri haricindeki herhangi bir kişi veya kurum, hak sahiplerinin önceden verilmiş yazılı izni olmadan projenin özgün içeriklerini:
+
+- Kullanamaz veya çalıştıramaz.
+- Kopyalayamaz veya yeniden yayınlayamaz.
+- Değiştiremez veya türev çalışma oluşturamaz.
+- Başka bir projeye, ürüne, ödeve ya da yarışma çalışmasına dahil edemez.
+- Dağıtamaz, satamaz, lisanslayamaz veya ticari amaçla kullanamaz.
+- Kendi çalışmasıymış gibi sunamaz.
+- Yapay zekâ modeli, veri seti veya benzer bir sistem geliştirmek için kullanamaz.
+
+Yapay Zekâ ve Teknoloji Akademisi mentorları, eğitmenleri ve jüri üyeleri projeyi yalnızca Bootcamp değerlendirmesi ve gösterim amacıyla inceleyebilir ve çalıştırabilir. Bu sınırlı izin, proje içeriğinin başka çalışmalarda kullanılmasına, değiştirilmesine veya dağıtılmasına izin vermez.
+
+Projede kullanılan Django, React, PostgreSQL, pgvector, Gemini ve diğer üçüncü taraf teknolojiler kendi sahiplerine ve kendi lisanslarına tabidir. Bu kullanım bildirimi, söz konusu üçüncü taraf teknolojiler üzerinde hak iddia etmez.
+
+### RAG Eğitim İçeriklerinin Kullanımı
+
+FikirLab’ın RAG bilgi tabanında, Yapay Zekâ ve Teknoloji Akademisi eğitim sürecinde takım üyelerine sağlanan ve Türkiye Girişimcilik Vakfına ait olan girişimcilik eğitim videoları kullanılmaktadır.
+
+Team 138, eğitim içeriklerinin Bootcamp projesinde RAG tabanlı bir bilgi kaynağı olarak kullanılması konusunda Akademi tarafından takıma atanan asistandan yazılı görüş almıştır. İlgili görüşte, içeriklerin yarışma ve Bootcamp projesi kapsamında kullanılmasında sakınca bulunmadığı; ancak projenin gerçek bir ürüne dönüştürülmesi durumunda Türkiye Girişimcilik Vakfıyla telif ve kullanım hakları konusunda ayrıca görüşülmesi gerektiği belirtilmiştir.
+
+Mevcut Render deployment’ı yalnızca Bootcamp jüri değerlendirmesi ve proje gösterimi amacıyla hazırlanmış geçici bir ortamdır. Bu kullanım, eğitim içeriklerinin kalıcı, kurumsal veya ticari bir üründe kullanılmasına yönelik genel bir lisans olarak değerlendirilmemektedir.
+
+FikirLab’ın Bootcamp sonrasında kalıcı veya ticari bir ürüne dönüştürülmesi durumunda:
+
+1. Türkiye Girişimcilik Vakfıyla eğitim içeriklerinin RAG sisteminde kullanım kapsamını belirleyen yazılı bir izin veya lisans anlaşması yapılması,
+2. Ya da mevcut eğitim içeriklerine dayanan transcript, metadata, chunk, embedding ve ilişkili RAG kayıtlarının kaldırılarak bilgi tabanının Team 138 tarafından üretilmiş, kamu malı, açık lisanslı veya yazılı kullanım izni alınmış kaynaklarla yeniden oluşturulması
+
+gerekecektir.
+
+Team 138, Türkiye Girişimcilik Vakfına ait eğitim videoları ve bunlardan elde edilen içerikler üzerinde sahiplik iddiasında bulunmaz ve üçüncü kişilere bu içerikler üzerinde kullanım hakkı vermez.
+
+Ayrıntılı kullanım koşulları repository kök dizinindeki [`LICENSE`](LICENSE) dosyasında yer almaktadır.
+
+**Copyright © 2026 Team 138 Contributors. All Rights Reserved.**
