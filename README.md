@@ -167,8 +167,11 @@ Board üzerinde görevler aşağıdaki durumlara göre yönetilmektedir:
 - `To Do`: İlgili sprintte yapılması planlanan çalışmalar
 - `In Progress`: Geliştirmesi devam eden çalışmalar
 - `Done`: Geliştirmesi ve kontrolleri tamamlanan çalışmalar
+- `Block`: Sprint sürecinde kapsamdan çıkarılan, önceliği kaldırılan veya artık tamamlanması planlanmayan çalışmalar
 
-Tamamlanamayan işler ilgili issue'lara açıklayıcı yorumlar eklenerek sonraki sprintlere aktarılmaktadır. Tamamlanan çalışmalar ise pull request ve test süreçlerinin ardından `Done` durumuna taşınmaktadır.
+Tamamlanan çalışmalar pull request ve kontrol süreçlerinin ardından `Done` durumuna taşınmaktadır.
+
+Teknik bir engel nedeniyle geçici olarak bekleyen işler `In Progress` veya ilgili issue açıklaması üzerinden takip edilmektedir. Sprint içerisinde artık yapılmamasına karar verilen, kapsamdan çıkarılan veya önceliği kaldırılan işler ise tamamlanmış gibi gösterilmeden `Block` durumuna alınmaktadır.
 
 URL: <https://github.com/users/erenylldz/projects/2>
 
@@ -1127,50 +1130,316 @@ Sprint 2 süreci sonunda ekip tarafından teknik ilerleme, iş dağılımı, ile
 
 ### Sprint Notları
 
-Belirlenecek.
+Sprint 3, 20 Temmuz 2026 tarihinde başlamış ve 2 Ağustos 2026 tarihinde tamamlanmıştır.
+
+Bu sprintte temel hedef, önceki sprintlerde geliştirilen backend ve yapay zekâ modüllerini tek bir kullanıcı akışı içerisinde birleştirerek ürünü uçtan uca kullanılabilir, test edilebilir ve teslim edilebilir hale getirmek olmuştur.
+
+Sprint 2’den aktarılan analiz sonuçlarının dashboard kullanıcı arayüzüne entegre edilmesi ve temel MVP test senaryolarının hazırlanması çalışmalarına öncelik verilmiştir. Bunun yanında fikir doğrulama modülleri tek bir doğrulama iş akışı altında birleştirilmiş; kullanıcının fikir oluşturma, analiz başlatma, sonuçları görüntüleme, müşteri görüşme notlarını kaydetme ve bu notlardan kanıta dayalı içgörüler elde etme süreçleri geliştirilmiştir.
+
+Sprint kapsamında müşteri görüşme notları için veri modeli ve CRUD API hazırlanmış, notların frontend üzerinden eklenmesi, düzenlenmesi ve silinmesi sağlanmıştır. Görüşme notlarından kanıt ve içgörü üretme özelliği geliştirilmiş ve bu çıktılar ürünün doğrulama akışına dahil edilmiştir.
+
+Fikir analizleri, Mom Test soruları, MoSCoW kapsam analizi, doğrulama yol haritası, görüşme kanıtları ve diğer analiz sonuçlarını bir araya getiren bütünleşik fikir doğrulama raporu hazırlanmıştır. Rapor ekranı geliştirilmiş ve doğrulama raporunun metin tabanlı PDF olarak dışa aktarılabilmesi sağlanmıştır.
+
+Frontend tarafında analiz geçmişinin saklanması, kullanıcıya ait gerçek fikirlerin yüklenmesi, açık ve koyu tema desteği, hesap ayarları, şifre görünürlüğü, e-posta doğrulama, şifre sıfırlama ve mentor yanıtlarının Markdown biçiminde gösterilmesi gibi kullanıcı deneyimini geliştiren çalışmalar gerçekleştirilmiştir. Yüklenme, hata, boş durum ve responsive arayüz davranışları gözden geçirilmiş; kullanılmayan veya güncelliğini kaybeden frontend özellikleri ve endpointler temizlenmiştir.
+
+Yapay zekâ ve RAG tarafında analiz servisleri RAG kaynaklarıyla bütünleştirilmiş, YouTube içeriklerinin bilgi tabanına alınabilmesi için ingestion pipeline ve yanıt servisi eklenmiştir. RAG kaynak yönetimi ve oturum işlemleri geliştirilmiş; fikir bazlı Mom Test soruları ve görüşme kanıtı analizi gibi AI özellikleri ürün akışına dahil edilmiştir.
+
+Doğrulama akışının uzun süren işlemlerinde kullanıcıya anlık ilerleme bilgisi sunmak amacıyla gerçek zamanlı workflow progress tracking özelliği geliştirilmiştir. Ayrıca proje yaşam döngüsündeki sık kullanılan geliştirme komutlarını kolaylaştırmak amacıyla Makefile eklenmiştir.
+
+Sprint 3 Milestone kapsamında yer alan 11 issue'nun tamamı kapatılmış ve milestone yüzde 100 tamamlanmıştır. Çalışmalar ayrı branch ve pull request'ler üzerinden ana branch'e aktarılmış; sprint sonunda ürünün temel kullanıcı akışı, analiz modülleri, raporlama özellikleri, testleri ve production ortamı için gerekli yapılandırmaları tamamlanmıştır.
+
+Ürünün canlıya alınmasına yönelik teknik hazırlıklar yapılmış olmakla birlikte, canlı bağlantı ve nihai deployment bilgileri proje teslim süreci kapsamında ayrıca güncellenecektir.
 
 ### Sprint Hedefi
 
-Belirlenecek.
+Sprint 3’ün temel hedefi, önceki sprintlerde geliştirilen backend, yapay zekâ ve RAG modüllerini frontend ile birleştirerek kullanıcı tarafından uçtan uca deneyimlenebilen, test edilebilir ve teslim edilebilir bir ürün ortaya çıkarmaktır.
+
+Bu sprintte yeni ve bağımsız özellikler geliştirmekten çok, mevcut modüllerin tek bir doğrulama süreci altında birleştirilmesine, kullanıcı deneyiminin tamamlanmasına, hata durumlarının giderilmesine ve ürünün production ortamına hazırlanmasına öncelik verilmiştir.
+
+Sprint 3 kapsamında hedeflenen ana çıktılar:
+
+- Sprint 2’den aktarılan analiz sonuçlarını dashboard kullanıcı arayüzüne entegre etmek
+- Fikir oluşturma, analiz başlatma ve analiz sonuçlarını görüntüleme adımlarını uçtan uca çalışan tek bir kullanıcı akışında birleştirmek
+- Riskli varsayımlar, Mom Test soruları, MoSCoW kapsamı, doğrulama yol haritası ve diğer analiz modüllerini merkezi bir doğrulama workflow’u üzerinden yönetmek
+- RAG kaynaklarını analiz servisleriyle bütünleştirerek yapay zekâ çıktılarının girişimcilik ve fikir doğrulama içerikleriyle desteklenmesini sağlamak
+- Kullanıcının müşteri görüşme notlarını ekleyebilmesi, görüntüleyebilmesi, düzenleyebilmesi ve silebilmesi için backend ve frontend akışlarını geliştirmek
+- Görüşme notlarından kanıt, içgörü ve tekrar eden problem analizleri oluşturmak
+- Analiz sonuçları ile görüşme kanıtlarını bir araya getiren bütünleşik fikir doğrulama raporu hazırlamak
+- Doğrulama raporunu PDF olarak dışa aktarılabilir hale getirmek
+- Uzun süren analiz işlemlerinde kullanıcıya gerçek zamanlı ilerleme bilgisi göstermek
+- Yüklenme, hata, boş durum ve responsive arayüz davranışlarını tamamlamak
+- Kullanıcı sahipliği, yetkilendirme ve başarısız istek senaryolarını test etmek
+- Hesap ayarları, e-posta doğrulama ve parola yönetimi gibi kullanıcı hesabı akışlarını tamamlamak
+- Kullanılmayan frontend özelliklerini ve endpointleri temizleyerek ürün bütünlüğünü artırmak
+- Projenin sık kullanılan geliştirme ve test komutlarını Makefile üzerinden kolaylaştırmak
+- Production ortam değişkenlerini ve deployment yapılandırmasını hazırlamak
+- Ürünün son kontrollerini, hata düzeltmelerini, dokümantasyonunu ve demo hazırlıklarını tamamlamak
+
+Sprint sonunda hedeflenen ürün artımı; kullanıcının kayıt olarak bir iş fikri oluşturabildiği, bu fikir için yapay zekâ destekli doğrulama analizleri alabildiği, müşteri görüşme kanıtlarını sisteme ekleyebildiği ve tüm sonuçları bütünleşik bir rapor üzerinden inceleyebildiği çalışır bir MVP’dir.
 
 ### Sprint Backlog
 
-Belirlenecek.
+Sprint 3 backlog'u, önceki sprintten aktarılan frontend entegrasyonunun tamamlanması, yapay zekâ ve RAG modüllerinin tek bir doğrulama akışında birleştirilmesi, müşteri görüşme kanıtlarının ürüne dahil edilmesi ve uygulamanın production ortamına hazırlanması hedefleri doğrultusunda oluşturulmuştur.
+
+İşler; kullanıcı tarafından doğrudan deneyimlenen ürün akışları, bu akışları destekleyen backend ve yapay zekâ servisleri, yetkilendirme kontrolleri, arayüz durumları ve deployment hazırlıkları dikkate alınarak önceliklendirilmiştir.
+
+Sprint kapsamındaki çalışmalar GitHub Issues, Sprint 3 Milestone, branch'ler, pull request'ler ve Project Board üzerinden takip edilmiştir.
+
+| Issue | Çalışma | Sprint Sonu Durumu |
+|---|---|---|
+| #22 | Integrate Analysis Results into Dashboard UI | Sprint 2’den aktarıldı. Analiz sonuçları frontend kullanıcı akışına entegre edildi ve issue tamamlanarak kapatıldı. |
+| #23 | Add Basic Test Scenarios for Sprint 2 MVP Flow | Sprint 2’den aktarıldı. Sprint sürecinde ayrı bir çalışma olarak devam ettirilmesinden vazgeçildi, kapsamdan çıkarıldı ve Project Board üzerinde `Block` durumuna alındı. Tamamlanmış bir çalışma olarak değerlendirilmedi. |
+| #31 | Integrate RAG Sources into Analysis Services | RAG kaynakları yapay zekâ analiz servislerine entegre edildi ve issue tamamlanarak kapatıldı. |
+| #32 | Orchestrate Validation Modules into a Single Workflow | Ayrı doğrulama modülleri tek bir merkezi workflow altında birleştirildi ve issue tamamlanarak kapatıldı. |
+| #33 | Add Interview Notes Model and CRUD API | Müşteri görüşme notları için veri modeli ile oluşturma, listeleme, güncelleme ve silme API'leri geliştirildi ve issue tamamlanarak kapatıldı. |
+| #34 | Generate Evidence and Insights from Interview Notes | Görüşme notlarından kanıt ve doğrulama içgörüleri üreten yapay zekâ servisi geliştirildi ve issue tamamlanarak kapatıldı. |
+| #35 | Add Interview Notes and Evidence Insights UI | Görüşme notlarının eklenebildiği, düzenlenebildiği, silinebildiği ve ilgili içgörülerin görüntülenebildiği frontend akışı tamamlandı. |
+| #36 | Build Consolidated Idea Validation Report | Farklı analiz ve kanıt sonuçlarını bir araya getiren bütünleşik fikir doğrulama raporu oluşturuldu ve issue tamamlanarak kapatıldı. |
+| #37 | Finalize Loading, Error, Empty and Responsive UI States | Yüklenme, hata, boş durum ve responsive arayüz davranışları gözden geçirilerek tamamlandı. |
+| #38 | Prepare Production Deployment and Environment Configuration | Production ortam değişkenleri ve deployment için gerekli yapılandırmalar hazırlandı ve issue tamamlanarak kapatıldı. |
+| #39 | Add Authorization, Ownership and Failure Scenario Tests | Yetkilendirme, kullanıcı sahipliği ve başarısız istek senaryolarına yönelik testler tamamlandı ve issue kapatıldı. |
+
+Sprint 3 Milestone kapsamında toplam 11 issue takip edilmiştir. Sprint sonunda milestone içerisindeki tüm issue'lar kapatılmış ve milestone GitHub üzerinde yüzde 100 tamamlanmış olarak görünmüştür.
+
+Ancak kapatılan 11 işin tamamı geliştirilerek tamamlanmamıştır. On iş başarıyla tamamlanırken, #23 numaralı temel MVP test senaryoları çalışmasının ayrı bir backlog maddesi olarak devam ettirilmesinden vazgeçilmiş ve çalışma `Block` durumuna alınmıştır.
+
+Sprint sırasında entegrasyon ve son ürün kontrolleri sonucunda ortaya çıkan ek ihtiyaçlar da ayrı branch ve pull request'ler üzerinden ele alınmıştır. Bu kapsamda tema sistemi, analiz geçmişi, gerçek kullanıcı fikirlerinin yüklenmesi, hesap ayarları, e-posta doğrulama, parola sıfırlama, mentor yanıtlarında Markdown desteği, Makefile, gerçek zamanlı workflow ilerleme takibi ve metin tabanlı PDF rapor çıktısı gibi tamamlayıcı geliştirmeler gerçekleştirilmiştir.
+
+Sprint 3 teknik geliştirme milestone'u kapatıldıktan sonra final dokümantasyonu ve teslim süreci ayrı bir `Final Delivery` milestone'u üzerinden devam ettirilmiştir. Bu milestone altında yer alan #40 numaralı Sprint 3 ve final proje dokümantasyonu ile #41 numaralı demo videosu ve Bootcamp teslimi işleri sprint kapanışı sırasında `In Progress` durumundadır.
 
 ### Daily Scrum Notları
 
-Belirlenecek.
+Sprint 3 boyunca ekip içi iletişim ve ilerleme takibi Slack, WhatsApp, GitHub Issues, pull request'ler ve Project Board üzerinden yürütülmüştür. Ekip üyeleri üzerinde çalıştıkları görevleri, tamamlanan geliştirmeleri, karşılaştıkları teknik sorunları ve sonraki adımlarını bu kanallar üzerinden paylaşmıştır.
+
+Daily Scrum görüşmeleri ve yazılı durum güncellemelerinde ağırlıklı olarak aşağıdaki konular takip edilmiştir:
+
+- Sprint 2’den aktarılan frontend ve backend entegrasyon çalışmalarının durumu
+- Analiz sonuçlarının dashboard ve rapor ekranlarına bağlanması
+- Farklı doğrulama modüllerinin tek bir workflow altında birleştirilmesi
+- RAG kaynaklarının analiz servisleriyle entegrasyonu
+- Müşteri görüşme notları için backend CRUD API ve frontend yönetim akışının geliştirilmesi
+- Görüşme notlarından kanıt ve içgörü üretilmesi
+- Fikir doğrulama raporunun oluşturulması ve PDF dışa aktarımının geliştirilmesi
+- Yüklenme, hata, boş durum ve responsive arayüz kontrolleri
+- Yetkilendirme, kullanıcı sahipliği ve başarısız istek senaryolarının kontrol edilmesi
+- Kullanıcı hesabı, e-posta doğrulama ve parola sıfırlama akışlarının tamamlanması
+- Gerçek zamanlı doğrulama ilerleme bilgisinin kullanıcıya gösterilmesi
+- Kullanılmayan frontend özellikleri ve endpointlerin temizlenmesi
+- Makefile ile geliştirme ve proje yaşam döngüsü komutlarının kolaylaştırılması
+- Production ortamı ve deployment yapılandırmalarının hazırlanması
+- Sprint 3 dokümantasyonu, demo videosu ve final teslim hazırlıkları
+
+Sprintin ilk bölümünde temel öncelik, önceki sprintlerde ayrı ayrı geliştirilen backend, yapay zekâ ve frontend parçalarının birbiriyle uyumlu hale getirilmesi olmuştur. Entegrasyon sırasında ortaya çıkan eksik durumlar ve kullanıcı deneyimi sorunları ayrı commit ve pull request'ler üzerinden ele alınmıştır.
+
+Sprint ilerledikçe görüşme notları, kanıt analizi, doğrulama raporu ve RAG entegrasyonu gibi çalışmalar tamamlanarak Project Board üzerinde `Done` durumuna taşınmıştır. Pull request açılan çalışmalar birleştirme öncesinde `In Review`, aktif olarak devam eden çalışmalar ise `In Progress` durumunda takip edilmiştir.
+
+#23 numaralı temel MVP test senaryoları çalışmasının ayrı bir backlog maddesi olarak devam ettirilmemesine karar verilmiştir. Bu iş tamamlanmış olarak gösterilmemiş, Project Board üzerinde `Block` durumuna alınmıştır.
+
+Sprint 3 teknik geliştirme işleri tamamlandıktan sonra #40 numaralı Sprint 3 ve final proje dokümantasyonu ile #41 numaralı demo videosu ve final Bootcamp teslimi çalışmaları ayrı `Final Delivery` milestone'u altında takip edilmeye başlanmıştır.
+
+Sprint boyunca ortaya çıkan engeller ve entegrasyon sorunları ekip içinde değerlendirilmiş; gerekli düzeltmeler yeni branch, commit ve pull request'lerle ana geliştirme akışına dahil edilmiştir. Daily Scrum iletişimi yalnızca görev durumlarının paylaşılması için değil, frontend-backend bağımlılıklarının belirlenmesi, ürün kapsamının korunması ve final teslim önceliklerinin netleştirilmesi amacıyla da kullanılmıştır.
 
 ### Sprint Board Güncellemeleri
 
-Belirlenecek.
+Sprint 3 boyunca görevlerin durumu GitHub Project Board üzerinden takip edilmiştir. Issue'lar geliştirme sürecindeki durumlarına göre `To Do`, `In Progress`, `In Review`, `Done` ve `Block` sütunları arasında güncellenmiştir.
+
+Sprint başlangıcında Sprint 2’den aktarılan #22 ve #23 numaralı çalışmalar ile Sprint 3 Milestone kapsamında oluşturulan #31–#39 numaralı issue'lar board üzerinde takip edilmiştir. Geliştirmesine başlanan işler `In Progress`, pull request'i açılan ve birleştirme bekleyen işler `In Review`, geliştirmesi ve kontrolleri tamamlanan işler ise `Done` durumuna taşınmıştır.
+
+Sprint sonunda board ve milestone üzerinde gerçekleştirilen başlıca güncellemeler aşağıdaki gibidir:
+
+- **#22 – Integrate Analysis Results into Dashboard UI:** Sprint 2’den aktarılan çalışma tamamlanarak `Done` durumuna taşındı.
+- **#23 – Add Basic Test Scenarios for Sprint 2 MVP Flow:** Ayrı bir backlog maddesi olarak devam ettirilmesinden vazgeçildi. Tamamlanmış olarak gösterilmeden `Block` durumuna alındı.
+- **#31 – Integrate RAG Sources into Analysis Services:** Tamamlanarak `Done` durumuna taşındı.
+- **#32 – Orchestrate Validation Modules into a Single Workflow:** Tamamlanarak `Done` durumuna taşındı.
+- **#33 – Add Interview Notes Model and CRUD API:** Tamamlanarak `Done` durumuna taşındı.
+- **#34 – Generate Evidence and Insights from Interview Notes:** Tamamlanarak `Done` durumuna taşındı.
+- **#35 – Add Interview Notes and Evidence Insights UI:** Tamamlanarak `Done` durumuna taşındı.
+- **#36 – Build Consolidated Idea Validation Report:** Tamamlanarak `Done` durumuna taşındı.
+- **#37 – Finalize Loading, Error, Empty and Responsive UI States:** Tamamlanarak `Done` durumuna taşındı.
+- **#38 – Prepare Production Deployment and Environment Configuration:** Tamamlanarak `Done` durumuna taşındı.
+- **#39 – Add Authorization, Ownership and Failure Scenario Tests:** Tamamlanarak `Done` durumuna taşındı.
+
+Sprint 3 Milestone içerisindeki 11 issue'nun tamamı kapatıldığı için milestone GitHub üzerinde yüzde 100 tamamlanmış olarak görünmektedir. Bununla birlikte kapatılan işlerden #23 tamamlanmış bir geliştirme değildir; kapsamdan çıkarıldığı için `Block` durumunda tutulmaktadır. Sprint 3 kapsamında planlanan diğer 10 çalışma tamamlanmıştır.
+
+Sprint 3 teknik geliştirme süreci sonrasında final dokümantasyonu ve teslim hazırlıkları ayrı bir `Final Delivery` milestone'u altında takip edilmeye başlanmıştır:
+
+- **#40 – Prepare Sprint 3 and final project documentation:** `In Progress`
+- **#41 – Prepare demo video and final Bootcamp submission:** `In Progress`
+
+Paylaşılan güncel Project Board görüntüsünde durum dağılımı aşağıdaki şekildedir:
+
+- `To Do`: 0
+- `In Progress`: 2
+- `In Review`: 0
+- `Done`: 29
+- `Block`: 1
+
+`Done` sütunundaki 29 iş yalnızca Sprint 3 çalışmalarını değil, proje boyunca önceki sprintlerde tamamlanan issue'ları da kapsamaktadır. `In Progress` sütunundaki iki çalışma final teslim hazırlıklarına, `Block` sütunundaki tek çalışma ise #23 numaralı kapsamdan çıkarılan işe aittir.
+
+Sprint sonunda teknik geliştirme backlog'u kapatılmış; devam eden çalışmalar ürün geliştirmesinden ziyade dokümantasyon, demo videosu ve final Bootcamp teslimi üzerine yoğunlaşmıştır.
+
+#### Sprint Board Ekran Görüntüsü
+
+Sprint 3 sonundaki Project Board ve Milestone durumu `docs/sprint-3/screenshots/` klasörü altında paylaşılmaktadır.
 
 ### Ürün Durumu
 
-Belirlenecek.
+Sprint 3 sonunda ürün, önceki sprintlerde ayrı ayrı geliştirilen backend, frontend, yapay zekâ ve RAG bileşenlerinin bir araya getirildiği, kullanıcı tarafından uçtan uca deneyimlenebilen bir MVP seviyesine ulaşmıştır.
+
+Kullanıcı, uygulama üzerinden hesap oluşturabilmekte, e-posta adresini doğrulayabilmekte ve giriş yapabilmektedir. Parola sıfırlama, parola değiştirme ve kullanıcı profil bilgilerini güncelleme akışları da ürün içerisine dahil edilmiştir.
+
+Giriş yapan kullanıcı kendisine ait iş fikirlerini oluşturabilmekte, listeleyebilmekte, görüntüleyebilmekte, güncelleyebilmekte ve silebilmektedir. Aktif fikir yönetimi iyileştirilmiş; silinen veya artık erişilemeyen bir fikrin analiz, mentor ve rapor ekranlarında hatalı istekler oluşturmasının önüne geçilmiştir.
+
+Kullanıcının oluşturduğu fikir için aşağıdaki yapay zekâ destekli doğrulama çıktıları üretilebilmektedir:
+
+- Fikrin temel analizi ve riskli varsayımları
+- Mom Test yaklaşımına uygun müşteri görüşme soruları
+- MoSCoW yöntemiyle MVP kapsam analizi
+- Fikir doğrulama yol haritası
+- Rakip ve pazar analizi
+- Yatırımcı sunumu hazırlama desteği
+- AI mentor üzerinden fikir odaklı yönlendirmeler
+
+Bu analiz modülleri tek bir doğrulama workflow'u altında birleştirilmiştir. Uzun süren analiz işlemlerinde kullanıcıya işlemin hangi aşamada olduğu hakkında gerçek zamanlı ilerleme bilgisi gösterilmektedir.
+
+RAG altyapısı analiz servisleriyle bütünleştirilmiş; girişimcilik ve fikir doğrulama kaynaklarının model yanıtlarında kullanılabilmesi sağlanmıştır. Ayrıca YouTube kaynaklarının sisteme alınması, parçalanması ve yanıt servisinde kullanılmasına yönelik RAG ingestion akışı geliştirilmiştir.
+
+Müşteri görüşmelerinden elde edilen bilgilerin yalnızca kullanıcı tarafında tutulması yerine doğrulama sürecinin bir parçası haline getirilmesi sağlanmıştır. Kullanıcı görüşme notlarını ekleyebilmekte, düzenleyebilmekte ve silebilmektedir. Yapay zekâ servisi bu notlardan kanıtlar, içgörüler ve fikir doğrulamasında kullanılabilecek değerlendirmeler oluşturabilmektedir.
+
+Fikir analizi, MVP kapsamı, doğrulama yol haritası, görüşme kanıtları ve diğer sonuçlar bütünleşik doğrulama raporu ekranında bir araya getirilmiştir. Rapor, metin tabanlı ve düzenlenmiş bir PDF çıktısı olarak dışa aktarılabilmektedir.
+
+Frontend tarafında ürün bütünlüğünü ve kullanıcı deneyimini geliştirmek amacıyla aşağıdaki çalışmalar tamamlanmıştır:
+
+- Gerçek kullanıcı fikirlerinin ve analiz geçmişinin yüklenmesi
+- Açık ve koyu tema desteği
+- Responsive ekran düzenlemeleri
+- Yüklenme, hata ve boş durum ekranları
+- Mentor mesajlarında Markdown gösterimi
+- Formların klavye ile gönderilebilmesi
+- Parola alanlarında görünürlük kontrolü
+- Hesap ayarları ekranı
+- Kullanılmayan frontend özelliklerinin ve endpointlerin temizlenmesi
+
+Backend tarafında kullanıcı sahipliği ve yetkilendirme kontrolleri uygulanmıştır. Kullanıcıların başka kullanıcılara ait fikir, analiz ve görüşme notlarına erişmesi engellenmiş; başarısız istekler ve hata senaryoları için gerekli kontroller hazırlanmıştır.
+
+Projenin geliştirme sürecini kolaylaştırmak amacıyla Makefile eklenmiş ve sık kullanılan proje yaşam döngüsü komutları merkezi hale getirilmiştir. Production ortam değişkenleri, e-posta ayarları, güvenlik yapılandırmaları ve deployment için gerekli teknik hazırlıklar gerçekleştirilmiştir.
+
+Sprint sonunda ürünün temel özellikleri çalışır ve birbiriyle entegre durumdadır. Bununla birlikte ürün henüz canlı bir production adresinde yayınlanmamıştır. Canlıya alma, son dokümantasyon, demo videosu ve Bootcamp teslim işlemleri ayrı `Final Delivery` milestone'u altında devam etmektedir.
+
 
 ### Sprint Review
 
-Belirlenecek.
+Sprint 3 sonunda takım; ürünün kullanıcı akışını, tamamlanan teknik geliştirmeleri, Sprint 3 Milestone durumunu ve final teslim hazırlıklarını değerlendirmiştir.
 
-### Sprint Retrospective
+Bu sprintte temel amaç, önceki sprintlerde geliştirilen backend, frontend, yapay zekâ ve RAG bileşenlerini tek bir ürün akışı içerisinde birleştirmekti. Sprint sonunda kullanıcıların kayıt ve giriş işlemlerinden başlayarak fikir oluşturabildiği, yapay zekâ destekli doğrulama analizlerini çalıştırabildiği, müşteri görüşme notlarını yönetebildiği ve sonuçları bütünleşik rapor üzerinden inceleyebildiği uçtan uca MVP akışı oluşturulmuştur.
 
-Belirlenecek.
+Sprint kapsamında tamamlanan başlıca çalışmalar şunlardır:
 
----
+- Sprint 2’den aktarılan analiz sonuçlarının frontend kullanıcı arayüzüne entegrasyonu tamamlandı.
+- Ayrı çalışan doğrulama modülleri merkezi bir workflow altında birleştirildi.
+- RAG kaynakları yapay zekâ analiz servislerine entegre edildi.
+- Müşteri görüşme notları için backend veri modeli ve CRUD API geliştirildi.
+- Görüşme notlarının eklenmesi, düzenlenmesi ve silinmesi için frontend akışı hazırlandı.
+- Görüşme notlarından kanıt ve içgörü üreten yapay zekâ servisi geliştirildi.
+- Analiz ve görüşme sonuçlarını bir araya getiren bütünleşik fikir doğrulama raporu oluşturuldu.
+- Doğrulama raporunun PDF olarak dışa aktarılması sağlandı.
+- Yüklenme, hata, boş durum ve responsive arayüz davranışları iyileştirildi.
+- Kullanıcı sahipliği, yetkilendirme ve başarısız istek senaryolarına yönelik kontroller tamamlandı.
+- Hesap ayarları, e-posta doğrulama, parola değiştirme ve parola sıfırlama akışları ürüne dahil edildi.
+- Kullanılmayan veya güncelliğini kaybeden frontend özellikleri ve endpointler temizlendi.
+- Uzun süren doğrulama işlemleri için gerçek zamanlı ilerleme takibi eklendi.
+- Sık kullanılan geliştirme, test ve proje yaşam döngüsü komutlarını kolaylaştırmak amacıyla Makefile hazırlandı.
+- Production ortamı ve deployment için gerekli yapılandırmalar oluşturuldu.
+
+Sprint 3 Milestone kapsamında takip edilen 11 issue'nun tamamı kapatılmıştır. Bu issue'lardan 10'u geliştirilerek tamamlanmış ve Project Board üzerinde `Done` durumuna taşınmıştır.
+
+#23 numaralı temel MVP test senaryoları çalışmasının ise ayrı bir backlog maddesi olarak devam ettirilmesinden süreç içerisinde vazgeçilmiştir. Bu çalışma tamamlanmış gibi gösterilmemiş, Project Board üzerinde `Block` durumuna alınmıştır. Milestone'un GitHub üzerinde yüzde 100 görünmesi, milestone içerisindeki bütün issue'ların kapatılmış olmasından kaynaklanmaktadır.
+
+Sprint Review sonucunda ürünün temel MVP kapsamının tamamlandığı ve kullanıcı tarafından uçtan uca deneyimlenebilir duruma geldiği değerlendirilmiştir. Önceki sprintlerde görülen frontend-backend entegrasyon eksikliği büyük ölçüde giderilmiş, ayrı geliştirilen modüller ürün bütünlüğü içerisinde birleştirilmiştir.
+
+Sprint sonunda teknik geliştirme ağırlıklı Sprint 3 Milestone kapatılmıştır. Kalan çalışmalar ürünün temel fonksiyonlarının geliştirilmesinden ziyade aşağıdaki final teslim faaliyetlerine odaklanmaktadır:
+
+- Sprint 3 ve final proje dokümantasyonunun tamamlanması
+- Güncel ürün ekran görüntülerinin ve demo kayıtlarının hazırlanması
+- Üç dakikalık proje tanıtım videosunun oluşturulması
+- Final Bootcamp teslim formunun doldurulması
+- Canlı ortam ve erişim bilgilerinin kesinleştirilmesi
+
+Bu çalışmalar #40 ve #41 numaralı issue'lar üzerinden ayrı `Final Delivery` milestone'u altında takip edilmektedir.
+
+Sprint Review sonunda ürünün yarışmaya sunulabilecek temel teknik seviyeye ulaştığı, final teslim öncesinde ise dokümantasyon, demo, canlı ortam kontrolleri ve sunum hazırlıklarının tamamlanması gerektiği sonucuna varılmıştır.
+
+#### Sprint Retrospective
+
+Sprint 3 sonunda takım; teknik geliştirme sürecini, entegrasyon çalışmalarını, görev yönetimini, ürün kapsamını ve final teslim hazırlıklarını birlikte değerlendirmiştir.
+
+Bu sprintte önceki sprintlerden farklı olarak yalnızca bağımsız özelliklerin geliştirilmesine değil, geliştirilen bütün parçaların gerçek bir kullanıcı akışı içerisinde birlikte çalışmasına odaklanılmıştır. Frontend, backend, yapay zekâ ve RAG bileşenlerinin birleştirilmesi sırasında ortaya çıkan eksikler giderilmiş ve ürünün temel MVP akışı büyük ölçüde tamamlanmıştır.
+
+#### İyi Giden Noktalar
+
+- Sprint 2’den aktarılan analiz sonuçlarının frontend entegrasyonu tamamlandı.
+- Ayrı ayrı geliştirilen analiz modülleri merkezi bir doğrulama workflow'u altında birleştirildi.
+- RAG altyapısı analiz servisleriyle entegre edilerek ürün içerisinde işlevsel biçimde kullanılmaya başlandı.
+- Müşteri görüşme notları için backend ve frontend tarafında bütünleşik bir yönetim akışı oluşturuldu.
+- Görüşme notlarından kanıt ve içgörü üreten yapay zekâ özelliği doğrulama sürecine dahil edildi.
+- Analiz sonuçlarını ve görüşme kanıtlarını bir araya getiren bütünleşik rapor ekranı hazırlandı.
+- Raporların PDF olarak dışa aktarılması sağlandı.
+- Yüklenme, hata, boş durum ve responsive arayüz davranışları iyileştirildi.
+- E-posta doğrulama, parola sıfırlama, parola değiştirme ve hesap ayarları gibi kullanıcı hesabı akışları tamamlandı.
+- Kullanıcı sahipliği, yetkilendirme ve başarısız istek senaryoları daha kapsamlı şekilde kontrol edildi.
+- Gerçek zamanlı workflow ilerleme takibi sayesinde uzun süren analiz işlemleri kullanıcı açısından daha anlaşılır hale getirildi.
+- Kullanılmayan frontend özellikleri ve eski endpointler temizlenerek ürün bütünlüğü artırıldı.
+- Makefile eklenerek sık kullanılan geliştirme ve proje yaşam döngüsü komutlarının daha düzenli yönetilmesi sağlandı.
+- Görevler issue, branch, commit, pull request, milestone ve Project Board üzerinden takip edildi.
+- Sprint 3 kapsamında tamamlanan çalışmalar `Done`, kapsamdan çıkarılan çalışma ise `Block` durumunda açıkça gösterildi.
+
+#### Karşılaşılan Zorluklar
+
+- Önceki sprintlerde frontend ve backend çalışmalarının farklı hızlarda ilerlemesi, Sprint 3 içerisinde yoğun bir entegrasyon yükü oluşturdu.
+- Ayrı geliştirilen modüllerin tek bir kullanıcı akışında birleştirilmesi sırasında beklenmeyen veri akışı ve durum yönetimi sorunları ortaya çıktı.
+- Aktif fikir yönetimi, silinen fikirler, eski isteklerin sonuçları ve farklı sayfalardaki bağımlı API çağrıları ek düzenlemeler gerektirdi.
+- Entegrasyon sırasında ilk backlog planında yer almayan kullanıcı hesabı, e-posta doğrulama, parola yönetimi ve arayüz iyileştirmeleri gibi tamamlayıcı ihtiyaçlar ortaya çıktı.
+- Sprint kapsamının genişlemesi, dokümantasyon, demo ve final teslim çalışmalarının teknik geliştirmelerle paralel yürütülmesini zorlaştırdı.
+- Production yapılandırmaları hazırlanmasına rağmen canlıya alma işlemi sprint kapanışı sırasında henüz kesinleştirilemedi.
+- #23 numaralı temel MVP test senaryoları çalışmasının ayrı bir backlog maddesi olarak sürdürülmesinden vazgeçildi. Bu iş tamamlanmış kabul edilmeden `Block` durumuna alındı.
+- Sprint milestone'unun yalnızca kapatılan issue sayısına göre yüzde 100 görünmesi, tamamlanan ve kapsamdan çıkarılan işlerin ayrıca açıklanması gerektiğini gösterdi.
+
+#### Öğrenilenler
+
+- Frontend ve backend entegrasyonu sprintin sonuna bırakılmamalı, özellikler tamamlandıkça küçük parçalar halinde doğrulanmalıdır.
+- Bir özelliğin yalnızca backend veya frontend tarafında tamamlanması, ürün açısından tamamlandığı anlamına gelmemektedir.
+- Issue açıklamalarında bağımlılıklar, beklenen API yapıları, hata durumları ve kabul kriterleri daha erken tanımlanmalıdır.
+- Kullanıcı akışındaki yüklenme, boş durum, yetkilendirme ve silinmiş veri senaryoları geliştirme başlangıcından itibaren ele alınmalıdır.
+- Sprint backlog'u hazırlanırken yalnızca yeni özellikler değil, entegrasyon, temizlik, test, dokümantasyon ve deployment çalışmaları için de zaman ayrılmalıdır.
+- Kapatılan her issue'nun tamamlanmış olduğu varsayılmamalı; `Done` ve `Block` durumları ayrı biçimde raporlanmalıdır.
+- Final dokümantasyonu ve demo hazırlıkları sprintin son günlerine bırakılmadan geliştirme süreciyle paralel yürütülmelidir.
+- Projenin kurulum ve geliştirme komutlarının Makefile gibi merkezi bir yapı üzerinden sunulması ekip içi kullanım ve teslim kolaylığı sağlamaktadır.
+
+#### Final Teslim İçin Aksiyonlar
+
+- Sprint 3 ve final proje dokümantasyonu tamamlanacaktır.
+- README içerisindeki ürün özellikleri, Product Backlog, proje yapısı, kullanılan teknolojiler ve kurulum adımları güncel proje yapısına göre yenilenecektir.
+- Makefile içerisinde yer alan komutlar doğrulanarak kurulum ve geliştirme dokümantasyonuna eklenecektir.
+- Güncel ürün ekran görüntüleri ve demo kayıtları `docs/sprint-3/` klasörüne eklenecektir.
+- Üç dakikalık proje tanıtım videosu hazırlanacaktır.
+- Final ürün akışı teslim öncesinde uçtan uca yeniden kontrol edilecektir.
+- Public repository, proje videosu, canlı bağlantı ve teslim formu bilgileri kesinleştirilecektir.
+- Deployment gerçekleştirilebilirse canlı bağlantı teslim dokümantasyonuna eklenecektir.
+- #40 ve #41 numaralı final teslim çalışmaları `Final Delivery` milestone'u üzerinden tamamlanacaktır.
+
+Sprint Retrospective sonucunda takım, ürünün temel MVP hedeflerine ulaştığını; ancak başarılı bir final teslim için dokümantasyon, demo videosu, son kullanıcı akışı kontrolleri ve deployment çalışmalarının tamamlanması gerektiğini değerlendirmiştir.
 
 ## Proje Teslim Bilgileri
 
-| Teslim Kalemi | Durum        |
-| ------------- | ------------ |
-| GitHub reposu | Hazır        |
-| Public repo   | Belirlenecek |
-| Ürün demosu   | Belirlenecek |
-| Canlı link    | Belirlenecek |
-| Proje videosu | Belirlenecek |
-| Final raporu  | Belirlenecek |
-
----
+| Teslim Kalemi | Durum |
+|---|---|
+| GitHub reposu | Hazır |
+| Public repo | Hazır – <https://github.com/erenylldz/YZTA---Team-138> |
+| Sprint 3 ürün durumu videosu | Çekildi, repository'ye yüklenmesi bekleniyor |
+| Ürün demosu | Planlanıyor |
+| Canlı link | Henüz bulunmuyor |
+| Proje videosu | Hazırlanıyor |
+| Final raporu ve dokümantasyon | Hazırlanıyor |
 
 ## Lisans
 
