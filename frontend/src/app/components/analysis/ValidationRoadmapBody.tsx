@@ -12,30 +12,15 @@ const SECTION_CONFIG: { key: string; label: string; icon: any }[] = [
 
 export function ValidationRoadmapBody({
   ideaId,
-  onIdeaIdChange,
   readOnly = false,
 }: {
   ideaId: number;
-  onIdeaIdChange?: (id: number) => void;
   readOnly?: boolean;
 }) {
   const { status, data, error, generate, reload } = useValidationRoadmap(ideaId);
 
   return (
     <div>
-      {onIdeaIdChange && (
-        <div className="flex items-center justify-end gap-2 mb-3">
-          <label className="text-[11px] text-muted-foreground">Fikir ID</label>
-          <input
-            type="number"
-            min={1}
-            value={ideaId}
-            onChange={(e) => onIdeaIdChange(Number(e.target.value))}
-            className="w-16 bg-muted border border-border rounded-lg px-2 py-1 text-xs text-foreground focus:outline-none focus:border-primary/50"
-          />
-        </div>
-      )}
-
       {status === "loading" && (
         <div data-pdf-block className="space-y-2.5">
           {[0, 1, 2].map((i) => (

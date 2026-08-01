@@ -10,6 +10,7 @@ from rest_framework import serializers
 
 from apps.analyses.models import MoscowScopeAnalysis
 from apps.analyses.serializers import MoscowScopeResultSerializer
+from apps.ideas.rag_context import get_idea_rag_context
 
 PROMPT_VERSION = "moscow-v1"
 CATEGORY_FIELDS = ("must_have", "should_have", "could_have", "wont_have")
@@ -112,12 +113,21 @@ def _default_client() -> MoscowClient:
     return OpenAICompatibleClient.from_settings()
 
 
-def build_moscow_prompt(idea) -> str:
+def build_moscow_prompt(
+    idea,
+    rag_context: str = "",
+) -> str:
     return f"""Deneyimli bir ürün yöneticisi ve MVP danışmanı gibi davran.
 Aşağıdaki iş fikrini yalnızca verilen bilgilerle değerlendir:
 - Başlık: {idea.title}
 - Açıklama / çözülen problem ve değer önerisi: {idea.description}
 - Hedef kullanıcı: {idea.target_audience}
+
+RAG bağlamı:
+{rag_context or "İlgili bilgi tabanı içeriği bulunamadı."}
+
+RAG bağlamını yalnızca destekleyici bilgi olarak kullan.
+Bağlamdaki ifadeleri doğrudan kopyalama; iş fikrine özel ve uygulanabilir MVP özellikleri üret.
 
 Toplam 8-12 somut ürün özelliği üret ve Must Have, Should Have, Could Have ve Won't Have
 kategorilerine ayır. Must Have yalnızca temel değeri sunmak için zorunlu özellikleri; Should Have
@@ -201,9 +211,26 @@ def save_moscow_analysis(idea, result: dict, *, provider: str = "", model_name: 
     return analysis
 
 
-def generate_moscow_scope(idea, client: MoscowClient | None = None):
+def generate_moscow_scope(
+    idea,
+    client: MoscowClient | None = None,
+):
+
+    rag_context, _ = get_idea_rag_context(
+        idea,
+        purpose=(
+            "MVP kapsamı, MoSCoW önceliklendirme, "
+            "ürün özellikleri ve minimum uygulanabilir ürün"
+        ),
+    )
+
     client = client or _default_client()
-    prompt = build_moscow_prompt(idea)
+
+    prompt = build_moscow_prompt(
+        idea,
+        rag_context=rag_context,
+    )
+
     last_error = None
     for _attempt in range(2):
         try:

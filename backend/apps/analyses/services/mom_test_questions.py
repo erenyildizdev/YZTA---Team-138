@@ -7,6 +7,8 @@ from apps.analyses.services.prompts import (
     build_mom_test_questions_prompt,
 )
 
+from apps.ideas.rag_context import get_idea_rag_context
+
 QUESTION_TEMPLATES = (
     {
         "category": "problem_context",
@@ -56,10 +58,19 @@ def generate_mom_test_questions(idea, question_count=10):
         raise ValueError(
             "question_count must be between 8 and 10."
         )
-
+        
+    rag_context, _ = get_idea_rag_context(
+        idea,
+        purpose=(
+            "Mom Test müşteri görüşmeleri, geçmiş davranışlar, "
+            "problem doğrulama ve kullanıcı içgörüsü"
+        ),
+    )
+    
     prompt = build_mom_test_questions_prompt(
         idea=idea,
         question_count=question_count,
+        rag_context=rag_context,
     )
 
     try:

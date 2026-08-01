@@ -421,8 +421,8 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
               <p className="mt-1 text-xs text-muted-foreground">
                 {idea
                   ? `Oluşturulma: ${new Date(
-                      idea.created_at,
-                    ).toLocaleDateString("tr-TR")}`
+                    idea.created_at,
+                  ).toLocaleDateString("tr-TR")}`
                   : ""}
               </p>
             </div>
@@ -651,7 +651,6 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
               <ValidationRoadmapBody
                 key={roadmapRefreshKey}
                 ideaId={ideaId}
-                onIdeaIdChange={setActiveIdeaId}
               />
             </div>
 
@@ -753,11 +752,10 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
           {msgs.map((message) => (
             <div
               key={message.id}
-              className={`flex ${
-                message.role === "user"
+              className={`flex ${message.role === "user"
                   ? "justify-end"
                   : "justify-start"
-              }`}
+                }`}
             >
               {message.role === "assistant" && (
                 <div className="mr-2 mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary">
@@ -767,11 +765,10 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
 
               <div className="min-w-0 max-w-[220px]">
                 <div
-                  className={`min-w-0 break-words px-3.5 py-2.5 text-sm leading-relaxed ${
-                    message.role === "user"
+                  className={`min-w-0 break-words px-3.5 py-2.5 text-sm leading-relaxed ${message.role === "user"
                       ? "whitespace-pre-line rounded-2xl rounded-tr-sm bg-primary text-primary-foreground"
                       : "rounded-2xl rounded-tl-sm border border-border bg-secondary text-secondary-foreground"
-                  }`}
+                    }`}
                 >
                   {message.role === "assistant" ? (
                     <MentorMarkdown content={message.content} />
@@ -786,26 +783,26 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
                       const questions =
                         action.status === "success"
                           ? (action.result?.questions as
-                              | string[]
-                              | undefined)
+                            | string[]
+                            | undefined)
                           : undefined;
 
                       const newAudience =
                         action.status === "success"
                           ? (action.result?.target_audience as
-                              | string
-                              | undefined)
+                            | string
+                            | undefined)
                           : undefined;
 
                       const evidenceSummary =
                         action.status === "success" &&
-                        action.tool === "analyze_interview_evidence"
+                          action.tool === "analyze_interview_evidence"
                           ? (action.result as {
-                              validated_count?: number;
-                              refuted_count?: number;
-                              untested_count?: number;
-                              new_assumptions_count?: number;
-                            } | undefined)
+                            validated_count?: number;
+                            refuted_count?: number;
+                            untested_count?: number;
+                            new_assumptions_count?: number;
+                          } | undefined)
                           : undefined;
 
                       return (
@@ -814,11 +811,10 @@ export function AnalysisPage({ onReport }: AnalysisPageProps) {
                           className="flex flex-col items-start gap-1"
                         >
                           <span
-                            className={`inline-flex w-fit items-center gap-1.5 rounded-lg border px-2 py-1 text-[11px] font-semibold ${
-                              action.status === "success"
+                            className={`inline-flex w-fit items-center gap-1.5 rounded-lg border px-2 py-1 text-[11px] font-semibold ${action.status === "success"
                                 ? "border-success/40 bg-success/10 text-success"
                                 : "border-destructive/40 bg-destructive/10 text-destructive"
-                            }`}
+                              }`}
                           >
                             {action.status === "success" ? (
                               <CheckCircle2 size={11} />
