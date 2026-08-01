@@ -2964,11 +2964,11 @@ Canlı ortamda kullanılan RAG bilgi tabanı, Türkiye Girişimcilik Vakfına ai
 
 | Ekip Üyesi | Proje Rolü |
 |---|---|
-| Eren Yıldız | Scrum Master, backend, AI ve veri koordinasyonu |
-| Sema Yeşilkaya | Product Owner ve backend geliştirme |
-| Semiha Çıtırkı | Frontend geliştirme |
-| Mücahit Ayyıldız | Backend ve veri geliştirme |
-| Berker Öner | Backend, AI ve RAG geliştirme |
+| Eren Yıldız | Scrum Master |
+| Sema Yeşilkaya | Product Owner |
+| Semiha Çıtırkı | Developer |
+| Mücahit Ayyıldız | Developer |
+| Berker Öner | Developer |
 
 Final teslim bağlantıları tamamlandıkça bu bölüm güncellenecektir.
 
