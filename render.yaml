@@ -50,6 +50,20 @@ services:
         value: gemini-3.1-flash-lite
       - key: GEMINI_EMBEDDING_MODEL_NAME
         value: gemini-embedding-001
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.smtp.EmailBackend
+      - key: EMAIL_HOST
+        value: smtp.gmail.com
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_HOST_USER
+        value: fikirlab.team@gmail.com
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: EMAIL_USE_TLS
+        value: "True"
+      - key: DEFAULT_FROM_EMAIL
+        value: fikirlab.team@gmail.com
 
   - type: web
     name: fikirlab-frontend

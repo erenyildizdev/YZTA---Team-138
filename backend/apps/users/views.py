@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError, transaction
@@ -22,6 +24,7 @@ from .models import AuthCode
 from .throttles import ScopedIPRateThrottle
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 REGISTER_SUCCESS_RESPONSE = {
     "detail": (
@@ -85,6 +88,7 @@ class RegisterView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception:
+            logger.exception("Registration email delivery failed.")
             return Response(
                 REGISTER_FAILURE_RESPONSE,
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -188,7 +192,7 @@ class ResendVerificationView(APIView):
                     AuthCode.Purpose.EMAIL_VERIFICATION,
                 )
             except Exception:
-                pass
+                logger.exception("Verification email resend failed.")
 
         return Response(RESEND_RESPONSE, status=status.HTTP_200_OK)
 
@@ -211,7 +215,7 @@ class PasswordResetRequestView(APIView):
             try:
                 issue_auth_code(user, AuthCode.Purpose.PASSWORD_RESET)
             except Exception:
-                pass
+                logger.exception("Password reset email delivery failed.")
 
         return Response(
             PASSWORD_RESET_REQUEST_RESPONSE,
