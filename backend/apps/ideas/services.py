@@ -3,6 +3,7 @@ import json
 from django.conf import settings
 from google import genai
 from google.genai import types
+from .rag_context import get_idea_rag_context
 
 
 class RiskyAssumptionsGenerationError(Exception):
@@ -38,7 +39,10 @@ GENERAL_EVALUATION_SCHEMA = {
 }
 
 
-def build_general_evaluation_prompt(idea) -> str:
+def build_general_evaluation_prompt(
+    idea,
+    rag_context: str = "",
+) -> str:
     return (
         "Sen deneyimli bir girişim doğrulama danışmanısın. SADECE geçerli JSON döndür, "
         "markdown veya ek açıklama ekleme. Aşağıdaki iş fikri için genel bir değerlendirme yap: "
@@ -50,7 +54,12 @@ def build_general_evaluation_prompt(idea) -> str:
         f"Hedef kitle: {idea.target_audience}\n"
         f"Problem: {idea.problem}\n"
         f"Çözüm önerisi: {idea.solution}\n"
-        f"Sektör: {idea.sector}\n"
+        f"Sektör: {idea.sector}\n\n"
+        "--- RAG BAĞLAMI ---\n"
+        f"{rag_context or 'İlgili bilgi tabanı içeriği bulunamadı.'}\n"
+        "--- RAG BAĞLAMI SONU ---\n\n"
+        "RAG bağlamını yalnızca destekleyici bilgi olarak kullan. "
+        "Bağlamdaki ifadeleri doğrudan kopyalama; değerlendirmeyi iş fikrine özgü üret.\n"
     )
 
 
@@ -58,6 +67,14 @@ def generate_general_evaluation_payload(idea) -> dict:
     api_key = getattr(settings, "GEMINI_API_KEY", "")
     if not api_key:
         raise GeneralEvaluationGenerationError("GEMINI_API_KEY is not configured.")
+
+    rag_context, _ = get_idea_rag_context(
+        idea,
+        purpose=(
+            "iş fikri değerlendirmesi, güçlü yönler, "
+            "belirsizlikler, riskler ve sonraki aksiyon"
+        ),
+    )
 
     client = genai.Client(
         api_key=api_key,
@@ -67,7 +84,10 @@ def generate_general_evaluation_payload(idea) -> dict:
     try:
         response = client.models.generate_content(
             model=settings.GEMINI_MODEL_NAME,
-            contents=build_general_evaluation_prompt(idea),
+            contents=build_general_evaluation_prompt(
+                idea,
+                rag_context=rag_context,
+            ),
             config=types.GenerateContentConfig(
                 temperature=0.3,
                 response_mime_type="application/json",
@@ -307,7 +327,10 @@ RISKY_ASSUMPTIONS_SCHEMA = {
 }
 
 
-def build_risky_assumptions_prompt(idea) -> str:
+def build_risky_assumptions_prompt(
+    idea,
+    rag_context: str = "",
+) -> str:
     return (
         "Sen deneyimli bir girişim doğrulama danışmanısın. SADECE geçerli JSON döndür, "
         "markdown veya ek açıklama ekleme. Aşağıdaki iş fikri için tam olarak 5 riskli varsayım üret. "
@@ -319,7 +342,12 @@ def build_risky_assumptions_prompt(idea) -> str:
         f"Hedef kitle: {idea.target_audience}\n"
         f"Problem: {idea.problem}\n"
         f"Çözüm önerisi: {idea.solution}\n"
-        f"Sektör: {idea.sector}\n"
+        f"Sektör: {idea.sector}\n\n"
+        "--- RAG BAĞLAMI ---\n"
+        f"{rag_context or 'İlgili bilgi tabanı içeriği bulunamadı.'}\n"
+        "--- RAG BAĞLAMI SONU ---\n\n"
+        "RAG bağlamını yalnızca destekleyici bilgi olarak kullan. "
+        "Bağlamdaki ifadeleri doğrudan kopyalama; fikre özgü riskli varsayımlar üret.\n"
     )
 
 
@@ -327,6 +355,14 @@ def generate_risky_assumptions_payload(idea) -> dict:
     api_key = getattr(settings, "GEMINI_API_KEY", "")
     if not api_key:
         raise RiskyAssumptionsGenerationError("GEMINI_API_KEY is not configured.")
+    
+    rag_context, _ = get_idea_rag_context(
+        idea,
+        purpose=(
+            "riskli varsayımlar, hipotez doğrulama, "
+            "müşteri problemi ve pazar riski"
+        ),
+    )
 
     client = genai.Client(
         api_key=api_key,
@@ -336,7 +372,10 @@ def generate_risky_assumptions_payload(idea) -> dict:
     try:
         response = client.models.generate_content(
             model=settings.GEMINI_MODEL_NAME,
-            contents=build_risky_assumptions_prompt(idea),
+            contents=build_risky_assumptions_prompt(
+                idea,
+                rag_context=rag_context,
+            ),
             config=types.GenerateContentConfig(
                 temperature=0.3,
                 response_mime_type="application/json",
@@ -526,7 +565,10 @@ VALIDATION_ROADMAP_SCHEMA = {
 }
 
 
-def build_validation_roadmap_prompt(idea):
+def build_validation_roadmap_prompt(
+    idea,
+    rag_context: str = "",
+):
     return (
         "Sen deneyimli bir girişim doğrulama danışmanısın. SADECE geçerli JSON döndür, "
         "markdown veya ek açıklama ekleme. Aşağıdaki iş fikri için 3 haftalık, aşamalı bir doğrulama "
@@ -539,7 +581,13 @@ def build_validation_roadmap_prompt(idea):
         f"Hedef kitle: {idea.target_audience}\n"
         f"Problem: {idea.problem}\n"
         f"Çözüm önerisi: {idea.solution}\n"
-        f"Sektör: {idea.sector}\n"
+        f"Sektör: {idea.sector}\n\n"
+        "--- RAG BAĞLAMI ---\n"
+        f"{rag_context or 'İlgili bilgi tabanı içeriği bulunamadı.'}\n"
+        "--- RAG BAĞLAMI SONU ---\n\n"
+        "RAG bağlamını yalnızca destekleyici bilgi olarak kullan. "
+        "Bağlamdaki ifadeleri doğrudan kopyalama; fikre özgü, somut ve uygulanabilir "
+        "bir doğrulama yol haritası üret.\n"
     )
 
 
@@ -547,6 +595,14 @@ def generate_validation_roadmap_payload(idea) -> dict:
     api_key = getattr(settings, "GEMINI_API_KEY", "")
     if not api_key:
         raise RoadmapGenerationError("GEMINI_API_KEY is not configured.")
+    
+    rag_context, _ = get_idea_rag_context(
+        idea,
+        purpose=(
+            "doğrulama yol haritası, deneyler, başarı metrikleri, "
+            "müşteri görüşmeleri ve karar noktaları"
+        ),
+    )
 
     client = genai.Client(
         api_key=api_key,
@@ -556,7 +612,10 @@ def generate_validation_roadmap_payload(idea) -> dict:
     try:
         response = client.models.generate_content(
             model=settings.GEMINI_MODEL_NAME,
-            contents=build_validation_roadmap_prompt(idea),
+            contents=build_validation_roadmap_prompt(
+                idea,
+                rag_context=rag_context,
+            ),
             config=types.GenerateContentConfig(
                 temperature=0.4,
                 response_mime_type="application/json",

@@ -248,6 +248,7 @@ Sorular şu konulara odaklanabilir:
 def build_mom_test_questions_prompt(
     idea,
     question_count: int,
+    rag_context: str = "",
 ) -> str:
     idea_text = f"""
 Fikir başlığı: {idea.title}
@@ -264,6 +265,13 @@ Sektör: {idea.sector}
 Analiz edilecek iş fikri:
 
 {idea_text}
+
+RAG bağlamı:
+
+{rag_context or "İlgili bilgi tabanı içeriği bulunamadı."}
+
+RAG bağlamını yalnızca destekleyici bilgi olarak kullan.
+Soruları doğrudan bağlamdan kopyalama; iş fikrine özel üret.
 
 Üretilecek soru sayısı: {question_count}
 
