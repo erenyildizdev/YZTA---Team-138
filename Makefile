@@ -4,7 +4,7 @@ override .SHELLFLAGS := -eu -o pipefail -c
 .ONESHELL:
 .NOTPARALLEL:
 
-.PHONY: setup up down restart build clean force-clean
+.PHONY: setup up down restart build rag-ingest rag-stats clean force-clean
 
 ifneq ($(origin MAKEFILE_LIST),file)
 $(error MAKEFILE_LIST değişkeni override edilemez)
@@ -361,6 +361,13 @@ wait_for_db() {
 
 	compose logs --tail 30 db >&2 || true
 	fail "PostgreSQL 60 saniye içinde hazır olmadı."
+}
+
+require_web_running() {
+	local container_id
+	container_id="$$(compose ps --status running -q web)"
+	[[ -n "$$container_id" ]] \
+		|| fail "Backend web servisi çalışmıyor. Önce make up çalıştırın."
 }
 
 build_backend_image() {
@@ -968,6 +975,29 @@ build:
 	build_backend_image "$(NO_CACHE)"
 	(cd "$(FRONTEND_DIR)" && npm run build)
 	say "Docker image ve frontend production build hazırlandı."
+	unlock_project
+
+rag-ingest:
+	@$(COMMON_FUNCTIONS)
+	lock_project
+	ensure_env
+	select_docker
+	assert_compose_checkout_ownership
+	require_web_running
+	say "RAG bilgi tabanı YouTube kaynaklarından yükleniyor..."
+	compose exec -T web python -m scripts.ingest_all_youtube_videos
+	say "RAG ingestion tamamlandı."
+	unlock_project
+
+rag-stats:
+	@$(COMMON_FUNCTIONS)
+	lock_project
+	ensure_env
+	select_docker
+	assert_compose_checkout_ownership
+	require_web_running
+	say "RAG kaynak ve chunk sayıları:"
+	compose exec -T web python manage.py shell -c 'from apps.analyses.models import KnowledgeSource, KnowledgeChunk; print(f"KnowledgeSource: {KnowledgeSource.objects.count()}"); print(f"KnowledgeChunk: {KnowledgeChunk.objects.count()}")'
 	unlock_project
 
 clean:
