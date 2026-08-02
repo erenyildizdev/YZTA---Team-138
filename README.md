@@ -27,6 +27,33 @@ FikirLab, girişimci adaylarının iş fikirlerini sistemli, ölçülebilir ve k
 7. [API Kullanımı](#api-kullanimi)
 8. [Geliştirme ve Test Süreci](#gelistirme-ortami)
 9. [Sprint Dokümantasyonu](#sprint-dokumantasyonu)
+   - [9.1 Sprint 1](#sprint-1)
+     - [9.1.1 Sprint Notları](#sprint-1-notlari)
+     - [9.1.2 Sprint Hedefi](#sprint-1-hedefi)
+     - [9.1.3 Sprint Backlog](#sprint-1-backlog)
+     - [9.1.4 Daily Scrum Notları](#sprint-1-daily-scrum)
+     - [9.1.5 Sprint Board Güncellemeleri](#sprint-1-board)
+     - [9.1.6 Ürün Durumu](#sprint-1-urun-durumu)
+     - [9.1.7 Sprint Review](#sprint-1-review)
+     - [9.1.8 Sprint Retrospective](#sprint-1-retrospective)
+   - [9.2 Sprint 2](#sprint-2)
+     - [9.2.1 Sprint Notları](#sprint-2-notlari)
+     - [9.2.2 Sprint Hedefi](#sprint-2-hedefi)
+     - [9.2.3 Sprint Backlog](#sprint-2-backlog)
+     - [9.2.4 Daily Scrum Notları](#sprint-2-daily-scrum)
+     - [9.2.5 Sprint Board Güncellemeleri](#sprint-2-board)
+     - [9.2.6 Ürün Durumu](#sprint-2-urun-durumu)
+     - [9.2.7 Sprint Review](#sprint-2-review)
+     - [9.2.8 Sprint Retrospective](#sprint-2-retrospective)
+   - [9.3 Sprint 3](#sprint-3)
+     - [9.3.1 Sprint Notları](#sprint-3-notlari)
+     - [9.3.2 Sprint Hedefi](#sprint-3-hedefi)
+     - [9.3.3 Sprint Backlog](#sprint-3-backlog)
+     - [9.3.4 Daily Scrum Notları](#sprint-3-daily-scrum)
+     - [9.3.5 Sprint Board Güncellemeleri](#sprint-3-board)
+     - [9.3.6 Ürün Durumu](#sprint-3-urun-durumu)
+     - [9.3.7 Sprint Review](#sprint-3-review)
+     - [9.3.8 Sprint Retrospective](#sprint-3-retrospective)
 10. [Proje Teslim Bilgileri](#proje-teslimi)
 11. [Telif ve Kullanım Hakları](#telif-ve-kullanim-haklari)
 
@@ -2082,7 +2109,11 @@ Tüm sprint dokümanları `docs/` klasörü altında, ilgili sprint dizinlerinde
 
 ---
 
+<a name="sprint-1"></a>
+
 ## Sprint 1
+
+<a name="sprint-1-notlari"></a>
 
 ### Sprint Notları
 
@@ -2093,6 +2124,8 @@ Backend tarafında Django mimarisi kurulmuş, kullanıcı kayıt/giriş işlemle
 Sprint 1 sonunda admin panel aktif hale getirilmiş, backend tarafındaki ilk geliştirmeler ilgili branch üzerinden GitHub reposuna aktarılmıştır. Frontend tarafında ise kullanıcı kayıt/giriş ekranları ve backend entegrasyonu Sprint 2 kapsamında ele alınacak şekilde planlanmıştır.
 
 Buna ek olarak, ürünün girişimcilik ve fikir doğrulama süreçlerinde daha nitelikli analizler sunabilmesi için RAG destekli bilgi katmanı üzerine kaynak araştırması başlatılmıştır.
+
+<a name="sprint-1-hedefi"></a>
 
 ### Sprint Hedefi
 
@@ -2111,6 +2144,8 @@ Sprint 1 sonunda hedeflenen ana çıktılar:
 - Admin panelin aktif hale getirilmesi
 - RAG destekli bilgi katmanı için kaynak araştırmasının başlatılması
 - Sprint 2’de geliştirilecek frontend ve AI analiz akışları için temel planın çıkarılması
+
+<a name="sprint-1-backlog"></a>
 
 ### Sprint Backlog
 
@@ -2131,6 +2166,8 @@ Sprint 1 sonunda hedeflenen ana çıktılar:
 | SB-13 | Arayüz prototipi ve kullanıcı akışının incelenmesi | Takım | Devam Ediyor |
 | SB-14 | RAG destekli bilgi katmanı için kaynak araştırmasının başlatılması | Takım | Devam Ediyor |
 | SB-15 | Sprint 1 dokümantasyonunun hazırlanması | Eren | Devam Ediyor |
+
+<a name="sprint-1-daily-scrum"></a>
 
 ### Daily Scrum Notları
 
@@ -2153,6 +2190,8 @@ Bu sprintte Daily Scrum gündemi genel olarak aşağıdaki başlıklar etrafınd
 
 Daily Scrum notları ve ekip içi iletişim çıktıları Sprint 1 dokümantasyonu kapsamında `docs/sprint-1/` klasörü altında ayrıca paylaşılacaktır.
 
+<a name="sprint-1-board"></a>
+
 ### Sprint Board Güncellemeleri
 
 Sprint 1 sürecinde görev takibi GitHub Projects üzerinden yapılmıştır. Product backlog ve sprint backlog maddeleri; yapılacaklar, devam eden işler ve tamamlanan işler olarak ayrıştırılmıştır.
@@ -2173,6 +2212,8 @@ Sprint 1 sonunda backend tarafındaki temel endpoint geliştirmeleri tamamlanmı
 
 ![Sprint 1 Board](docs/sprint-1/screenshots/sprint-board.png)
 
+<a name="sprint-1-urun-durumu"></a>
+
 ### Ürün Durumu
 
 Sprint 1 sonunda ürün, tam çalışan bir MVP seviyesinde değildir; ancak projenin temel teknik altyapısı ve ilk backend modülleri oluşturulmuştur.
@@ -2188,6 +2229,8 @@ AI analiz akışı, riskli varsayım çıkarımı, müşteri görüşme sorular�
 RAG destekli bilgi katmanı için kaynak araştırması Sprint 1’de başlatılmıştır ve bu çalışmanın Sprint 3’e kadar geliştirilerek ürüne entegre edilmesi hedeflenmektedir.
 
 ![Sprint 1 Ürün Durumu](docs/sprint-1/sprint1-demo.gif)
+
+<a name="sprint-1-review"></a>
 
 ### Sprint Review
 
@@ -2209,6 +2252,8 @@ Sprint 1 sonunda ortaya çıkan başlıca çıktılar:
 - RAG destekli bilgi katmanı için kaynak araştırması başlatıldı.
 
 Sprint Review sonucunda, Sprint 2’de frontend ekranlarının geliştirilmesi, backend ile entegrasyonun yapılması ve AI destekli temel fikir analizi akışının başlatılması öncelikli hedefler olarak belirlenmiştir.
+
+<a name="sprint-1-retrospective"></a>
 
 ### Sprint Retrospective
 
@@ -2247,7 +2292,11 @@ Sprint 1 sonunda takım olarak süreç, iletişim, görev dağılımı ve teknik
 
 ---
 
+<a name="sprint-2"></a>
+
 ## Sprint 2
+
+<a name="sprint-2-notlari"></a>
 
 ### Sprint Notları
 
@@ -2262,6 +2311,8 @@ AI analiz servisinin backend tarafı hazırlanmış ancak frontend geliştirmele
 Frontend entegrasyonunun tamamlanamaması nedeniyle analiz sonuçlarının dashboard üzerinde gösterilmesi ve uçtan uca MVP akışına yönelik temel test senaryolarının hazırlanması Son Sprint'e aktarılmıştır.
 
 Sprint sonunda tamamlanan, devam eden ve sonraki sprinte aktarılan işler GitHub Issues, Sprint 2 Milestone ve Project Board üzerinde güncellenmiştir.
+
+<a name="sprint-2-hedefi"></a>
 
 ### Sprint Hedefi
 
@@ -2282,6 +2333,8 @@ Sprint sonunda fikir gönderme akışı, Mom Test, MoSCoW kapsam analizi, doğru
 
 AI analiz servisinin backend tarafı hazır olmasına rağmen frontend tarafı tamamlanmadığı için kullanıcı arayüzü entegrasyonu gerçekleştirilememiştir. Dashboard entegrasyonu ve uçtan uca MVP test senaryoları Son Sprint'e aktarılmıştır.
 
+<a name="sprint-2-backlog"></a>
+
 ### Sprint Backlog
 
 Sprint 2 backlog'u, kullanıcının iş fikrini sisteme göndermesini ve yapay zekâ destekli doğrulama analizleri almasını sağlayacak temel ürün akışına yönelik GitHub issue'larından oluşturulmuştur.
@@ -2301,6 +2354,8 @@ Sprint 2 backlog'u, kullanıcının iş fikrini sisteme göndermesini ve yapay z
 | #24 | Prepare Sprint 2 Documentation and Review Notes | Tamamlandı ve issue kapatıldı. |
 
 Sprint içerisinde toplam dokuz backlog maddesi takip edilmiştir. Bunlardan altısının teknik geliştirmeleri tamamlanmış, iki çalışma Son Sprint'e aktarılmış ve Sprint 2 dokümantasyonu sprint kapanış sürecinde hazırlanmıştır.
+
+<a name="sprint-2-daily-scrum"></a>
 
 ### Daily Scrum Notları
 
@@ -2324,6 +2379,8 @@ Backend tarafındaki analiz servisleri hazırlanırken frontend çalışmaların
 Bu engel ekip içerisinde paylaşılmış ve analiz sonuçlarının dashboard arayüzüne bağlanması ile uçtan uca MVP testlerinin Son Sprint'e aktarılmasına karar verilmiştir.
 
 Daily Scrum kayıtları ve ekip içi ilerleme paylaşımları, sprint sürecinin takip edilebilirliğini sağlamak amacıyla Slack üzerinde tutulmuştur.
+
+<a name="sprint-2-board"></a>
 
 ### Sprint Board Güncellemeleri
 
@@ -2349,9 +2406,13 @@ Tamamlanamayan işlerin açıklamaları ilgili issue'lara yorum olarak eklenmiş
 
 ![Sprint 2 Board](docs/sprint-2/screenshots/sprint-board.png)
 
+<a name="sprint-2-urun-durumu"></a>
+
 ### Ürün Durumu
 
 ![Sprint 2 Ürün Durumu](docs/sprint-2/sprint2-demo.gif)
+
+<a name="sprint-2-review"></a>
 
 ### Sprint Review
 
@@ -2375,6 +2436,8 @@ Bu nedenle aşağıdaki çalışmalar Sprint 2 içerisinde tamamlanamamış ve S
 - Fikir gönderme ve analiz sonuçlarını görüntüleme adımlarını kapsayan uçtan uca MVP test senaryolarının hazırlanması
 
 Sprint 2 sonunda ortaya çıkan ürün artımı, fikir oluşturma ve fikir doğrulama analizlerinin backend tarafında çalışan temelini oluşturmaktadır. Son Sprint'te öncelik, tamamlanan backend servislerinin frontend ile birleştirilmesi ve kullanıcı tarafından uçtan uca deneyimlenebilir bir ürün akışının oluşturulması olacaktır.
+
+<a name="sprint-2-retrospective"></a>
 
 ### Sprint Retrospective
 
@@ -2420,7 +2483,11 @@ Sprint 2 süreci sonunda ekip tarafından teknik ilerleme, iş dağılımı, ile
 
 ---
 
+<a name="sprint-3"></a>
+
 ## Sprint 3
+
+<a name="sprint-3-notlari"></a>
 
 ### Sprint Notları
 
@@ -2444,8 +2511,9 @@ Sprint 3 Milestone kapsamında yer alan 11 issue'nun tamamı kapatılmış ve mi
 
 Ürünün canlıya alınmasına yönelik teknik hazırlıklar yapılmış olmakla birlikte, canlı bağlantı ve nihai deployment bilgileri proje teslim süreci kapsamında ayrıca güncellenecektir.
 
-### Sprint Hedefi
+<a name="sprint-3-hedefi"></a>
 
+### Sprint Hedefi
 Sprint 3’ün temel hedefi, önceki sprintlerde geliştirilen backend, yapay zekâ ve RAG modüllerini frontend ile birleştirerek kullanıcı tarafından uçtan uca deneyimlenebilen, test edilebilir ve teslim edilebilir bir ürün ortaya çıkarmaktır.
 
 Bu sprintte yeni ve bağımsız özellikler geliştirmekten çok, mevcut modüllerin tek bir doğrulama süreci altında birleştirilmesine, kullanıcı deneyiminin tamamlanmasına, hata durumlarının giderilmesine ve ürünün production ortamına hazırlanmasına öncelik verilmiştir.
@@ -2470,6 +2538,8 @@ Sprint 3 kapsamında hedeflenen ana çıktılar:
 - Ürünün son kontrollerini, hata düzeltmelerini, dokümantasyonunu ve demo hazırlıklarını tamamlamak
 
 Sprint sonunda hedeflenen ürün artımı; kullanıcının kayıt olarak bir iş fikri oluşturabildiği, bu fikir için yapay zekâ destekli doğrulama analizleri alabildiği, müşteri görüşme kanıtlarını sisteme ekleyebildiği ve tüm sonuçları bütünleşik bir rapor üzerinden inceleyebildiği çalışır bir MVP’dir.
+
+<a name="sprint-3-backlog"></a>
 
 ### Sprint Backlog
 
@@ -2500,6 +2570,8 @@ Ancak kapatılan 11 işin tamamı geliştirilerek tamamlanmamıştır. On iş ba
 Sprint sırasında entegrasyon ve son ürün kontrolleri sonucunda ortaya çıkan ek ihtiyaçlar da ayrı branch ve pull request'ler üzerinden ele alınmıştır. Bu kapsamda tema sistemi, analiz geçmişi, gerçek kullanıcı fikirlerinin yüklenmesi, hesap ayarları, e-posta doğrulama, parola sıfırlama, mentor yanıtlarında Markdown desteği, Makefile, gerçek zamanlı workflow ilerleme takibi ve metin tabanlı PDF rapor çıktısı gibi tamamlayıcı geliştirmeler gerçekleştirilmiştir.
 
 Sprint 3 teknik geliştirme milestone'u kapatıldıktan sonra final dokümantasyonu ve teslim süreci ayrı bir `Final Delivery` milestone'u üzerinden devam ettirilmiştir. Bu milestone altında yer alan #40 numaralı Sprint 3 ve final proje dokümantasyonu ile #41 numaralı demo videosu ve Bootcamp teslimi işleri sprint kapanışı sırasında `In Progress` durumundadır.
+
+<a name="sprint-3-daily-scrum"></a>
 
 ### Daily Scrum Notları
 
@@ -2533,6 +2605,8 @@ Sprint 3 teknik geliştirme işleri tamamlandıktan sonra #40 numaralı Sprint 3
 
 Sprint boyunca ortaya çıkan engeller ve entegrasyon sorunları ekip içinde değerlendirilmiş; gerekli düzeltmeler yeni branch, commit ve pull request'lerle ana geliştirme akışına dahil edilmiştir. Daily Scrum iletişimi yalnızca görev durumlarının paylaşılması için değil, frontend-backend bağımlılıklarının belirlenmesi, ürün kapsamının korunması ve final teslim önceliklerinin netleştirilmesi amacıyla da kullanılmıştır.
 
+<a name="sprint-3-board"></a>
+
 ### Sprint Board Güncellemeleri
 
 Sprint 3 boyunca görevlerin durumu GitHub Project Board üzerinden takip edilmiştir. Issue'lar geliştirme sürecindeki durumlarına göre `To Do`, `In Progress`, `In Review`, `Done` ve `Block` sütunları arasında güncellenmiştir.
@@ -2555,7 +2629,7 @@ Sprint sonunda board ve milestone üzerinde gerçekleştirilen başlıca güncel
 
 Sprint 3 Milestone içerisindeki 11 issue'nun tamamı kapatıldığı için milestone GitHub üzerinde yüzde 100 tamamlanmış olarak görünmektedir. Bununla birlikte kapatılan işlerden #23 tamamlanmış bir geliştirme değildir; kapsamdan çıkarıldığı için `Block` durumunda tutulmaktadır. Sprint 3 kapsamında planlanan diğer 10 çalışma tamamlanmıştır.
 
-Sprint 3 teknik geliştirme süreci sonrasında final dokümantasyonu ve teslim hazırlıkları ayrı bir `Final Delivery` milestone'u altında takip edilmeye başlanmıştır:
+Sprint 3 teknik geliştirme süreci sonrasında final dokümantasyonu ve teslim hazırlıkları ayrı bir `Final Delivery` milestone'u altında tamamlanmıştır.
 
 - **#40 – Prepare Sprint 3 and final project documentation:** `In Progress`
 - **#41 – Prepare demo video and final Bootcamp submission:** `In Progress`
@@ -2575,6 +2649,8 @@ Sprint sonunda teknik geliştirme backlog'u kapatılmış; devam eden çalışma
 ![Sprint 3 Board](docs/sprint-3/sprint-board.png)
 ![Sprint 3 Board2](docs/sprint-3/sprint-board-2.png)
 ![Sprint 3 Board3](docs/sprint-3/sprint-board-3.png)
+
+<a name="sprint-3-urun-durumu"></a>
 
 ### Ürün Durumu
 
@@ -2725,6 +2801,8 @@ Sprint 3 sonunda ürünün temel fonksiyonları çalışır, birbirine bağlı v
 ![Sprint 3 Ürün Durumu](docs/sprint-3/sprint-3-demo.gif)
 
 
+<a name="sprint-3-review"></a>
+
 ### Sprint Review
 
 Sprint 3 Review kapsamında ürün; sprint hedefi, tamamlanan backlog maddeleri, kullanıcı akışı, teknik entegrasyonlar, test sonuçları ve final teslim gereksinimleri üzerinden değerlendirilmiştir.
@@ -2824,6 +2902,8 @@ Sprint 3 sonunda teknik geliştirme ağırlıklı milestone kapatılmıştır. K
 - Teslim bağlantılarının ve proje bilgilerinin kesinleştirilmesi
 
 Bu çalışmalar `#40` ve `#41` numaralı issue’lar üzerinden ayrı `Final Delivery` milestone’u altında takip edilmektedir.
+
+<a name="sprint-3-retrospective"></a>
 
 ### Sprint Retrospective
 
