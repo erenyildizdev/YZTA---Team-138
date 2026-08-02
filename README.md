@@ -174,7 +174,7 @@ AI Destekli Fikir Doğrulama Asistanı'nın ana hedef kitlesi, iş fikrini hayat
 - Docker ve Docker Compose tabanlı geliştirme ortamı
 - Kullanıcı sahipliği ve yetkilendirme kontrolleri
 - Başarısız istek ve erişim senaryolarına yönelik backend testleri
-- SMTP tabanlı e-posta gönderim desteği
+- Production ortamında Brevo Transactional Email HTTP API, yerel geliştirmede Django console e-posta backend desteği
 - Production ortam değişkenleri ve güvenlik yapılandırmaları
 - Render üzerinde deployment yapılabilmesi için production yapılandırması
 - Sık kullanılan proje yaşam döngüsü işlemlerini yöneten Makefile
@@ -307,7 +307,8 @@ Projenin backend, frontend, yapay zekâ, RAG, geliştirme ortamı ve deployment 
 | PDF oluşturma | `@react-pdf/renderer` 4.5.1 | Metin tabanlı doğrulama raporu ve kaynak listesinin PDF çıktısı |
 | Containerization | Docker ve Docker Compose v2 | Django backend ve PostgreSQL geliştirme ortamı |
 | Production sunucusu | Gunicorn 26.0.0 | Render üzerindeki Django WSGI servisi |
-| E-posta altyapısı | Django Console Backend / SMTP | E-posta doğrulama ve parola sıfırlama kodlarının gönderimi |
+| E-posta altyapısı | Brevo Transactional Email HTTP API / Django Console Backend | Production ortamında doğrulama ve parola sıfırlama kodlarının Brevo HTTP API üzerinden, yerel geliştirmede console backend üzerinden gönderimi |
+| HTTP istemcisi | Requests 2.32.3 | Brevo Transactional Email API çağrılarının gerçekleştirilmesi |
 | Yerel otomasyon | GNU Make ve Bash | Kurulum, servis yaşam döngüsü, build, temizlik ve RAG işlemleri |
 | Deployment | Render Blueprint | Docker backend, statik frontend ve yönetilen PostgreSQL kurulumu |
 | Backend testleri | Django Test Framework | API, kullanıcı sahipliği, workflow, RAG ve servis testleri |
@@ -850,29 +851,55 @@ Gerçek API anahtarları ve gizli erişim bilgileri repository’ye gönderilmem
 
 ### 4. E-posta Ayarları
 
-Yerel geliştirme ortamında varsayılan olarak Django console e-posta backend’i kullanılır:
+FikirLab, e-posta doğrulama ve parola sıfırlama kodlarını ortam yapılandırmasına göre iki farklı yöntemle gönderir:
+
+- `BREVO_API_KEY` tanımlıysa Brevo Transactional Email HTTP API kullanılır.
+- `BREVO_API_KEY` boşsa Django'nun `EMAIL_BACKEND` yapılandırması kullanılır.
+
+#### Yerel Geliştirme
+
+Yerel geliştirme ortamında varsayılan olarak Django console e-posta backend'i kullanılır:
 
 ```env
 EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
+BREVO_API_KEY=
+DEFAULT_FROM_EMAIL=no-reply@example.com
 ```
 
-Bu yapılandırmada e-posta doğrulama ve parola sıfırlama kodları gerçek bir e-posta adresine gönderilmez. Oluşturulan e-posta içeriği backend container loglarında görüntülenir.
+Bu yapılandırmada doğrulama ve parola sıfırlama e-postaları gerçek bir e-posta adresine gönderilmez. Oluşturulan e-posta içeriği backend container loglarında görüntülenir:
 
-Gerçek SMTP gönderimi için aşağıdaki ayarlar `.env` içerisinde yapılandırılmalıdır:
+```bash
+docker compose logs -f web
+```
+
+#### Production Ortamı
+
+Production ortamında doğrulama ve parola sıfırlama kodları Brevo Transactional Email HTTP API üzerinden gönderilir.
+
+Gerekli temel ortam değişkenleri:
 
 ```env
-EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+BREVO_API_KEY=<brevo-api-anahtarı>
+DEFAULT_FROM_EMAIL=<gonderici-e-posta-adresi>
+```
+
+`BREVO_API_KEY` gizli bir erişim anahtarıdır. Gerçek anahtar `.env.example`, README, commit veya repository içerisinde paylaşılmamalıdır. Render deployment sırasında secret environment variable olarak tanımlanmalıdır.
+
+`BREVO_API_KEY` tanımlı olduğunda uygulama, Django SMTP backend'i yerine Brevo HTTP API üzerinden gönderim yapar. Anahtar boş bırakıldığında uygulama mevcut `EMAIL_BACKEND` yapılandırmasına geri döner.
+
+Repository içerisinde bulunan aşağıdaki SMTP değişkenleri, alternatif Django e-posta backend yapılandırmaları için korunmaktadır:
+
+```env
 EMAIL_HOST=
 EMAIL_PORT=
 EMAIL_HOST_USER=
 EMAIL_HOST_PASSWORD=
 EMAIL_USE_TLS=True
 EMAIL_USE_SSL=False
-DEFAULT_FROM_EMAIL=
-EMAIL_TIMEOUT=30
+EMAIL_TIMEOUT=10
 ```
 
-`EMAIL_USE_TLS` ve `EMAIL_USE_SSL` aynı anda `True` olmamalıdır. Kullanılan port ve bağlantı güvenliği SMTP sağlayıcısının yapılandırmasıyla uyumlu olmalıdır.
+Render üzerindeki güncel production e-posta akışında SMTP kullanıcı adı, parola veya port bilgisi yerine `BREVO_API_KEY` kullanılmaktadır.
 
 Doğrulama kodu politikaları aşağıdaki değişkenlerle yönetilebilir:
 
@@ -881,8 +908,6 @@ AUTH_CODE_TTL_MINUTES=10
 AUTH_CODE_RESEND_COOLDOWN_SECONDS=60
 AUTH_CODE_MAX_ATTEMPTS=5
 ```
-
-Production ortamında gerçek SMTP bilgileri Render secret veya benzeri güvenli bir secret yönetim sistemi üzerinden tanımlanmalıdır.
 
 ### 5. Projeyi Başlatma
 
@@ -1157,6 +1182,21 @@ Render ücretsiz web servisleri yaklaşık 15 dakika boyunca istek almadığınd
 Bu gecikme PostgreSQL veritabanının uykuya geçmesinden değil, ücretsiz Django backend web servisinin yeniden başlatılmasından kaynaklanmaktadır.
 
 Ayrıca ücretsiz Render PostgreSQL veritabanları oluşturulduktan 30 gün sonra sona ermektedir. Projenin uzun süreli kullanılmaya devam edilmesi durumunda veritabanının ücretli bir plana taşınması veya veriler için ayrı bir yedekleme ve taşıma planı hazırlanması gerekir.s
+
+### Production E-posta Gönderimi
+
+Render üzerindeki backend servisinde e-posta doğrulama ve parola sıfırlama kodları Brevo Transactional Email HTTP API üzerinden gönderilmektedir.
+
+`render.yaml` içerisinde production e-posta gönderimi için aşağıdaki ortam değişkenleri tanımlanmıştır:
+
+- `DEFAULT_FROM_EMAIL`: Gönderici e-posta adresi
+- `BREVO_API_KEY`: Render Dashboard üzerinden girilen gizli Brevo API anahtarı
+
+`BREVO_API_KEY`, `sync: false` olarak tanımlandığı için gerçek API anahtarı repository içerisinde tutulmaz. Anahtar, Render Dashboard üzerinden backend servisine manuel olarak eklenir.
+
+`BREVO_API_KEY` tanımlı olduğunda uygulama e-postaları Brevo HTTP API üzerinden gönderir. Anahtar tanımlı değilse Django'nun mevcut `EMAIL_BACKEND` yapılandırmasına geri dönülür.
+
+Yerel geliştirme ortamında `BREVO_API_KEY` boş bırakılır ve varsayılan olarak Django console e-posta backend'i kullanılır.
 
 ---
 
@@ -2772,7 +2812,7 @@ Sprint boyunca teknik entegrasyonların kapsamı başlangıçta öngörülenden 
 - Akademi eğitim videolarına ait transcript ve metadata dosyalarının ingestion sürecine uygun hâle getirilmesi
 - RAG kaynaklarının analiz sonuçlarıyla birlikte saklanması ve raporda gösterilmesi
 - Production deployment için CORS, CSRF, environment variable ve servis başlangıç komutlarının düzenlenmesi
-- E-posta doğrulama ve parola sıfırlama işlemleri için SMTP yapılandırmasının hazırlanması
+- Canlı ortamda SMTP tabanlı gönderimde yaşanan sorun nedeniyle e-posta doğrulama ve parola sıfırlama akışlarının Brevo HTTP API'ye taşınması
 - Canlı ortamın ücretsiz servis sınırlamalarıyla birlikte çalıştırılması
 - Teknik dokümantasyonun hızla değişen proje yapısına göre güncel tutulması
 
@@ -2812,7 +2852,7 @@ Sprint sonunda ürün çalışır bir MVP seviyesine ulaşmış olsa da aşağı
 - Kullanılmayan frontend dependency’lerinin temizlenmesi
 - npm tarafından bildirilen güvenlik uyarılarının değerlendirilmesi
 - Production RAG corpus’unun hazırlanması ve doğrulanması
-- Production SMTP yapılandırmasının tamamlanması
+- Transactional e-posta gönderim hatalarının izlenmesi ve Brevo API teslimat gözlemlenebilirliğinin geliştirilmesi
 - Uzun süreli kullanım için kalıcı deployment ve veritabanı planının oluşturulması
 
 Bu maddeler Sprint 3 MVP kapsamının başarısız olduğu anlamına gelmemektedir. Ürünün mevcut sürümü Bootcamp teslimi için temel kullanıcı akışlarını sağlamaktadır; belirtilen alanlar ürünün daha güvenilir, ölçeklenebilir ve sürdürülebilir hâle getirilmesi için sonraki geliştirme fırsatlarıdır.
@@ -2845,7 +2885,7 @@ Sprint Retrospective sonucunda final teslim süreci için aşağıdaki aksiyonla
 - Final proje raporunun tamamlanması
 - Final teslim formunun doldurulması
 - Canlı ortamda kayıt, giriş, fikir oluşturma, analiz ve rapor akışlarının tekrar kontrol edilmesi
-- Production e-posta yapılandırmasının kontrol edilmesi
+- Production Brevo API anahtarı, gönderici adresi ve doğrulama e-postası akışının kontrol edilmesi
 - Production RAG corpus durumunun doğrulanması
 - Repository’de lisans ve kullanım hakları bildiriminin hazırlanması
 - Takım üyeleri ve iletişim bilgilerinin son kez doğrulanması
@@ -2923,7 +2963,7 @@ Final teslim kapsamında kalan çalışmalar yeni bir temel ürün özelliği ge
 - Final proje tanıtım videosunun hazırlanması
 - Final proje raporunun tamamlanması
 - Canlı uygulamadaki temel kullanıcı akışlarının yeniden test edilmesi
-- Production SMTP ayarlarının kontrol edilmesi
+- Production Brevo HTTP API e-posta gönderiminin kontrol edilmesi
 - Production RAG bilgi tabanının durumunun doğrulanması
 - Repository lisans ve kullanım hakları bildiriminin eklenmesi
 - Bootcamp final teslim formunun doldurulması
@@ -2937,7 +2977,7 @@ Proje, Bootcamp değerlendirme sürecinde erişilebilir olması amacıyla Render
 
 Ücretsiz Render backend servisi bir süre istek almadığında otomatik olarak durabilir. Bu nedenle uygulama uzun süre kullanılmadıktan sonra yapılan ilk giriş veya API isteği normalden daha uzun sürebilir. Backend servisi yeniden çalışmaya başladıktan sonra sonraki işlemler normal biçimde devam eder.
 
-Canlı ortam geçici değerlendirme amacıyla hazırlanmıştır. Uzun süreli veya production seviyesinde kullanım için kalıcı veritabanı, yedekleme, SMTP, servis izleme ve ücretli hosting seçeneklerinin ayrıca yapılandırılması gerekir.
+Canlı ortam geçici değerlendirme amacıyla hazırlanmıştır. Uzun süreli veya production seviyesinde kullanım için kalıcı veritabanı, yedekleme, transactional e-posta servisinin izlenmesi, güvenli secret yönetimi, servis gözlemlenebilirliği ve ücretli hosting seçeneklerinin ayrıca yapılandırılması gerekir.
 
 Canlı ortamda kullanılan RAG bilgi tabanı, Türkiye Girişimcilik Vakfına ait girişimcilik eğitim içerikleri temel alınarak yalnızca Bootcamp değerlendirmesi amacıyla hazırlanmıştır. Mevcut deployment kalıcı veya ticari kullanım izni anlamına gelmez. Projenin jüri değerlendirmesinden sonra yayında tutulması ya da gerçek bir ürüne dönüştürülmesi durumunda ilgili içerikler için yazılı kullanım izni alınması veya RAG bilgi tabanının kullanım hakkı açık kaynaklarla değiştirilmesi gerekecektir.
 
@@ -2954,7 +2994,7 @@ Canlı ortamda kullanılan RAG bilgi tabanı, Türkiye Girişimcilik Vakfına ai
 - [x] Uygulama Render üzerinde canlı ortama alındı.
 - [x] Canlı frontend ve backend sağlık kontrolü doğrulandı.
 - [x] Production RAG corpus durumu son kez kontrol edilecek.
-- [x] Production SMTP ayarları son kez kontrol edilecek.
+- [x] Production Brevo HTTP API e-posta gönderimi kontrol edildi.
 - [ ] Final proje tanıtım videosu tamamlanacak.
 - [x] Final proje raporu tamamlanacak.
 - [ ] Bootcamp final teslim formu gönderilecek.
