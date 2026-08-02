@@ -960,14 +960,28 @@ export function NewIdeaPage({ onCreated }: { onCreated: () => void }) {
                       setValue(step.key, selected);
                     }
                   }}
-                  className={inputClass}
+                  className={`${inputClass} dark:[color-scheme:dark]`}
                 >
-                  <option value="" disabled>
-                    {step.placeholder}
-                  </option>
-                  {step.options!.map((o) => (
-                    <option key={o} value={o}>
-                      {o}
+                <option
+                value=""
+                disabled
+                style={{
+                  backgroundColor: "#ffffff",
+                  color: "#18181b",
+                  }}
+                >
+                  {step.placeholder}
+                </option>
+                {step.options!.map((o) => (
+                  <option
+                  key={o}
+                  value={o}
+                  style={{
+                    backgroundColor: "#ffffff",
+                    color: "#18181b",
+                  }}
+                  >
+                    {o}
                     </option>
                   ))}
                 </select>
