@@ -223,6 +223,12 @@ EMAIL_USE_SSL = _boolean_config("EMAIL_USE_SSL", False)
 EMAIL_TIMEOUT = _positive_int_config("EMAIL_TIMEOUT", 10, maximum=300)
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="no-reply@example.com")
 
+# Brevo (Sendinblue) transactional email HTTP API. Render blocks outbound
+# SMTP, so production sends through this instead. When unset, email
+# continues to go through EMAIL_BACKEND above (e.g. the console backend in
+# local dev).
+BREVO_API_KEY = config("BREVO_API_KEY", default="")
+
 if EMAIL_USE_TLS and EMAIL_USE_SSL:
     raise ImproperlyConfigured(
         "EMAIL_USE_TLS and EMAIL_USE_SSL cannot both be enabled."

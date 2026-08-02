@@ -64,6 +64,8 @@ services:
         value: "True"
       - key: DEFAULT_FROM_EMAIL
         value: fikirlab.team@gmail.com
+      - key: BREVO_API_KEY
+        sync: false
 
   - type: web
     name: fikirlab-frontend

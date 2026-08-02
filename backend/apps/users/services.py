@@ -1,6 +1,7 @@
 import secrets
 from datetime import timedelta
 
+import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model, password_validation
 from django.contrib.auth.hashers import check_password, make_password
@@ -12,6 +13,8 @@ from django.views.decorators.debug import sensitive_variables
 
 from .models import AuthCode
 
+
+BREVO_API_URL = "https://api.brevo.com/v3/smtp/email"
 
 EMAIL_CONTENT_BY_PURPOSE = {
     AuthCode.Purpose.EMAIL_VERIFICATION: (
@@ -72,6 +75,30 @@ def _user_is_eligible_for_code(user, purpose):
 
 
 @sensitive_variables()
+def _send_via_brevo(subject, message, to_email):
+    try:
+        response = requests.post(
+            BREVO_API_URL,
+            json={
+                "sender": {"email": settings.DEFAULT_FROM_EMAIL},
+                "to": [{"email": to_email}],
+                "subject": subject,
+                "textContent": message,
+            },
+            headers={
+                "api-key": settings.BREVO_API_KEY,
+                "content-type": "application/json",
+            },
+            timeout=10,
+        )
+        response.raise_for_status()
+    except requests.RequestException as exc:
+        raise AuthCodeEmailDeliveryError(
+            "Authentication code email could not be delivered."
+        ) from exc
+
+
+@sensitive_variables()
 def send_auth_code_email(user, purpose, raw_code):
     _validate_purpose(purpose)
     if not user.email:
@@ -87,6 +114,11 @@ def send_auth_code_email(user, purpose, raw_code):
             "ttl_minutes": settings.AUTH_CODE_TTL_MINUTES,
         },
     ).strip()
+
+    if settings.BREVO_API_KEY:
+        _send_via_brevo(subject, message, user.email)
+        return
+
     sent_count = send_mail(
         subject=subject,
         message=message,
