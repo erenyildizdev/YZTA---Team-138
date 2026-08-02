@@ -11,10 +11,6 @@ FikirLab, girişimci adaylarının iş fikirlerini sistemli, ölçülebilir ve k
 - [Canlı Uygulama](https://fikirlab-frontend.onrender.com)
 - [Proje Tanıtım Videosu](https://www.youtube.com/watch?v=APuWhWGeCEo&feature=youtu.be)
 - [GitHub Project Board](https://github.com/users/erenylldz/projects/2)
-- [Kurulum](#kurulum)
-- [API Dokümantasyonu](#api-kullanimi)
-- [Sprint Dokümantasyonu](#sprint-dokumantasyonu)
-- [Telif ve Kullanım Hakları](#telif-ve-kullanim-haklari)
 
 ## İçindekiler
 
