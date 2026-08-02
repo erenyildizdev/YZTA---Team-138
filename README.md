@@ -1,4 +1,34 @@
-# AI Destekli Fikir Doğrulama Asistanı
+<a name="readme-top"></a>
+
+# FikirLab
+
+### AI Destekli Fikir Doğrulama Asistanı
+
+FikirLab, girişimci adaylarının iş fikirlerini sistemli, ölçülebilir ve kanıta dayalı biçimde doğrulamasına yardımcı olan yapay zekâ destekli bir karar destek platformudur.
+
+## Hızlı Bağlantılar
+
+- [Canlı Uygulama](https://fikirlab-frontend.onrender.com)
+- [Proje Tanıtım Videosu](YOUTUBE_VIDEO_LINKI)
+- [GitHub Project Board](https://github.com/users/erenylldz/projects/2)
+- [Kurulum](#kurulum)
+- [API Dokümantasyonu](#api-kullanimi)
+- [Sprint Dokümantasyonu](#sprint-dokumantasyonu)
+- [Telif ve Kullanım Hakları](#telif-ve-kullanim-haklari)
+
+## İçindekiler
+
+1. [Takım ve Ürün Bilgileri](#takim-ve-urun)
+2. [Ürün Özellikleri](#urun-ozellikleri)
+3. [Product Backlog ve Sprint Board](#proje-yonetimi)
+4. [Kullanılan Teknolojiler ve Teknik Mimari](#teknik-mimari)
+5. [Proje Yapısı](#proje-yapisi)
+6. [Kurulum ve Deployment](#kurulum)
+7. [API Kullanımı](#api-kullanimi)
+8. [Geliştirme ve Test Süreci](#gelistirme-ortami)
+9. [Sprint Dokümantasyonu](#sprint-dokumantasyonu)
+10. [Proje Teslim Bilgileri](#proje-teslimi)
+11. [Telif ve Kullanım Hakları](#telif-ve-kullanim-haklari)
 
 ## Takım İsmi
 
@@ -148,7 +178,7 @@ AI Destekli Fikir Doğrulama Asistanı'nın ana hedef kitlesi, iş fikrini hayat
 #### Bütünleşik Doğrulama Raporu
 
 - Fikir analizi, riskli varsayımlar, Mom Test soruları, MoSCoW kapsamı ve doğrulama yol haritasının tek raporda birleştirilmesi
-- Müşteri görüşme kanıtlarının ve içgörülerinin doğrulama raporuna dahil edilmesi
+- Fikir analizi, riskli varsayımlar, Mom Test soruları, MoSCoW kapsamı, doğrulama yol haritası ve RAG kaynaklarının tek raporda birleştirilmesi
 - Kullanıcının fikrine ait güncel doğrulama sonuçlarını rapor ekranından inceleyebilmesi
 - Doğrulama raporunun metin tabanlı PDF olarak dışa aktarılabilmesi
 - PDF içerisinde Türkçe karakterlerin ve düzenli metin yapısının korunması
@@ -224,9 +254,9 @@ Backlog maddelerinin ayrıntılı takibi GitHub Issues, Milestones, branch'ler, 
 | PB-20 | Müşteri görüşme notları için veri modeli ve CRUD API geliştirilmesi | Yüksek | Sprint 3 | Tamamlandı |
 | PB-21 | Görüşme notlarının frontend üzerinden eklenmesi, düzenlenmesi ve silinmesi | Yüksek | Sprint 3 | Tamamlandı |
 | PB-22 | Görüşme notlarından yapay zekâ destekli kanıt ve içgörü oluşturulması | Yüksek | Sprint 3 | Tamamlandı |
-| PB-23 | Analiz ve görüşme sonuçlarını birleştiren bütünleşik fikir doğrulama raporunun hazırlanması | Yüksek | Sprint 3 | Tamamlandı |
+| PB-23 | Temel fikir doğrulama analizlerini ve RAG kaynaklarını birleştiren bütünleşik doğrulama raporunun hazırlanması | Yüksek | Sprint 3 | Tamamlandı |
 | PB-24 | Doğrulama raporunun PDF olarak dışa aktarılabilmesi | Orta | Sprint 3 | Tamamlandı |
-| PB-25 | Uzun süren doğrulama işlemleri için gerçek zamanlı ilerleme takibinin geliştirilmesi | Orta | Sprint 3 | Tamamlandı |
+| PB-25 | Uzun süren doğrulama işlemleri için HTTP polling tabanlı yakın gerçek zamanlı ilerleme takibinin geliştirilmesi | Orta | Sprint 3 | Tamamlandı |
 | PB-26 | Yüklenme, hata, boş durum ve responsive arayüz davranışlarının tamamlanması | Yüksek | Sprint 3 | Tamamlandı |
 | PB-27 | Kullanıcı sahipliği, yetkilendirme ve başarısız istek senaryolarının test edilmesi | Yüksek | Sprint 3 | Tamamlandı |
 | PB-28 | Kullanıcı profil bilgileri ve hesap ayarları ekranının geliştirilmesi | Orta | Sprint 3 | Tamamlandı |
@@ -237,11 +267,11 @@ Backlog maddelerinin ayrıntılı takibi GitHub Issues, Milestones, branch'ler, 
 | PB-33 | Proje yaşam döngüsü ve RAG komutlarının Makefile üzerinden yönetilmesi | Orta | Sprint 3 | Tamamlandı |
 | PB-34 | Production ortam değişkenleri ve deployment yapılandırmasının hazırlanması | Yüksek | Sprint 3 | Teknik hazırlık tamamlandı |
 | PB-35 | Ürünün canlı ortamda yayınlanması ve canlı bağlantının oluşturulması | Yüksek | Final Delivery | Tamamlandı – <https://fikirlab-frontend.onrender.com> |
-| PB-36 | Sprint 3 ve final proje dokümantasyonunun tamamlanması | Yüksek | Final Delivery | Devam ediyor |
-| PB-37 | Sprint 3 ürün durumu videosunun repository'ye eklenmesi | Orta | Final Delivery | Video çekildi, yükleme bekleniyor |
-| PB-38 | Final ürün demosunun hazırlanması | Yüksek | Final Delivery | Planlanıyor |
-| PB-39 | Üç dakikalık proje tanıtım videosunun hazırlanması | Yüksek | Final Delivery | Devam ediyor |
-| PB-40 | Final Bootcamp teslim bilgilerinin hazırlanması ve teslim formunun tamamlanması | Yüksek | Final Delivery | Devam ediyor |
+| PB-36 | Sprint 3 ve final proje dokümantasyonunun tamamlanması | Yüksek | Final Delivery | Tamamlandı |
+| PB-37 | Sprint 3 ürün durumu videosunun repository'ye eklenmesi | Orta | Final Delivery | Tamamlandı |
+| PB-38 | Final ürün demosunun hazırlanması | Yüksek | Final Delivery | Tamamlandı |
+| PB-39 | Üç dakikalık proje tanıtım videosunun hazırlanması | Yüksek | Final Delivery | Tamamlandı |
+| PB-40 | Final Bootcamp teslim bilgilerinin hazırlanması ve teslim formunun tamamlanması | Yüksek | Final Delivery | Tamamlandı |
 
 Sprint 3 sonunda ürünün temel MVP akışı tamamlanmıştır. Önceki sprintlerde ayrı ayrı geliştirilen frontend, backend, yapay zekâ ve RAG bileşenleri tek bir kullanıcı akışı içerisinde birleştirilmiştir.
 
@@ -251,7 +281,7 @@ Production deployment için gerekli teknik yapılandırmalar tamamlanmış ve ü
 
 Canlı uygulama: <https://fikirlab-frontend.onrender.com>
 
-Final dokümantasyonu, ürün demosu, proje videosu ve Bootcamp teslim işlemleri `Final Delivery` kapsamında devam etmektedir.
+Final dokümantasyonu, ürün demosu ve üç dakikalık proje tanıtım videosu tamamlanmıştır. Proje canlı ortamda çalışır durumdadır ve Bootcamp final teslimi için gerekli çıktılar hazırlanmıştır.
 
 ---
 
@@ -1191,7 +1221,7 @@ Render ücretsiz web servisleri yaklaşık 15 dakika boyunca istek almadığınd
 
 Bu gecikme PostgreSQL veritabanının uykuya geçmesinden değil, ücretsiz Django backend web servisinin yeniden başlatılmasından kaynaklanmaktadır.
 
-Ayrıca ücretsiz Render PostgreSQL veritabanları oluşturulduktan 30 gün sonra sona ermektedir. Projenin uzun süreli kullanılmaya devam edilmesi durumunda veritabanının ücretli bir plana taşınması veya veriler için ayrı bir yedekleme ve taşıma planı hazırlanması gerekir.s
+Ayrıca ücretsiz Render PostgreSQL veritabanları oluşturulduktan 30 gün sonra sona ermektedir. Projenin uzun süreli kullanılmaya devam edilmesi durumunda veritabanının ücretli bir plana taşınması veya veriler için ayrı bir yedekleme ve taşıma planı hazırlanması gerekir.
 
 ### Production E-posta Gönderimi
 
@@ -2901,7 +2931,7 @@ Sprint Retrospective sonucunda final teslim süreci için aşağıdaki aksiyonla
 - Takım üyeleri ve iletişim bilgilerinin son kez doğrulanması
 - Final teslim bağlantılarının ekip üyeleriyle paylaşılması
 
-Bu aksiyonlar `Final Delivery` milestone’u altındaki issue’lar üzerinden takip edilmektedir.
+Bu aksiyonlar `Final Delivery` milestone’u altındaki issue’lar üzerinden takip edilmiş ve tamamlnamıştır.
 
 #### Retrospective Sonucu
 
@@ -2931,9 +2961,9 @@ Projenin temel geliştirme çalışmaları tamamlanmış, uygulama canlı ortama
 | GitHub Project Board | <https://github.com/users/erenylldz/projects/2> | Güncel |
 | Sprint dokümantasyonları | `docs/sprint-1/`, `docs/sprint-2/`, `docs/sprint-3/` | Repository içerisinde |
 | Sprint 3 ürün durumu | `docs/sprint-3/sprint-3-demo.gif` | Repository içerisinde |
-| Final proje tanıtım videosu | Teslim bağlantısı eklenecektir. | Hazırlanıyor |
-| Final proje raporu | Teslim bağlantısı veya dosya yolu eklenecektir. | Hazırlanıyor |
-| Bootcamp final teslim formu | Akademi teslim sistemi üzerinden paylaşılacaktır. | Final teslim aşamasında |
+| Final proje tanıtım videosu | [YouTube üzerinden izle](https://www.youtube.com/watch?v=APuWhWGeCEo&feature=youtu.be) | Tamamlandı |
+| Final proje raporu | Teslim bağlantısı veya dosya yolu eklenecektir. | Tamamlandı. |
+| Bootcamp final teslim formu | Akademi teslim sistemi üzerinden paylaşılacaktır. | Teslim edildi. |
 
 ### Proje Durumu
 
@@ -3003,12 +3033,11 @@ Canlı ortamda kullanılan RAG bilgi tabanı, Türkiye Girişimcilik Vakfına ai
 - [x] Frontend production build işlemi doğrulandı.
 - [x] Uygulama Render üzerinde canlı ortama alındı.
 - [x] Canlı frontend ve backend sağlık kontrolü doğrulandı.
-- [x] Production RAG corpus durumu son kez kontrol edilecek.
+- [x] Production RAG corpus durumu son kez kontrol edildi.
 - [x] Production Brevo HTTP API e-posta gönderimi kontrol edildi.
-- [ ] Final proje tanıtım videosu tamamlanacak.
-- [x] Final proje raporu tamamlanacak.
-- [ ] Bootcamp final teslim formu gönderilecek.
-- [x] Repository lisans ve kullanım hakları bildirimi eklenecek.
+- [x] Final proje tanıtım videosu tamamlandı.
+- [x] Bootcamp final teslim formu gönderildi.
+- [x] Repository lisans ve kullanım hakları bildirimi eklendi.
 
 ### Team 138
 
