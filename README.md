@@ -120,7 +120,7 @@ AI Destekli Fikir Doğrulama Asistanı'nın ana hedef kitlesi, iş fikrini hayat
 - Ayrı çalışan doğrulama modüllerinin merkezi bir workflow altında birleştirilmesi
 - Doğrulama analizlerinin belirli bir işlem sırası içerisinde yürütülmesi
 - Analiz aşamalarının birbirinden bağımsız olarak hata yönetimine sahip olması
-- Uzun süren doğrulama işlemlerinde kullanıcıya gerçek zamanlı ilerleme bilgisi gösterilmesi
+- Uzun süren doğrulama işlemlerinde kullanıcıya HTTP polling tabanlı yakın gerçek zamanlı ilerleme bilgisi gösterilmesi
 - Tamamlanan analiz sonuçlarının veritabanında saklanması
 - Kullanıcının daha önce oluşturulan analiz sonuçlarını tekrar görüntüleyebilmesi
 
@@ -306,7 +306,7 @@ Projenin backend, frontend, yapay zekâ, RAG, geliştirme ortamı ve deployment 
 | Markdown gösterimi | React Markdown 10.1.0 | AI mentor yanıtlarının biçimlendirilmiş gösterimi |
 | PDF oluşturma | `@react-pdf/renderer` 4.5.1 | Metin tabanlı doğrulama raporu ve kaynak listesinin PDF çıktısı |
 | Containerization | Docker ve Docker Compose v2 | Django backend ve PostgreSQL geliştirme ortamı |
-| Production sunucusu | Gunicorn 26.0.0 | Render üzerindeki Django WSGI servisi |
+| Production sunucusu | Gunicorn 26.0.0 (`gthread`) | Render üzerinde bir worker ve dört thread ile Django WSGI servisi; uzun süren workflow sırasında ilerleme polling isteklerinin eş zamanlı karşılanması |
 | E-posta altyapısı | Brevo Transactional Email HTTP API / Django Console Backend | Production ortamında doğrulama ve parola sıfırlama kodlarının Brevo HTTP API üzerinden, yerel geliştirmede console backend üzerinden gönderimi |
 | HTTP istemcisi | Requests 2.32.3 | Brevo Transactional Email API çağrılarının gerçekleştirilmesi |
 | Yerel otomasyon | GNU Make ve Bash | Kurulum, servis yaşam döngüsü, build, temizlik ve RAG işlemleri |
@@ -1150,6 +1150,16 @@ Migration işlemleri
 → static dosyaların toplanması
 → Gunicorn sunucusunun başlatılması
 ```
+Gunicorn production ortamında aşağıdaki eş zamanlılık ayarlarıyla çalıştırılmaktadır:
+
+- Worker sınıfı: `gthread`
+- Worker sayısı: `1`
+- Thread sayısı: `4`
+- İstek zaman aşımı: `300` saniye
+
+Beş aşamalı doğrulama workflow'u senkron bir HTTP isteği içerisinde çalışmaktadır. Gunicorn'un thread tabanlı yapılandırılması sayesinde bir thread uzun süren workflow isteğini yürütürken diğer thread'ler frontend tarafından yaklaşık bir saniyelik aralıklarla gönderilen workflow ilerleme sorgularına yanıt verebilir.
+
+Bu yapı, production ortamında analiz aşamalarının `running` ve `completed` durumlarının kullanıcı arayüzünde işlem devam ederken görüntülenmesini sağlar.
 
 Frontend build süreci:
 
