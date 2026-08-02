@@ -9,7 +9,7 @@ FikirLab, girişimci adaylarının iş fikirlerini sistemli, ölçülebilir ve k
 ## Hızlı Bağlantılar
 
 - [Canlı Uygulama](https://fikirlab-frontend.onrender.com)
-- [Proje Tanıtım Videosu](YOUTUBE_VIDEO_LINKI)
+- [Proje Tanıtım Videosu](https://www.youtube.com/watch?v=APuWhWGeCEo&feature=youtu.be)
 - [GitHub Project Board](https://github.com/users/erenylldz/projects/2)
 - [Kurulum](#kurulum)
 - [API Dokümantasyonu](#api-kullanimi)
@@ -30,6 +30,9 @@ FikirLab, girişimci adaylarının iş fikirlerini sistemli, ölçülebilir ve k
 10. [Proje Teslim Bilgileri](#proje-teslimi)
 11. [Telif ve Kullanım Hakları](#telif-ve-kullanim-haklari)
 
+
+<a name="takim-ve-urun"></a>
+
 ## Takım İsmi
 
 TEAM - 138
@@ -45,12 +48,6 @@ TEAM - 138
 | Semiha Çıtırkı   | Developer     |
 | Mücahit Ayyıldız | Developer     |
 | Berker Öner      | Developer     |
-
----
-
-## Ürün İsmi
-
-AI Destekli Fikir Doğrulama Asistanı
 
 ---
 
@@ -103,6 +100,8 @@ AI Destekli Fikir Doğrulama Asistanı'nın ana hedef kitlesi, iş fikrini hayat
 İkincil hedef kitle olarak üniversite öğrencileri, bootcamp ve hackathon katılımcıları, girişimcilik programlarında yer alan ekipler ve proje fikrini daha sistemli bir doğrulama sürecinden geçirmek isteyen kullanıcılar hedeflenmektedir.
 
 ---
+
+<a name="urun-ozellikleri"></a>
 
 ## Ürün Özellikleri
 
@@ -224,6 +223,8 @@ AI Destekli Fikir Doğrulama Asistanı'nın ana hedef kitlesi, iş fikrini hayat
 
 ---
 
+<a name="proje-yonetimi"></a>
+
 ## Product Backlog
 
 Product Backlog, ürünün geliştirme sürecinde planlanan kullanıcı özelliklerini, yapay zekâ çalışmalarını, teknik altyapı ihtiyaçlarını ve final teslim faaliyetlerini göstermektedir.
@@ -308,6 +309,8 @@ Product Backlog ve Sprint Board:
 <https://github.com/users/erenylldz/projects/2>
 
 ---
+
+<a name="teknik-mimari"></a>
 
 ## Kullanılan Teknolojiler
 
@@ -560,6 +563,8 @@ Canlı uygulama:
 
 ---
 
+<a name="proje-yapisi"></a>
+
 ## Proje Yapısı
 
 Proje; Django tabanlı backend, React tabanlı frontend, Gemini destekli yapay zekâ servisleri, pgvector tabanlı RAG altyapısı, AI mentor agent, PDF raporlama sistemi ve sprint dokümantasyonlarından oluşmaktadır.
@@ -770,6 +775,8 @@ Okunabilirliği korumak amacıyla aşağıdaki dosya ve klasörler proje ağacı
 - Migration klasörlerinin içerisindeki tek tek migration dosyaları
 
 ---
+
+<a name="kurulum"></a>
 
 ## Kurulum
 
@@ -1240,6 +1247,8 @@ Yerel geliştirme ortamında `BREVO_API_KEY` boş bırakılır ve varsayılan ol
 
 ---
 
+<a name="api-kullanimi"></a>
+
 ## API Kullanımı
 
 FikirLab backend API’si Django REST Framework ile geliştirilmiştir.
@@ -1628,6 +1637,8 @@ POST /api/analyses/analyze/
 Temel fikir doğrulama işlemleri merkezi workflow ve fikir bazlı analiz endpointleri üzerinden gerçekleştirilmektedir.
 
 ---
+
+<a name="gelistirme-ortami"></a>
 
 ## Geliştirme Ortamı
 
@@ -2021,6 +2032,8 @@ Geliştirme tamamlanmadan önce aşağıdaki kontrollerin yapılması önerilir:
 - Issue, milestone ve Project Board durumlarının güncellenmesi
 
 ---
+
+<a name="sprint-dokumantasyonu"></a>
 
 ## Sprint Dokümantasyonu
 
@@ -2945,6 +2958,8 @@ Sonraki aşamada öncelik, yeni temel özellikler eklemek yerine mevcut ürünü
 
 ---
 
+<a name="proje-teslimi"></a>
+
 ## Proje Teslim Bilgileri
 
 FikirLab, Yapay Zekâ ve Teknoloji Akademisi Bootcamp sürecinde Team 138 tarafından geliştirilen AI destekli fikir doğrulama platformudur.
@@ -3050,6 +3065,8 @@ Canlı ortamda kullanılan RAG bilgi tabanı, Türkiye Girişimcilik Vakfına ai
 | Berker Öner | Developer |
 
 Final teslim bağlantıları tamamlandıkça bu bölüm güncellenecektir.
+
+<a name="telif-ve-kullanim-haklari"></a>
 
 ## Telif ve Kullanım Hakları
 
