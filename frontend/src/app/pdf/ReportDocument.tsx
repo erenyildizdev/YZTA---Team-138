@@ -951,7 +951,7 @@ function SourcesSection({
         <SectionShell title="Kullanılan Kaynaklar">
             <View style={styles.card}>
                 <Text style={[styles.bodyText, { marginBottom: 10 }]}>
-                    Bu analiz hazırlanırken aşağıdaki eğitim içerikleri referans
+                    Bu analiz hazırlanırken aşağıdaki bilgi kaynakları referans
                     alınmıştır.
                 </Text>
                 {sources.map((source, idx) => (

@@ -21,6 +21,28 @@ class RagAnswerServiceTests(TestCase):
         self.assertIn("Kaynak 1", prompt)
         self.assertIn("İçerik", prompt)
         self.assertIn("Türkçe cevap ver.", prompt)
+        self.assertIn("Kaynaklar belirli bir ayrım", prompt)
+        self.assertIn("konuşma dili", prompt)
+
+    def test_build_prompt_omits_source_section_without_context(self):
+        prompt = build_prompt(
+            question="MOM Test nedir?",
+            rag_context="",
+        )
+
+        self.assertIn("MOM Test nedir?", prompt)
+        self.assertNotIn("KAYNAKLAR", prompt)
+        self.assertNotIn("Bunu verilen kaynaklarda bulamadım.", prompt)
+        self.assertIn("genel girişimcilik", prompt)
+
+    def test_build_prompt_accepts_none_context(self):
+        prompt = build_prompt(
+            question="MOM Test nedir?",
+            rag_context=None,
+        )
+
+        self.assertIn("MOM Test nedir?", prompt)
+        self.assertNotIn("KAYNAKLAR", prompt)
 
     @patch(
         "apps.analyses.rag.rag_answer_service.call_rag_llm"

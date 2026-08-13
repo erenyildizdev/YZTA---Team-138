@@ -3,6 +3,9 @@ import json
 from django.conf import settings
 from google import genai
 from google.genai import types
+
+from apps.analyses.rag.prompt_context import build_optional_rag_section
+
 from .rag_context import get_idea_rag_context
 
 
@@ -41,9 +44,9 @@ GENERAL_EVALUATION_SCHEMA = {
 
 def build_general_evaluation_prompt(
     idea,
-    rag_context: str = "",
+    rag_context: str | None = "",
 ) -> str:
-    return (
+    prompt = (
         "Sen deneyimli bir girişim doğrulama danışmanısın. SADECE geçerli JSON döndür, "
         "markdown veya ek açıklama ekleme. Aşağıdaki iş fikri için genel bir değerlendirme yap: "
         "tam olarak 3 güçlü yön, tam olarak 2 belirsiz/riskli nokta üret. Ayrıca fikrin sahibinin "
@@ -54,12 +57,17 @@ def build_general_evaluation_prompt(
         f"Hedef kitle: {idea.target_audience}\n"
         f"Problem: {idea.problem}\n"
         f"Çözüm önerisi: {idea.solution}\n"
-        f"Sektör: {idea.sector}\n\n"
-        "--- RAG BAĞLAMI ---\n"
-        f"{rag_context or 'İlgili bilgi tabanı içeriği bulunamadı.'}\n"
-        "--- RAG BAĞLAMI SONU ---\n\n"
-        "RAG bağlamını yalnızca destekleyici bilgi olarak kullan. "
-        "Bağlamdaki ifadeleri doğrudan kopyalama; değerlendirmeyi iş fikrine özgü üret.\n"
+        f"Sektör: {idea.sector}\n"
+    )
+    context_section = build_optional_rag_section(
+        rag_context,
+        guidance=(
+            "Bağlamdaki ifadeleri doğrudan kopyalama; değerlendirmeyi iş "
+            "fikrine özgü üret."
+        ),
+    )
+    return "\n\n".join(
+        section for section in (prompt.rstrip(), context_section) if section
     )
 
 
@@ -329,9 +337,9 @@ RISKY_ASSUMPTIONS_SCHEMA = {
 
 def build_risky_assumptions_prompt(
     idea,
-    rag_context: str = "",
+    rag_context: str | None = "",
 ) -> str:
-    return (
+    prompt = (
         "Sen deneyimli bir girişim doğrulama danışmanısın. SADECE geçerli JSON döndür, "
         "markdown veya ek açıklama ekleme. Aşağıdaki iş fikri için tam olarak 5 riskli varsayım üret. "
         "Her varsayım, MVP geliştirilmeden önce test edilmesi gereken, ölçülebilir ve spesifik bir hipotez "
@@ -342,12 +350,17 @@ def build_risky_assumptions_prompt(
         f"Hedef kitle: {idea.target_audience}\n"
         f"Problem: {idea.problem}\n"
         f"Çözüm önerisi: {idea.solution}\n"
-        f"Sektör: {idea.sector}\n\n"
-        "--- RAG BAĞLAMI ---\n"
-        f"{rag_context or 'İlgili bilgi tabanı içeriği bulunamadı.'}\n"
-        "--- RAG BAĞLAMI SONU ---\n\n"
-        "RAG bağlamını yalnızca destekleyici bilgi olarak kullan. "
-        "Bağlamdaki ifadeleri doğrudan kopyalama; fikre özgü riskli varsayımlar üret.\n"
+        f"Sektör: {idea.sector}\n"
+    )
+    context_section = build_optional_rag_section(
+        rag_context,
+        guidance=(
+            "Bağlamdaki ifadeleri doğrudan kopyalama; fikre özgü riskli "
+            "varsayımlar üret."
+        ),
+    )
+    return "\n\n".join(
+        section for section in (prompt.rstrip(), context_section) if section
     )
 
 
@@ -567,9 +580,9 @@ VALIDATION_ROADMAP_SCHEMA = {
 
 def build_validation_roadmap_prompt(
     idea,
-    rag_context: str = "",
+    rag_context: str | None = "",
 ):
-    return (
+    prompt = (
         "Sen deneyimli bir girişim doğrulama danışmanısın. SADECE geçerli JSON döndür, "
         "markdown veya ek açıklama ekleme. Aşağıdaki iş fikri için 3 haftalık, aşamalı bir doğrulama "
         "yol haritası üret. Her hafta şu tam alanları içermeli: "
@@ -581,13 +594,17 @@ def build_validation_roadmap_prompt(
         f"Hedef kitle: {idea.target_audience}\n"
         f"Problem: {idea.problem}\n"
         f"Çözüm önerisi: {idea.solution}\n"
-        f"Sektör: {idea.sector}\n\n"
-        "--- RAG BAĞLAMI ---\n"
-        f"{rag_context or 'İlgili bilgi tabanı içeriği bulunamadı.'}\n"
-        "--- RAG BAĞLAMI SONU ---\n\n"
-        "RAG bağlamını yalnızca destekleyici bilgi olarak kullan. "
-        "Bağlamdaki ifadeleri doğrudan kopyalama; fikre özgü, somut ve uygulanabilir "
-        "bir doğrulama yol haritası üret.\n"
+        f"Sektör: {idea.sector}\n"
+    )
+    context_section = build_optional_rag_section(
+        rag_context,
+        guidance=(
+            "Bağlamdaki ifadeleri doğrudan kopyalama; fikre özgü, somut ve "
+            "uygulanabilir bir doğrulama yol haritası üret."
+        ),
+    )
+    return "\n\n".join(
+        section for section in (prompt.rstrip(), context_section) if section
     )
 
 

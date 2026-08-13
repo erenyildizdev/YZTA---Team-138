@@ -9,6 +9,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from apps.analyses.models import MoscowScopeAnalysis
+from apps.analyses.rag.prompt_context import build_optional_rag_section
 from apps.analyses.serializers import MoscowScopeResultSerializer
 from apps.ideas.rag_context import get_idea_rag_context
 
@@ -115,21 +116,21 @@ def _default_client() -> MoscowClient:
 
 def build_moscow_prompt(
     idea,
-    rag_context: str = "",
+    rag_context: str | None = "",
 ) -> str:
-    return f"""Deneyimli bir ürün yöneticisi ve MVP danışmanı gibi davran.
+    idea_section = f"""Deneyimli bir ürün yöneticisi ve MVP danışmanı gibi davran.
 Aşağıdaki iş fikrini yalnızca verilen bilgilerle değerlendir:
 - Başlık: {idea.title}
 - Açıklama / çözülen problem ve değer önerisi: {idea.description}
-- Hedef kullanıcı: {idea.target_audience}
-
-RAG bağlamı:
-{rag_context or "İlgili bilgi tabanı içeriği bulunamadı."}
-
-RAG bağlamını yalnızca destekleyici bilgi olarak kullan.
-Bağlamdaki ifadeleri doğrudan kopyalama; iş fikrine özel ve uygulanabilir MVP özellikleri üret.
-
-Toplam 8-12 somut ürün özelliği üret ve Must Have, Should Have, Could Have ve Won't Have
+- Hedef kullanıcı: {idea.target_audience}"""
+    context_section = build_optional_rag_section(
+        rag_context,
+        guidance=(
+            "Bağlamdaki ifadeleri doğrudan kopyalama; iş fikrine özel ve "
+            "uygulanabilir MVP özellikleri üret."
+        ),
+    )
+    output_instructions = """Toplam 8-12 somut ürün özelliği üret ve Must Have, Should Have, Could Have ve Won't Have
 kategorilerine ayır. Must Have yalnızca temel değeri sunmak için zorunlu özellikleri; Should Have
 önemli fakat ilk sürüm için mutlak zorunlu olmayanları; Could Have deneyimi geliştiren fakat
 ertelenebilecekleri içersin. Won't Have kötü veya gereksiz demek değildir; mevcut MVP kapsamına
@@ -140,10 +141,19 @@ Aynı özellik iki kategoride bulunmasın. Soyut ifadeler yerine uygulanabilir f
 Her özellik için 3-100 karakterlik kısa title ve 10-500 karakterlik 1-2 cümlelik reason yaz.
 10-1000 karakterlik bir summary yaz. Dört kategori de boş olmasın.
 Yalnızca şu alanları içeren geçerli JSON döndür; markdown, code fence veya açıklama ekleme:
-{{"summary":"...","must_have":[{{"title":"...","reason":"..."}}],
-"should_have":[{{"title":"...","reason":"..."}}],
-"could_have":[{{"title":"...","reason":"..."}}],
-"wont_have":[{{"title":"...","reason":"..."}}]}}"""
+{"summary":"...","must_have":[{"title":"...","reason":"..."}],
+"should_have":[{"title":"...","reason":"..."}],
+"could_have":[{"title":"...","reason":"..."}],
+"wont_have":[{"title":"...","reason":"..."}]}"""
+    return "\n\n".join(
+        section
+        for section in (
+            idea_section,
+            context_section,
+            output_instructions,
+        )
+        if section
+    )
 
 
 def _parse_json(data: Any) -> dict:

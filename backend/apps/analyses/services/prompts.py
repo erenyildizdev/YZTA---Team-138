@@ -1,3 +1,6 @@
+from apps.analyses.rag.prompt_context import build_optional_rag_section
+
+
 IDEA_VALIDATION_BASE_PROMPT = """
 Sen deneyimli bir girişim doğrulama danışmanısın.
 Amacın, verilen iş fikrini MVP geliştirilmeden önce doğrulanabilir hale getirmektir.
@@ -92,36 +95,25 @@ Genel Kurallar
 - Teknik çözüm yerine kullanıcı problemini doğrulamaya öncelik ver.
 """
 
-def build_idea_validation_prompt(rag_context: str) -> str:
-    clean_context = rag_context.strip()
+def build_idea_validation_prompt(rag_context: str | None) -> str:
+    context_section = build_optional_rag_section(
+        rag_context,
+        guidance=(
+            "Kaynak parçalarını doğrudan kopyalama. Kaynaklardaki ilkeleri "
+            "kullanıcının fikrine uyarla; kaynaklarda bulunmayan veri, "
+            "istatistik veya araştırma sonucu uydurma. Kaynak bağlamı ile "
+            "kullanıcının fikri çelişirse kesin hüküm verme."
+        ),
+    )
 
-    if not clean_context:
-        context_section = """
-Ek bilgi kaynağı bulunamadı.
-Analizi yalnızca kullanıcının verdiği iş fikri ve genel girişim
-doğrulama ilkeleri üzerinden yap.
-""".strip()
-    else:
-        context_section = f"""
-Aşağıdaki kaynak parçalarını analiz sırasında referans olarak kullan:
-
---- RAG BAĞLAMI ---
-{clean_context}
---- RAG BAĞLAMI SONU ---
-
-Kaynak kullanım kuralları:
-
-- Kaynak parçalarını doğrudan kopyalama.
-- Kaynaklardaki ilkeleri kullanıcının fikrine uyarlayarak kullan.
-- Kaynaklarda bulunmayan veri, istatistik veya araştırma sonucu uydurma.
-- Kaynak bağlamı ile kullanıcının fikri çelişirse kesin hüküm verme.
-""".strip()
-
-    return f"""
-{IDEA_VALIDATION_BASE_PROMPT.strip()}
-
-{context_section}
-""".strip()
+    return "\n\n".join(
+        section
+        for section in (
+            IDEA_VALIDATION_BASE_PROMPT.strip(),
+            context_section,
+        )
+        if section
+    )
 
 
 INTERVIEW_EVIDENCE_ANALYSIS_PROMPT = """
@@ -248,7 +240,7 @@ Sorular şu konulara odaklanabilir:
 def build_mom_test_questions_prompt(
     idea,
     question_count: int,
-    rag_context: str = "",
+    rag_context: str | None = "",
 ) -> str:
     idea_text = f"""
 Fikir başlığı: {idea.title}
@@ -259,6 +251,13 @@ Problem: {idea.problem}
 Sektör: {idea.sector}
 """.strip()
 
+    context_section = build_optional_rag_section(
+        rag_context,
+        guidance=(
+            "Soruları doğrudan bağlamdan kopyalama; iş fikrine özel üret."
+        ),
+    )
+
     return f"""
 {MOM_TEST_QUESTIONS_PROMPT.strip()}
 
@@ -266,12 +265,7 @@ Analiz edilecek iş fikri:
 
 {idea_text}
 
-RAG bağlamı:
-
-{rag_context or "İlgili bilgi tabanı içeriği bulunamadı."}
-
-RAG bağlamını yalnızca destekleyici bilgi olarak kullan.
-Soruları doğrudan bağlamdan kopyalama; iş fikrine özel üret.
+{context_section}
 
 Üretilecek soru sayısı: {question_count}
 

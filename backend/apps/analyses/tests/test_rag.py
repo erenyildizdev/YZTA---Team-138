@@ -42,6 +42,9 @@ class RagRetrieverTests(TestCase):
             "geçmiş davranışlar",
             results[0].content,
         )
+        mock_embed.assert_called_once_with(
+            "Müşteri görüşmesinde ne sormalıyım?"
+        )
 
     @patch(
         "apps.analyses.rag.retriever.embed_query",
@@ -58,3 +61,21 @@ class RagRetrieverTests(TestCase):
             context,
         )
         self.assertIn("İçerik:", context)
+
+
+class EmptyKnowledgeBaseRetrieverTests(TestCase):
+    @patch("apps.analyses.rag.retriever.embed_query")
+    def test_nonblank_query_returns_no_results_without_embedding_call(
+        self,
+        mock_embed_query,
+    ):
+        self.assertFalse(KnowledgeSource.objects.exists())
+        self.assertFalse(KnowledgeChunk.objects.exists())
+
+        results = retrieve_context(
+            query="Müşteri doğrulaması nasıl yapılır?",
+            limit=4,
+        )
+
+        self.assertEqual(results, [])
+        mock_embed_query.assert_not_called()

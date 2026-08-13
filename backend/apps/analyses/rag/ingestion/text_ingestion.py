@@ -12,6 +12,7 @@ def ingest_text(
     text: str,
     source_url: str | None = None,
 ) -> KnowledgeSource:
+    """Chunk, embed, and persist a provider-independent text source."""
     clean_title = title.strip()
     clean_text = text.strip()
 
@@ -32,21 +33,15 @@ def ingest_text(
         chunk_size=1000,
         chunk_overlap=200,
     )
-
-    chunk_objects = []
-
-    for index, chunk_text in enumerate(chunks):
-        embedding = embed_document(chunk_text)
-
-        chunk_objects.append(
-            KnowledgeChunk(
-                source=source,
-                content=chunk_text,
-                chunk_index=index,
-                embedding=embedding,
-            )
+    chunk_objects = [
+        KnowledgeChunk(
+            source=source,
+            content=chunk_text,
+            chunk_index=index,
+            embedding=embed_document(chunk_text),
         )
-
+        for index, chunk_text in enumerate(chunks)
+    ]
     KnowledgeChunk.objects.bulk_create(chunk_objects)
 
     return source

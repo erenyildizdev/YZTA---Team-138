@@ -186,24 +186,24 @@ class RagRetrieverTests(TestCase):
 
         self.assertEqual(len(video_a_chunks), 2)
 
-def test_build_rag_context_returns_formatted_context(self):
-    chunks = [
-        RetrievedChunk(
-            content="İçerik",
-            source_title="Kaynak",
-            source_type="youtube",
-            source_url="https://example.com",
-            chunk_id=1,
-            chunk_index=0,
-            distance=0.12,
-        )
-    ]
+    def test_build_rag_context_returns_formatted_context(self):
+        chunks = [
+            RetrievedChunk(
+                content="İçerik",
+                source_title="Kaynak",
+                source_type="documentation",
+                source_url="https://example.com",
+                chunk_id=1,
+                chunk_index=0,
+                distance=0.12,
+            )
+        ]
 
-    with patch(
-        "apps.analyses.rag.retriever.retrieve_context",
-        return_value=chunks,
-    ):
-        result = build_rag_context("test")
+        with patch(
+            "apps.analyses.rag.retriever.retrieve_context",
+            return_value=chunks,
+        ):
+            result = build_rag_context("test")
 
-    self.assertIn("Kaynak", result)
-    self.assertIn("İçerik", result)
+        self.assertIn("Kaynak", result)
+        self.assertIn("İçerik", result)

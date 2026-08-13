@@ -4,7 +4,7 @@ override .SHELLFLAGS := -eu -o pipefail -c
 .ONESHELL:
 .NOTPARALLEL:
 
-.PHONY: setup up down restart build rag-ingest rag-stats clean force-clean
+.PHONY: setup up down restart build rag-stats clean force-clean
 
 ifneq ($(origin MAKEFILE_LIST),file)
 $(error MAKEFILE_LIST değişkeni override edilemez)
@@ -975,18 +975,6 @@ build:
 	build_backend_image "$(NO_CACHE)"
 	(cd "$(FRONTEND_DIR)" && npm run build)
 	say "Docker image ve frontend production build hazırlandı."
-	unlock_project
-
-rag-ingest:
-	@$(COMMON_FUNCTIONS)
-	lock_project
-	ensure_env
-	select_docker
-	assert_compose_checkout_ownership
-	require_web_running
-	say "RAG bilgi tabanı YouTube kaynaklarından yükleniyor..."
-	compose exec -T web python -m scripts.ingest_all_youtube_videos
-	say "RAG ingestion tamamlandı."
 	unlock_project
 
 rag-stats:

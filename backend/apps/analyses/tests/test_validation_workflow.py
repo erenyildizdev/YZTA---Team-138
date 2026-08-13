@@ -1,10 +1,12 @@
+import json
 import threading
 import uuid
-from unittest.mock import call, patch
+from types import SimpleNamespace
+from unittest.mock import MagicMock, call, patch
 
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError, close_old_connections, transaction
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from rest_framework import serializers, status
 from rest_framework.test import (
@@ -200,6 +202,107 @@ class WorkflowTestDataMixin:
             "validation_roadmap": roadmap,
             "general_evaluation": evaluation,
         }
+
+
+@override_settings(
+    GEMINI_API_KEY="test-key",
+    GEMINI_MODEL_NAME="test-model",
+)
+class EmptyKnowledgeBaseWorkflowTests(
+    WorkflowTestDataMixin,
+    TestCase,
+):
+    def setUp(self):
+        owner = get_user_model().objects.create_user(
+            username="empty-kb-owner",
+            email="empty-kb-owner@example.com",
+            password="StrongPass123!",
+        )
+        self.idea = self.create_idea(owner, "Empty KB Workflow")
+
+    def test_workflow_calls_llms_and_completes_without_rag_context(self):
+        moscow_client = MagicMock(
+            provider="test-provider",
+            model_name="test-model",
+        )
+        moscow_client.complete.return_value = json.dumps(
+            self.moscow_payload("empty-kb")
+        )
+
+        with (
+            patch(
+                "apps.analyses.rag.retriever.embed_query"
+            ) as mock_embed_query,
+            patch(
+                "apps.ideas.services.genai.Client"
+            ) as mock_genai_client,
+            patch(
+                "apps.analyses.services.mom_test_questions."
+                "call_mom_test_llm",
+                return_value={
+                    "questions": self.mom_questions("empty-kb")
+                },
+            ) as mock_mom_llm,
+            patch(
+                "apps.analyses.services.moscow_scope._default_client",
+                return_value=moscow_client,
+            ),
+        ):
+            generate_content = (
+                mock_genai_client.return_value.models.generate_content
+            )
+            generate_content.side_effect = [
+                SimpleNamespace(
+                    text=json.dumps(self.risky_payload("empty-kb"))
+                ),
+                SimpleNamespace(
+                    text=json.dumps(
+                        self.roadmap_payload("empty-kb", self.idea)
+                    )
+                ),
+                SimpleNamespace(
+                    text=json.dumps(self.evaluation_payload("empty-kb"))
+                ),
+            ]
+
+            result = run_validation_workflow(self.idea)
+
+        self.assertEqual(
+            [step.name for step in result.steps],
+            list(EXPECTED_WORKFLOW_STEP_ORDER),
+        )
+        mock_embed_query.assert_not_called()
+        self.assertEqual(generate_content.call_count, 3)
+        mock_mom_llm.assert_called_once()
+        moscow_client.complete.assert_called_once()
+
+        prompts = [
+            call_item.kwargs["contents"]
+            for call_item in generate_content.call_args_list
+        ]
+        prompts.append(mock_mom_llm.call_args.args[0])
+        prompts.append(moscow_client.complete.call_args.args[0])
+        for prompt in prompts:
+            self.assertNotIn("RAG BAĞLAMI", prompt)
+            self.assertNotIn("İlgili bilgi tabanı içeriği", prompt)
+
+        self.idea.refresh_from_db()
+        self.assertEqual(self.idea.rag_sources, [])
+        self.assertTrue(
+            RiskyAssumptions.objects.filter(idea=self.idea).exists()
+        )
+        self.assertTrue(
+            MomTestQuestionsAnalysis.objects.filter(idea=self.idea).exists()
+        )
+        self.assertTrue(
+            MoscowScopeAnalysis.objects.filter(idea=self.idea).exists()
+        )
+        self.assertTrue(
+            ValidationRoadmap.objects.filter(idea=self.idea).exists()
+        )
+        self.assertTrue(
+            GeneralEvaluation.objects.filter(idea=self.idea).exists()
+        )
 
 
 class ValidationWorkflowEndpointTests(

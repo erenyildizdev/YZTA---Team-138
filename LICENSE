@@ -89,10 +89,10 @@ dependencies.
 Nothing in this license grants Team 138 ownership of those third-party
 technologies or restricts their lawful use under their own licenses.
 
-6. TÜRKİYE GİRİŞİMCİLİK VAKFI EDUCATIONAL CONTENT
+6. TÜRKİYE GİRİŞİMCİLİK VAKFI EDUCATIONAL CONTENT PREVIOUSLY USED
 
 The entrepreneurship training videos and related educational materials
-used as sources for the Project's RAG knowledge base belong to the
+previously used as sources for the Project's RAG knowledge base belong to the
 Türkiye Girişimcilik Vakfı and/or their respective rights holders.
 
 The Project team received written confirmation from the assistant assigned
@@ -104,14 +104,12 @@ Bootcamp, jury evaluation, and temporary demonstration context. It does
 not constitute a permanent, transferable, sublicensable, or commercial
 license for the educational materials.
 
-If the Project is converted into a permanent, public commercial, or
-production-level product, Team 138 must either:
-
-- Obtain the necessary written permission or licensing agreement from
-  the Türkiye Girişimcilik Vakfı and any other relevant rights holders; or
-- Remove and replace the related transcripts, metadata, chunks,
-  embeddings, and other derived RAG records with materials that may
-  lawfully be used for the intended purpose.
+The current working tree no longer distributes the related URL manifests,
+transcripts, or metadata. Deployments populated by earlier Project versions
+must also remove the derived sources, chunks, embeddings, and saved source
+references before continued operation. Reintroducing these materials would
+require the necessary written permission or licensing agreement from the
+Türkiye Girişimcilik Vakfı and any other relevant rights holders.
 
 Team 138 does not claim ownership of, and cannot grant third parties any
 rights concerning, the Türkiye Girişimcilik Vakfı educational materials.

@@ -25,23 +25,35 @@ class RagAnswer:
 
 def build_prompt(
     question: str,
-    rag_context: str,
+    rag_context: str | None,
 ) -> str:
-    return f"""
-Sen girişimcilik ve ürün doğrulama konusunda uzman bir asistansın.
+    clean_context = (rag_context or "").strip()
 
+    if clean_context:
+        knowledge_instructions = f"""
 SADECE aşağıdaki bilgi kaynaklarını kullan.
 
-Eğer cevap kaynaklarda yoksa
-"Bunu verilen kaynaklarda bulamadım."
-de.
+Eğer cevap kaynaklarda yoksa "Bunu verilen kaynaklarda bulamadım." de.
+
+Kaynaklar belirli bir ayrım veya yöntem sunmuyorsa bunu açıkça belirt.
+Kaynaklardaki konuşma dili, dolgu ifadeleri ve hitapları cevaba taşıma.
 
 ------------------------
 KAYNAKLAR
 
-{rag_context}
-
+{clean_context}
 ------------------------
+""".strip()
+    else:
+        knowledge_instructions = (
+            "Soruyu genel girişimcilik ve ürün doğrulama bilginle yanıtla. "
+            "Bir bilgi tabanı kaynağı veya alıntı kullanmış gibi davranma."
+        )
+
+    return f"""
+Sen girişimcilik ve ürün doğrulama konusunda uzman bir asistansın.
+
+{knowledge_instructions}
 
 KULLANICI SORUSU
 
@@ -58,17 +70,13 @@ En sonda kullandığın kaynakları tekrar etme.
 Yanıt kuralları:
 
 - Soruyu doğrudan ve odaklı biçimde yanıtla.
-- Kaynaklarda yer alsa bile soruyla doğrudan ilgili olmayan ek konulara geçme.
+- Soruyla doğrudan ilgili olmayan ek konulara geçme.
 - Kullanıcının verdiği sınırlı veriden kesin sonuç çıkarma.
 - Kanıt yetersizse "kesin olarak söylenemez", "tek başına yeterli değildir"
   veya "güçlü/zayıf bir sinyal" gibi ihtiyatlı ifadeler kullan.
 - Erken ilgi, problem doğrulaması, çözüm doğrulaması ve ürün-pazar uyumunu
   birbirinden ayır.
-- Kaynaklar belirli bir ayrım veya yöntem sunmuyorsa bunu açıkça belirt.
 - Cevabı profesyonel, sade ve akıcı Türkçe ile yaz.
-- Kaynaklardaki konuşma dili, dolgu ifadeleri ve hitapları cevaba taşıma.
-
-
 """.strip()
 
 

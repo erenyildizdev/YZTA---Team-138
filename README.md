@@ -177,12 +177,13 @@ AI Destekli Fikir Doğrulama Asistanı'nın ana hedef kitlesi, iş fikrini hayat
 
 #### RAG Destekli Bilgi Katmanı
 
-- Yapay Zekâ ve Teknoloji Akademisi tarafından sağlanan girişimcilik eğitim videolarının RAG bilgi tabanında kullanılabilmesi
-- Eğitim videolarına ait metadata ve Türkçe transcript içeriklerinin işlenmesi
+- Sağlayıcıdan bağımsız bilgi kaynaklarının RAG bilgi tabanına alınabilmesi
+- Genel metin kaynakları ile kullanıcı tarafından sağlanan YouTube metadata ve transcript dosyalarının işlenebilmesi
 - Kaynak içeriklerin parçalara ayrılarak vektör tabanlı biçimde saklanması
 - Gemini embedding modeliyle kaynak ve sorgu vektörlerinin oluşturulması
 - PostgreSQL ve `pgvector` üzerinden benzerlik araması yapılması
-- İlgili eğitim bağlamının beş aşamalı doğrulama workflow’undaki analiz promptlarına eklenmesi
+- Bulunan ilgili bağlamın beş aşamalı doğrulama workflow’undaki analiz promptlarına eklenmesi
+- Bilgi tabanı boş olduğunda analizlerin RAG bağlamı olmadan devam etmesi
 - Kullanılan kaynakların doğrulama raporu ve PDF çıktısında kaynak listesi olarak gösterilmesi
 
 #### Müşteri Görüşme Notları ve Kanıt Analizi
@@ -230,7 +231,7 @@ AI Destekli Fikir Doğrulama Asistanı'nın ana hedef kitlesi, iş fikrini hayat
 - Render üzerinde deployment yapılabilmesi için production yapılandırması
 - Sık kullanılan proje yaşam döngüsü işlemlerini yöneten Makefile
 - Makefile üzerinden proje kurulumu, başlatma, durdurma, build ve temizlik işlemleri
-- Makefile üzerinden RAG kaynaklarının sisteme aktarılması ve bilgi tabanı istatistiklerinin görüntülenmesi
+- Makefile üzerinden bilgi tabanı istatistiklerinin görüntülenmesi
 
 ### Gelecekte Geliştirilebilecek Özellikler
 
@@ -435,15 +436,16 @@ Rakip analizi, yatırımcı sunumu, AI mentor ve görüşme kanıtı analizi mer
 
 #### RAG Mimarisi
 
-FikirLab’ın RAG katmanı, Yapay Zekâ ve Teknoloji Akademisi tarafından sağlanan girişimcilik eğitim içeriklerinden oluşturulan bilgi tabanını kullanmaktadır.
+FikirLab’ın RAG katmanı belirli bir içerik sağlayıcısına bağlı değildir. Uygun kullanım hakkına sahip metin veya YouTube transcript kaynakları aynı genel `KnowledgeSource` ve `KnowledgeChunk` veri modeli üzerinden işlenebilir.
 
-Fikir doğrulama workflow’unun beş aşaması, analiz sırasında kullanıcının iş fikriyle ilişkili eğitim içeriklerini bulmak ve yapay zekâ promptlarını bu bağlamla desteklemek için ortak RAG katmanından yararlanır.
+Fikir doğrulama workflow’unun beş aşaması, analiz sırasında kullanıcının iş fikriyle ilişkili içerikleri bulmak ve yapay zekâ promptlarını bu bağlamla desteklemek için ortak RAG katmanından yararlanır. Bilgi tabanı boşsa retrieval dış embedding servisini çağırmadan boş sonuç döndürür ve workflow normal LLM akışına RAG bölümü eklemeden devam eder.
 
 RAG akışı genel olarak şu şekilde çalışır:
 
 ```text
 Fikir bilgileri ve aşamaya özgü analiz amacı
 → sorgu metninin hazırlanması
+→ bilgi tabanında chunk bulunduğunun doğrulanması
 → Gemini query embedding oluşturulması
 → PostgreSQL ve pgvector üzerinde cosine distance sorgusu
 → uygun içerik parçalarının seçilmesi
@@ -477,21 +479,14 @@ Gösterilen kaynaklar inline veya cümle bazlı citation değildir. Sistem, mode
 
 #### RAG Kaynaklarının Hazırlanması
 
-RAG bilgi tabanının temel kaynaklarını, Yapay Zekâ ve Teknoloji Akademisi tarafından Bootcamp katılımcılarına sağlanan girişimcilik eğitim videoları oluşturmaktadır.
+Repository aktif veya varsayılan bir RAG corpus’u dağıtmaz. Bilgi tabanı ilk kurulumda boş olabilir; kaynak eklemek uygulamanın çalışması için zorunlu değildir.
 
-Bu eğitim içerikleri; iş fikri doğrulama, müşteri görüşmeleri, problem ve hedef kitle analizi, MVP kapsamı, girişimcilik süreçleri ve benzeri konularda proje analizlerini desteklemek amacıyla kullanılmaktadır.
+Kaynak eklemek için iki yeniden kullanılabilir yol korunur:
 
-Repository içerisinde videoların doğrudan medya dosyaları yerine, ingestion sürecinde kullanılan metadata ve Türkçe transcript dosyaları bulunmaktadır. Bu içerikler işlenerek metin parçalarına ayrılmakta, Gemini embedding modeliyle vektörleştirilmekte ve PostgreSQL ile pgvector tabanlı bilgi tabanına kaydedilmektedir.
+- `ingest_text`, sağlayıcıdan bağımsız düz metni genel chunker ile parçalar, embedding üretir ve kaydeder.
+- `ingest_youtube_video`, çağıranın sağladığı YouTube metadata ve JSON3 transcript dosyalarını zaman damgalı parçalara dönüştürür.
 
-YouTube ingestion süreci:
-
-- Akademi tarafından sağlanan video kaynaklarına ait metadata dosyalarını okur.
-- Videolara ait Türkçe transcript segmentlerini işler.
-- İçerikleri varsayılan olarak yaklaşık 750 karakterlik parçalara ayırır.
-- Ardışık parçalar arasında iki transcript segmenti overlap uygular.
-- Parçalara başlangıç ve bitiş zaman bilgilerini ekler.
-- Gemini embedding modeliyle 768 boyutlu vektörler oluşturur.
-- Kaynak ve içerik parçalarını PostgreSQL veritabanına kaydeder.
+Her iki yol da 768 boyutlu doküman embedding’i üretir ve `KnowledgeSource` ile ilişkili `KnowledgeChunk` kayıtlarını PostgreSQL/pgvector üzerinde saklar. Uygulamayı işleten kişi yalnızca kullanım hakkı bulunan kaynakları sağlamaktan sorumludur.
 
 #### AI Mentor Agent
 
@@ -626,12 +621,17 @@ Proje; Django tabanlı backend, React tabanlı frontend, Gemini destekli yapay z
 │   │       │   ├── embedding_service.py
 │   │       │   ├── retriever.py
 │   │       │   ├── chunker.py
+│   │       │   ├── prompt_context.py
 │   │       │   ├── rag_answer_service.py
-│   │       │   ├── ingestion.py
 │   │       │   └── ingestion/
+│   │       │       ├── text_ingestion.py
 │   │       │       ├── transcript_parser.py
 │   │       │       ├── youtube_ingestion.py
 │   │       │       └── youtube_metadata.py
+│   │       │
+│   │       ├── management/
+│   │       │   └── commands/
+│   │       │       └── cleanup_academy_sources.py
 │   │       │
 │   │       ├── services/
 │   │       │   ├── validation_workflow.py
@@ -662,16 +662,6 @@ Proje; Django tabanlı backend, React tabanlı frontend, Gemini destekli yapay z
 │   │   ├── urls.py                     # Ana URL yönlendirmeleri ve health endpointi
 │   │   ├── asgi.py
 │   │   └── wsgi.py
-│   │
-│   ├── data/
-│   │   └── youtube/
-│   │       ├── metadata/               # YouTube kaynak metadata dosyaları
-│   │       ├── transcripts/            # Türkçe transcript JSON3 dosyaları
-│   │       ├── video_urls.txt
-│   │       └── test_urls.txt
-│   │
-│   ├── scripts/
-│   │   └── ingest_all_youtube_videos.py
 │   │
 │   ├── manage.py
 │   └── requirements.txt
@@ -765,8 +755,10 @@ RAG altyapısının temel bileşenleri `backend/apps/analyses/rag/` altında yer
 - `embedding_service.py`: Doküman ve sorgu embedding’lerini oluşturur.
 - `retriever.py`: PostgreSQL ve pgvector üzerinden cosine distance sorgusu yapar.
 - `chunker.py`: Genel metinleri overlap kullanarak parçalara ayırır.
+- `prompt_context.py`: Yalnız retrieval sonucu varsa prompta RAG bölümü ekler.
 - `rag_answer_service.py`: RAG bağlamıyla cevap üretmek için hazırlanmış servis katmanıdır.
-- `ingestion/`: YouTube metadata ve transcript dosyalarını işler.
+- `ingestion/text_ingestion.py`: Sağlayıcıdan bağımsız metin kaynaklarını işler.
+- `ingestion/`: Çağıranın sağladığı YouTube metadata ve transcript dosyaları için yeniden kullanılabilir adaptörleri de içerir.
 
 Workflow aşamalarının retrieval sorguları ve kullanılan kaynakların fikir kaydına eklenmesi `backend/apps/ideas/rag_context.py` üzerinden yönetilmektedir.
 
@@ -1029,32 +1021,28 @@ localhost:5455
 
 ### 7. RAG Bilgi Tabanının Hazırlanması
 
-RAG bilgi tabanının temel kaynaklarını, Yapay Zekâ ve Teknoloji Akademisi tarafından Bootcamp katılımcılarına sağlanan girişimcilik eğitim videoları oluşturmaktadır.
+RAG bilgi tabanı opsiyoneldir ve repository herhangi bir varsayılan corpus içermez. `KnowledgeSource` ve `KnowledgeChunk` tabloları boşken uygulama normal analiz akışını RAG context olmadan sürdürür.
 
-Repository içerisinde bu videolara ait metadata ve Türkçe transcript dosyaları bulunmaktadır.
+Kullanım hakkına sahip genel bir metin kaynağı eklemek için Django shell içinde provider-independent ingestion fonksiyonu kullanılabilir:
 
-Backend ve PostgreSQL servisleri çalışır durumdayken ingestion işlemini başlatmak için:
+```python
+from apps.analyses.rag.ingestion import ingest_text
 
-```bash
-make rag-ingest
+source = ingest_text(
+    title="Kaynak başlığı",
+    text="Kaynağın tam metni",
+    source_url="https://example.com/source",
+)
 ```
 
-Bu komut:
+YouTube kaynağı eklenmesi gerekiyorsa `apps.analyses.rag.ingestion.youtube_ingestion.ingest_youtube_video` fonksiyonuna çağıran tarafından sağlanan metadata ve JSON3 transcript yolları verilir. Repository bu dosyaları otomatik keşfetmez veya paketlemez.
 
-- YouTube metadata dosyalarını okur.
-- Türkçe transcript dosyalarını işler.
-- İçerikleri parçalara ayırır.
-- Gemini embedding modeli üzerinden vektörler oluşturur.
-- `KnowledgeSource` ve `KnowledgeChunk` kayıtlarını veritabanına ekler.
-
-Komutun çalışabilmesi için:
+Ingestion için:
 
 - Backend `web` container’ı çalışıyor olmalıdır.
 - Migration işlemleri uygulanmış olmalıdır.
 - Geçerli bir `GEMINI_API_KEY` bulunmalıdır.
 - İnternet bağlantısı ve yeterli API kotası bulunmalıdır.
-
-Ingestion scripti video bazlı hataları yakalayarak sonuç özetine ekler. Bazı videolar başarısız olsa bile komut sıfır exit code ile tamamlanabileceğinden, işlem sonunda başarı ve hata sayıları ayrıca kontrol edilmelidir.
 
 Bilgi tabanındaki kaynak ve chunk sayılarını görüntülemek için:
 
@@ -1062,14 +1050,23 @@ Bilgi tabanındaki kaynak ve chunk sayılarını görüntülemek için:
 make rag-stats
 ```
 
-Örnek çıktı:
+Yerel geliştirme ve production veritabanları birbirinden bağımsızdır. Kaynak ekleme ve kaldırma işlemleri gerekli her ortamda ayrı uygulanmalıdır.
 
-```text
-KnowledgeSource: 33
-KnowledgeChunk: 426
+Önceki sürümlerde ingest edilmiş emekli Akademi kaynaklarını güvenli biçimde önizlemek ve temizlemek için:
+
+```bash
+docker compose exec -T web python manage.py cleanup_academy_sources --dry-run
+docker compose exec -T web python manage.py cleanup_academy_sources
 ```
 
-Yerel geliştirme veritabanının doldurulması, production veritabanının otomatik olarak aynı RAG kaynaklarını içereceği anlamına gelmez. Production veritabanı için ingestion işlemi ayrıca gerçekleştirilmelidir.
+Komut yalnız sabit Akademi video kimliği allowlist’iyle eşleşen kaynakları hedefler; ilişkili chunk/vector satırlarını ve fikir kayıtlarındaki eski kaynak özetlerini temizler. Diğer bilgi kaynaklarını korur ve tekrar çalıştırılabilir. Gerçek cleanup sırasında analiz ve ingestion yazmalarını kısa süreliğine durdurun; böylece cleanup başlamadan yüklenmiş eski bir fikir nesnesinin kaynak özetlerini yeniden kaydetmesi engellenir.
+
+Render/production için servis deploy edildikten sonra Render Shell içinde aynı bakım penceresinde doğrudan şu komutları çalıştırın:
+
+```bash
+python manage.py cleanup_academy_sources --dry-run
+python manage.py cleanup_academy_sources
+```
 
 ### 8. Servisleri Durdurma ve Yeniden Başlatma
 
@@ -1608,8 +1605,8 @@ Kaynak nesnesi aşağıdaki alanları içerebilir:
 ```json
 {
   "title": "Kaynak başlığı",
-  "source_type": "youtube",
-  "source_url": "https://www.youtube.com/...",
+  "source_type": "documentation",
+  "source_url": "https://example.com/source",
   "chunk_id": 42,
   "chunk_index": 3,
   "distance": 0.18
@@ -1799,9 +1796,9 @@ Güncel teknik kontrolde:
 
 - Django sistem kontrolü hatasız tamamlandı.
 - Bekleyen migration bulunmadığı doğrulandı.
-- Toplam 202 backend testi başarıyla geçti.
+- Toplam 219 backend testi başarıyla geçti.
 - Workflow testleri başarıyla tamamlandı.
-- RAG, retriever ve YouTube ingestion testleri başarıyla tamamlandı.
+- RAG, retriever, generic text/YouTube ingestion ve selective cleanup testleri başarıyla tamamlandı.
 - Görüşme notları ve evidence servislerine yönelik backend testleri çalıştı.
 
 AI mentor agent için ayrı bir dispatcher veya function-calling test paketi bulunmamaktadır.
@@ -1850,37 +1847,21 @@ Frontend tarafında ayrıca tanımlanmış bir unit test, component test veya br
 
 ### RAG Geliştirme Komutları
 
-RAG bilgi tabanına Akademi tarafından sağlanan girişimcilik eğitim içeriklerini aktarmak için:
-
-```bash
-make rag-ingest
-```
-
 Bilgi tabanındaki kaynak ve chunk sayılarını görüntülemek için:
 
 ```bash
 make rag-stats
 ```
 
-Teknik inceleme sırasında yerel geliştirme veritabanında aşağıdaki değerler doğrulanmıştır:
+Varsayılan durumda her iki sayının da `0` olması geçerlidir. Genel metin ingestion API’si `apps.analyses.rag.ingestion.ingest_text`, YouTube adaptörü ise `apps.analyses.rag.ingestion.youtube_ingestion.ingest_youtube_video` yolundadır. Kaynak dosyalarını ve kullanım haklarını çağıran sağlar.
 
-```text
-KnowledgeSource: 33
-KnowledgeChunk: 426
+Emekli Akademi kaynaklarının eşleşmelerini değiştirmeden görmek için:
+
+```bash
+docker compose exec -T web python manage.py cleanup_academy_sources --dry-run
 ```
 
-Kaynakların tamamı YouTube türündedir ve 426 chunk kaydının tamamında embedding bulunmaktadır.
-
-`make rag-ingest` çalıştırılmadan önce:
-
-- Backend `web` container’ının çalıştığı
-- Migration işlemlerinin tamamlandığı
-- Geçerli bir Gemini API anahtarının bulunduğu
-- İnternet bağlantısı ve API kotasının yeterli olduğu
-
-kontrol edilmelidir.
-
-Ingestion işlemi veritabanına yeni kaynak ve chunk kayıtları yazar. İşlem bazı videolarda başarısız olsa bile script sıfır exit code ile tamamlanabileceğinden komut çıktısındaki başarı ve hata sayıları ayrıca incelenmelidir.
+Yerel development veritabanında eşleşmeleri kaldırmak için `--dry-run` olmadan aynı Docker Compose komutu çalıştırılır. Render/production ortamında analiz ve ingestion yazmaları kısa süreliğine durdurulduktan sonra Render Shell’de `python manage.py cleanup_academy_sources --dry-run` ve ardından `python manage.py cleanup_academy_sources` çalıştırılır. Komut source, chunk, temizlenen fikir referansı ve güncellenen fikir sayılarını raporlar.
 
 ### Makefile Runtime Dosyaları
 
@@ -1960,11 +1941,11 @@ Güncel teknik incelemede aşağıdaki kontroller gerçekleştirilmiştir:
 | `docker compose config --quiet` | Başarılı |
 | `python manage.py check` | Sorun bulunmadı |
 | `python manage.py makemigrations --check` | Yeni migration gerekmiyor |
-| Backend testleri | 202 test başarılı |
+| Backend testleri | 219 test başarılı |
 | `npm ci` | Başarılı |
 | `npm run build` | Başarılı |
 | `git diff --check` | Başarılı |
-| `make rag-stats` | 33 kaynak, 426 chunk |
+| `make rag-stats` | Development cleanup sonrasında 0 kaynak, 0 chunk |
 
 Frontend build çıktısında yaklaşık 2 MB büyüklüğündeki JavaScript bundle için Vite boyut uyarısı alınmıştır. Build işlemi bu uyarıya rağmen başarıyla tamamlanmıştır.
 
@@ -1997,7 +1978,7 @@ Aşağıdaki alanlarda ayrı veya kapsamlı test altyapısı bulunmamaktadır:
 - Production RAG corpus doğrulaması
 - Canlı Gemini provider smoke testi
 
-Bu eksikler, mevcut backend testlerinin başarısız olduğu anlamına gelmez. Mevcut test paketi 202 testle başarıyla tamamlanmaktadır; ancak belirtilen alanlar için ek entegrasyon ve frontend testleri geliştirilebilir.
+Bu eksikler, mevcut backend testlerinin başarısız olduğu anlamına gelmez. Mevcut test paketi 219 testle başarıyla tamamlanmaktadır; ancak belirtilen alanlar için ek entegrasyon ve frontend testleri geliştirilebilir.
 
 ### Temizlik İşlemleri
 
@@ -2021,11 +2002,7 @@ Temizlik sonrasında proje tekrar aşağıdaki komutla kurulabilir:
 make up
 ```
 
-RAG bilgi tabanı silindiyse yeniden oluşturmak için:
-
-```bash
-make rag-ingest
-```
+RAG bilgi tabanı boş bırakılabilir. Yeniden doldurulacaksa yalnızca kullanım hakkı bulunan içerikler generic ingestion fonksiyonlarıyla açıkça eklenmelidir.
 
 ### Git ve Pull Request Akışı
 
@@ -3109,7 +3086,7 @@ Proje, Bootcamp değerlendirme sürecinde erişilebilir olması amacıyla Render
 
 Canlı ortam geçici değerlendirme amacıyla hazırlanmıştır. Uzun süreli veya production seviyesinde kullanım için kalıcı veritabanı, yedekleme, transactional e-posta servisinin izlenmesi, güvenli secret yönetimi, servis gözlemlenebilirliği ve ücretli hosting seçeneklerinin ayrıca yapılandırılması gerekir.
 
-Canlı ortamda kullanılan RAG bilgi tabanı, Türkiye Girişimcilik Vakfına ait girişimcilik eğitim içerikleri temel alınarak yalnızca Bootcamp değerlendirmesi amacıyla hazırlanmıştır. Mevcut deployment kalıcı veya ticari kullanım izni anlamına gelmez. Projenin jüri değerlendirmesinden sonra yayında tutulması ya da gerçek bir ürüne dönüştürülmesi durumunda ilgili içerikler için yazılı kullanım izni alınması veya RAG bilgi tabanının kullanım hakkı açık kaynaklarla değiştirilmesi gerekecektir.
+Güncel repository herhangi bir hazır RAG corpus’u içermez. Daha önce deploy edilmiş development veya Render veritabanlarında emekli Akademi kayıtları bulunabileceği için yeni sürüm deploy edildikten sonra önce `cleanup_academy_sources --dry-run`, ardından gerçek cleanup komutu ilgili ortamda ayrıca çalıştırılmalıdır. Bilgi tabanı boş kaldığında uygulama analizlerini RAG context olmadan sürdürür.
 
 ### Teslim Öncesi Kontrol Listesi
 
@@ -3124,6 +3101,7 @@ Canlı ortamda kullanılan RAG bilgi tabanı, Türkiye Girişimcilik Vakfına ai
 - [x] Uygulama Render üzerinde canlı ortama alındı.
 - [x] Canlı frontend ve backend sağlık kontrolü doğrulandı.
 - [x] Production RAG corpus durumu son kez kontrol edildi.
+- [ ] Emekli Akademi RAG kayıtları güncel production veritabanından cleanup komutuyla kaldırıldı.
 - [x] Production Brevo HTTP API e-posta gönderimi kontrol edildi.
 - [x] Final proje tanıtım videosu tamamlandı.
 - [x] Bootcamp final teslim formu gönderildi.
@@ -3165,20 +3143,15 @@ Projede kullanılan Django, React, PostgreSQL, pgvector, Gemini ve diğer üçü
 
 ### RAG Eğitim İçeriklerinin Kullanımı
 
-FikirLab’ın RAG bilgi tabanında, Yapay Zekâ ve Teknoloji Akademisi eğitim sürecinde takım üyelerine sağlanan ve Türkiye Girişimcilik Vakfına ait olan girişimcilik eğitim videoları kullanılmaktadır.
+FikirLab’ın önceki Bootcamp sürümündeki RAG bilgi tabanında, Yapay Zekâ ve Teknoloji Akademisi eğitim sürecinde takım üyelerine sağlanan ve Türkiye Girişimcilik Vakfına ait olan girişimcilik eğitim videoları kullanılmıştır. Bu kaynaklara ait URL manifestleri, metadata ve transcript dosyaları güncel çalışma ağacından kaldırılmış; bunları yeniden ingest eden proje komutu devre dışı bırakılmıştır.
 
 Team 138, eğitim içeriklerinin Bootcamp projesinde RAG tabanlı bir bilgi kaynağı olarak kullanılması konusunda Akademi tarafından takıma atanan asistandan yazılı görüş almıştır. İlgili görüşte, içeriklerin yarışma ve Bootcamp projesi kapsamında kullanılmasında sakınca bulunmadığı; ancak projenin gerçek bir ürüne dönüştürülmesi durumunda Türkiye Girişimcilik Vakfıyla telif ve kullanım hakları konusunda ayrıca görüşülmesi gerektiği belirtilmiştir.
 
-Mevcut Render deployment’ı yalnızca Bootcamp jüri değerlendirmesi ve proje gösterimi amacıyla hazırlanmış geçici bir ortamdır. Bu kullanım, eğitim içeriklerinin kalıcı, kurumsal veya ticari bir üründe kullanılmasına yönelik genel bir lisans olarak değerlendirilmemektedir.
+Bu açıklama geçmiş kullanımın kaynak ve izin bağlamını belgelemek amacıyla korunmaktadır; güncel RAG mimarisinin bu sağlayıcıya teknik bir bağımlılığı yoktur. Daha önce oluşturulmuş veritabanı kayıtları, her deployment ortamında `cleanup_academy_sources` management command’ı çalıştırılarak ayrıca kaldırılmalıdır.
 
-FikirLab’ın Bootcamp sonrasında kalıcı veya ticari bir ürüne dönüştürülmesi durumunda:
+Bilgi tabanına bundan sonra kaynak eklenmesi durumunda içeriklerin Team 138 tarafından üretilmiş, kamu malı, açık lisanslı veya amaçlanan kullanım için yazılı izin alınmış olması gerekir.
 
-1. Türkiye Girişimcilik Vakfıyla eğitim içeriklerinin RAG sisteminde kullanım kapsamını belirleyen yazılı bir izin veya lisans anlaşması yapılması,
-2. Ya da mevcut eğitim içeriklerine dayanan transcript, metadata, chunk, embedding ve ilişkili RAG kayıtlarının kaldırılarak bilgi tabanının Team 138 tarafından üretilmiş, kamu malı, açık lisanslı veya yazılı kullanım izni alınmış kaynaklarla yeniden oluşturulması
-
-gerekecektir.
-
-Team 138, Türkiye Girişimcilik Vakfına ait eğitim videoları ve bunlardan elde edilen içerikler üzerinde sahiplik iddiasında bulunmaz ve üçüncü kişilere bu içerikler üzerinde kullanım hakkı vermez.
+Team 138, önceki sürümde kullanılan Türkiye Girişimcilik Vakfına ait eğitim videoları ve bunlardan elde edilen içerikler üzerinde sahiplik iddiasında bulunmaz ve üçüncü kişilere bu içerikler üzerinde kullanım hakkı vermez.
 
 Ayrıntılı kullanım koşulları repository kök dizinindeki [`LICENSE`](LICENSE) dosyasında yer almaktadır.
 

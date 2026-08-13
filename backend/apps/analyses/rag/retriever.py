@@ -33,6 +33,11 @@ def retrieve_context(
     if limit <= 0:
         raise ValueError("Limit must be greater than zero.")
 
+    # An empty knowledge base is a valid application state. Avoid calling the
+    # external embedding provider when there cannot be any retrieval results.
+    if not KnowledgeChunk.objects.exists():
+        return []
+
     query_embedding = embed_query(clean_query)
 
     # Eşik ve kaynak tekrarı filtrelerinden sonra yeterli sayıda sonuç

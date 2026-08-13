@@ -338,7 +338,7 @@ export function ReportPage({ onBack }: ReportPageProps) {
 
               <div className="rounded-xl border border-border bg-card p-5">
                 <p className="mb-5 text-sm leading-6 text-muted-foreground">
-                  Bu analiz hazırlanırken aşağıdaki eğitim içerikleri
+                  Bu analiz hazırlanırken aşağıdaki bilgi kaynakları
                   referans alınmıştır.
                 </p>
 
